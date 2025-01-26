@@ -19,7 +19,6 @@ function App() {
         </div>
       </SidebarProvider>
     </Router>
-  </div>
   );
 }
 
