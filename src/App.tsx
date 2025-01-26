@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/Layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import Members from "@/pages/Members";
+import Events from "@/pages/Events";
+import Announcements from "@/pages/Announcements";
 
 function App() {
   return (
@@ -11,9 +14,9 @@ function App() {
           <main className="flex-1 p-6">
             <Routes>
               <Route path="/" element={<div>Dashboard</div>} />
-              <Route path="/members" element={<div>Members</div>} />
-              <Route path="/events" element={<div>Events</div>} />
-              <Route path="/announcements" element={<div>Announcements</div>} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/announcements" element={<Announcements />} />
             </Routes>
           </main>
         </div>
