@@ -9,6 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { nigerianCities } from "@/utils/nigerianCities";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface MemberRegistrationFormProps {
   onSubmit: (member: any) => void;
@@ -25,15 +27,31 @@ export function MemberRegistrationForm({
     maritalStatus: "",
     numberOfChildren: 0,
     foundationClassDate: "",
-    baptism: "",
-    baptismYear: "",
-    wofbiClass: "",
+    baptism: {
+      water: false,
+      holyGhost: false,
+      year: "",
+    },
+    wofbiClass: {
+      type: "",
+      year: "",
+    },
     joiningLocation: "",
+    customLocation: "",
+    familyGroup: "",
+    memberType: "individual", // individual or family
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const finalLocation = formData.joiningLocation === "other" 
+      ? formData.customLocation 
+      : formData.joiningLocation;
+    
+    onSubmit({
+      ...formData,
+      joiningLocation: finalLocation,
+    });
   };
 
   const handleChange = (
@@ -49,6 +67,39 @@ export function MemberRegistrationForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
+        <div>
+          <Label>Member Type</Label>
+          <RadioGroup
+            defaultValue="individual"
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, memberType: value }))
+            }
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="individual" id="individual" />
+              <Label htmlFor="individual">Individual</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="family" id="family" />
+              <Label htmlFor="family">Family</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {formData.memberType === "family" && (
+          <div>
+            <Label htmlFor="familyGroup">Family Group</Label>
+            <Input
+              id="familyGroup"
+              name="familyGroup"
+              value={formData.familyGroup}
+              onChange={handleChange}
+              placeholder="Enter family group name"
+            />
+          </div>
+        )}
+
         <div>
           <Label htmlFor="familyName">Family Name</Label>
           <Input
@@ -114,43 +165,61 @@ export function MemberRegistrationForm({
           />
         </div>
 
-        <div>
-          <Label htmlFor="baptism">Baptism</Label>
-          <Select
-            name="baptism"
-            onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, baptism: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select baptism type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="water">Water</SelectItem>
-              <SelectItem value="holy-ghost">Holy Ghost</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="baptismYear">Baptism Year</Label>
+        <div className="space-y-2">
+          <Label>Baptism</Label>
+          <div className="flex space-x-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="waterBaptism"
+                checked={formData.baptism.water}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    baptism: { ...prev.baptism, water: e.target.checked },
+                  }))
+                }
+              />
+              <Label htmlFor="waterBaptism">Water</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="holyGhostBaptism"
+                checked={formData.baptism.holyGhost}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    baptism: { ...prev.baptism, holyGhost: e.target.checked },
+                  }))
+                }
+              />
+              <Label htmlFor="holyGhostBaptism">Holy Ghost</Label>
+            </div>
+          </div>
           <Input
-            id="baptismYear"
-            name="baptismYear"
             type="number"
+            placeholder="Baptism Year"
+            value={formData.baptism.year}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                baptism: { ...prev.baptism, year: e.target.value },
+              }))
+            }
             min="1900"
             max={new Date().getFullYear()}
-            value={formData.baptismYear}
-            onChange={handleChange}
           />
         </div>
 
-        <div>
-          <Label htmlFor="wofbiClass">WOFBI Class</Label>
+        <div className="space-y-2">
+          <Label>WOFBI Class</Label>
           <Select
-            name="wofbiClass"
             onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, wofbiClass: value }))
+              setFormData((prev) => ({
+                ...prev,
+                wofbiClass: { ...prev.wofbiClass, type: value },
+              }))
             }
           >
             <SelectTrigger>
@@ -162,17 +231,53 @@ export function MemberRegistrationForm({
               <SelectItem value="LDC">LDC</SelectItem>
             </SelectContent>
           </Select>
+          <Input
+            type="number"
+            placeholder="WOFBI Year"
+            value={formData.wofbiClass.year}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                wofbiClass: { ...prev.wofbiClass, year: e.target.value },
+              }))
+            }
+            min="1900"
+            max={new Date().getFullYear()}
+          />
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="joiningLocation">Joining Location</Label>
-          <Input
-            id="joiningLocation"
+          <Select
             name="joiningLocation"
-            value={formData.joiningLocation}
-            onChange={handleChange}
-            required
-          />
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, joiningLocation: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select location" />
+            </SelectTrigger>
+            <SelectContent>
+              {nigerianCities.map((city) => (
+                <SelectItem key={city} value={city}>
+                  {city}
+                </SelectItem>
+              ))}
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+          {formData.joiningLocation === "other" && (
+            <Input
+              placeholder="Enter custom location"
+              value={formData.customLocation}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  customLocation: e.target.value,
+                }))
+              }
+            />
+          )}
         </div>
       </div>
 
