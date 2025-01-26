@@ -1,27 +1,26 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AppSidebar } from "@/components/Layout/Sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/members" element={<Navigate to="/" replace />} />
-          <Route path="/events" element={<Navigate to="/" replace />} />
-          <Route path="/announcements" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <Router>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <main className="flex-1 p-6">
+            <Routes>
+              <Route path="/" element={<div>Dashboard</div>} />
+              <Route path="/members" element={<div>Members</div>} />
+              <Route path="/events" element={<div>Events</div>} />
+              <Route path="/announcements" element={<div>Announcements</div>} />
+            </Routes>
+          </main>
+        </div>
+      </SidebarProvider>
+    </Router>
+  </div>
+  );
+}
 
 export default App;
