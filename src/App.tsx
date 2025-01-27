@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import Members from "@/pages/Members";
 import Events from "@/pages/Events";
 import Announcements from "@/pages/Announcements";
+import Income from "@/pages/Income";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
               <Route path="/members" element={<Members />} />
               <Route path="/events" element={<Events />} />
               <Route path="/announcements" element={<Announcements />} />
+              <Route path="/income" element={<Income />} />
             </Routes>
           </main>
         </div>
