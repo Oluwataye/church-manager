@@ -1,72 +1,37 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar, Clock } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EventCalendar } from "@/components/Events/EventCalendar";
+import { EventList } from "@/components/Events/EventList";
+import { EventForm } from "@/components/Events/EventForm";
 
-interface Event {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  description: string;
-  type: "Sunday" | "Midweek" | "Special";
-}
-
-export default function Events() {
-  const [events] = useState<Event[]>([
-    {
-      id: "1",
-      title: "Sunday Service",
-      date: "2024-03-24",
-      time: "09:00",
-      description: "Weekly Sunday Service",
-      type: "Sunday",
-    },
-    {
-      id: "2",
-      title: "Midweek Service",
-      date: "2024-03-27",
-      time: "18:00",
-      description: "Weekly Bible Study",
-      type: "Midweek",
-    },
-  ]);
-
-  const { toast } = useToast();
-
+const Events = () => {
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-church-600">Church Events</h1>
-        <Button onClick={() => toast({ title: "Coming soon!", description: "Event creation will be available soon." })}>
-          Add New Event
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold">Church Events</h1>
+        <p className="text-muted-foreground">Manage and track church events</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
-          <Card key={event.id} className="p-6">
-            <h3 className="font-semibold text-xl mb-4">{event.title}</h3>
-            <div className="space-y-2 text-gray-600">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>{new Date(event.date).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span>{event.time}</span>
-              </div>
-              <p className="mt-4">{event.description}</p>
-              <div className="mt-4">
-                <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-church-100 text-church-600">
-                  {event.type}
-                </span>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Tabs defaultValue="calendar" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+          <TabsTrigger value="list">Event List</TabsTrigger>
+          <TabsTrigger value="create">Create Event</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendar" className="space-y-4">
+          <EventCalendar />
+        </TabsContent>
+
+        <TabsContent value="list" className="space-y-4">
+          <EventList />
+        </TabsContent>
+
+        <TabsContent value="create" className="space-y-4">
+          <EventForm />
+        </TabsContent>
+      </Tabs>
     </div>
   );
-}
+};
+
+export default Events;
