@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { nigerianCities } from "@/utils/nigerianCities";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 interface MemberRegistrationFormProps {
   onSubmit: (member: any) => void;
@@ -39,8 +41,34 @@ export function MemberRegistrationForm({
     joiningLocation: "",
     customLocation: "",
     familyGroup: "",
-    memberType: "individual", // individual or family
+    memberType: "individual",
+    profilePhoto: "",
   });
+
+  const { toast } = useToast();
+
+  const handleProfilePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Profile photo must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData(prev => ({
+          ...prev,
+          profilePhoto: e.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +95,29 @@ export function MemberRegistrationForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-24 w-24">
+            <AvatarImage src={formData.profilePhoto || "/placeholder.svg"} alt="Profile Photo" />
+            <AvatarFallback>{formData.familyName?.[0] || "P"}</AvatarFallback>
+          </Avatar>
+          <div>
+            <input
+              type="file"
+              id="profile-upload"
+              className="hidden"
+              accept="image/*"
+              onChange={handleProfilePhotoUpload}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById("profile-upload")?.click()}
+            >
+              Upload Photo
+            </Button>
+          </div>
+        </div>
+
         <div>
           <Label>Member Type</Label>
           <RadioGroup
