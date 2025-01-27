@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/Layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
+import Dashboard from "@/pages/Dashboard";
 import Members from "@/pages/Members";
 import Events from "@/pages/Events";
 import Announcements from "@/pages/Announcements";
@@ -18,7 +19,7 @@ function App() {
               <ChurchLogo />
             </div>
             <Routes>
-              <Route path="/" element={<div>Dashboard</div>} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/members" element={<Members />} />
               <Route path="/events" element={<Events />} />
               <Route path="/announcements" element={<Announcements />} />
