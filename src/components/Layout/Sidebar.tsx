@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Bell, DollarSign } from "lucide-react";
+import { Home, Users, Calendar, Bell, DollarSign, Settings } from "lucide-react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -17,6 +17,7 @@ const menuItems = [
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Bell, label: "Announcements", path: "/announcements" },
   { icon: DollarSign, label: "Income", path: "/income" },
+  { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 export const AppSidebar = () => {
