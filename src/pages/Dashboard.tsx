@@ -6,14 +6,14 @@ import { IncomeWidget } from "@/components/Dashboard/IncomeWidget";
 export default function Dashboard() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+      <div className="mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold">Dashboard</h2>
         <p className="text-muted-foreground">
           Overview of your church's key metrics
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total Members"
           value="150"
@@ -40,7 +40,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AttendanceChart />
         <IncomeWidget />
       </div>
