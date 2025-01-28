@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/Layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import Dashboard from "@/pages/Dashboard";
 import Members from "@/pages/Members";
 import Events from "@/pages/Events";
@@ -15,7 +16,10 @@ function App() {
         <div className="min-h-screen flex w-full">
           <AppSidebar />
           <main className="flex-1 p-6">
-            <div className="mb-8 text-center">
+            <div className="mb-8 flex flex-col items-center">
+              <div className="mb-4">
+                <ChurchLogo />
+              </div>
               <h1 className="text-3xl font-bold text-church-700">LIVING FAITH CHURCH</h1>
               <p className="text-xl text-church-500 mt-1">Chanchaga</p>
             </div>
