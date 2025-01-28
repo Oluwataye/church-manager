@@ -15,6 +15,10 @@ function App() {
         <div className="min-h-screen flex w-full">
           <AppSidebar />
           <main className="flex-1 p-6">
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl font-bold text-church-700">LIVING FAITH CHURCH</h1>
+              <p className="text-xl text-church-500 mt-1">Chanchaga</p>
+            </div>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/members" element={<Members />} />
