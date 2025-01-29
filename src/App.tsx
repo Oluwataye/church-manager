@@ -18,7 +18,7 @@ function App() {
           <header className="fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200">
             <div className="flex items-center justify-center p-4 md:p-6">
               <div className="flex flex-col items-center md:flex-row md:gap-6">
-                <ChurchLogo />
+                <ChurchLogo displayOnly />
                 <div className="text-center md:text-left mt-4 md:mt-0">
                   <h1 className="text-2xl md:text-3xl font-bold text-church-700">LIVING FAITH CHURCH</h1>
                   <p className="text-lg md:text-xl text-church-500">Chanchaga</p>

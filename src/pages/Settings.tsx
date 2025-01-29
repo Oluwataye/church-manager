@@ -16,7 +16,9 @@ export default function Settings() {
           <p className="text-sm text-muted-foreground">
             Update your church logo. This will be used across the application.
           </p>
-          <ChurchLogo />
+          <div className="mt-4">
+            <ChurchLogo />
+          </div>
         </div>
       </div>
     </div>

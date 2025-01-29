@@ -3,7 +3,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export function ChurchLogo() {
+interface ChurchLogoProps {
+  displayOnly?: boolean;
+}
+
+export function ChurchLogo({ displayOnly = false }: ChurchLogoProps) {
   const [logo, setLogo] = useState<string>("/placeholder.svg");
   const { toast } = useToast();
 
@@ -37,21 +41,23 @@ export function ChurchLogo() {
         <AvatarImage src={logo} alt="Church Logo" />
         <AvatarFallback>Logo</AvatarFallback>
       </Avatar>
-      <div className="flex items-center gap-2">
-        <input
-          type="file"
-          id="logo-upload"
-          className="hidden"
-          accept="image/*"
-          onChange={handleLogoUpload}
-        />
-        <Button
-          variant="outline"
-          onClick={() => document.getElementById("logo-upload")?.click()}
-        >
-          Update Logo
-        </Button>
-      </div>
+      {!displayOnly && (
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            id="logo-upload"
+            className="hidden"
+            accept="image/*"
+            onChange={handleLogoUpload}
+          />
+          <Button
+            variant="outline"
+            onClick={() => document.getElementById("logo-upload")?.click()}
+          >
+            Update Logo
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
