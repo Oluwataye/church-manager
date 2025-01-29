@@ -29,9 +29,11 @@ function App() {
 
           {/* Main Layout Container */}
           <div className="flex min-h-[calc(100vh-120px)]">
-            {/* Sidebar Navigation - Fixed position with proper spacing */}
-            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] z-40 bg-white border-r border-gray-200">
-              <AppSidebar />
+            {/* Sidebar Navigation - Fixed position with proper spacing and overflow handling */}
+            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] z-40 bg-white border-r border-gray-200 overflow-y-auto">
+              <div className="py-4">
+                <AppSidebar />
+              </div>
             </aside>
 
             {/* Main Content Area - Responsive padding and margin */}
