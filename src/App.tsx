@@ -28,26 +28,28 @@ function App() {
           </header>
 
           {/* Main Grid Layout */}
-          <div className="flex pt-[180px] md:pt-[120px]">
+          <div className="flex min-h-screen pt-[180px] md:pt-[120px]">
             {/* Sidebar Navigation */}
             <aside className="fixed left-0 h-[calc(100vh-120px)] z-40">
               <AppSidebar />
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 ml-[64px] md:ml-[256px] p-4 md:p-6">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/members" element={<Members />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/announcements" element={<Announcements />} />
-                <Route path="/income" element={<Income />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
+            <main className="flex-1 ml-[64px] md:ml-[256px] p-6 md:p-8">
+              <div className="max-w-[1600px] mx-auto">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/members" element={<Members />} />
+                  <Route path="/events" element={<Events />} />
+                  <Route path="/announcements" element={<Announcements />} />
+                  <Route path="/income" element={<Income />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Routes>
 
-              <footer className="mt-8 py-4 text-center text-gray-600">
-                2024 © T-TECH GENERAL SERVICES
-              </footer>
+                <footer className="mt-12 py-4 text-center text-gray-600">
+                  2024 © T-TECH GENERAL SERVICES
+                </footer>
+              </div>
             </main>
           </div>
         </div>
