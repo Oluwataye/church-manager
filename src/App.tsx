@@ -28,14 +28,14 @@ function App() {
           </header>
 
           {/* Main Grid Layout */}
-          <div className="flex min-h-screen pt-[180px] md:pt-[120px]">
-            {/* Sidebar Navigation */}
-            <aside className="fixed left-0 h-[calc(100vh-120px)] z-40">
+          <div className="flex min-h-screen">
+            {/* Sidebar Navigation - Now positioned below header */}
+            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] z-40">
               <AppSidebar />
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 ml-[64px] md:ml-[256px] p-6 md:p-8">
+            <main className="flex-1 ml-[64px] md:ml-[256px] p-6 md:p-8 mt-[120px]">
               <div className="max-w-[1600px] mx-auto">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
