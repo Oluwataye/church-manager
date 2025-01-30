@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ChurchLogoProps {
   displayOnly?: boolean;
+  onLogoChange?: (logo: string) => void;
 }
 
-export function ChurchLogo({ displayOnly = false }: ChurchLogoProps) {
+export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProps) {
   const [logo, setLogo] = useState<string>("/placeholder.svg");
+  const [tempLogo, setTempLogo] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,24 +27,38 @@ export function ChurchLogo({ displayOnly = false }: ChurchLogoProps) {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        setLogo(e.target?.result as string);
-        toast({
-          title: "Success",
-          description: "Church logo updated successfully",
-        });
+        setTempLogo(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleApply = () => {
+    if (tempLogo) {
+      setLogo(tempLogo);
+      if (onLogoChange) {
+        onLogoChange(tempLogo);
+      }
+      setTempLogo(null);
+      toast({
+        title: "Success",
+        description: "Church logo updated successfully",
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setTempLogo(null);
+  };
+
   return (
     <div className="flex flex-col items-center gap-4">
       <Avatar className="h-24 w-24">
-        <AvatarImage src={logo} alt="Church Logo" />
+        <AvatarImage src={tempLogo || logo} alt="Church Logo" />
         <AvatarFallback>Logo</AvatarFallback>
       </Avatar>
       {!displayOnly && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-4">
           <input
             type="file"
             id="logo-upload"
@@ -50,12 +66,30 @@ export function ChurchLogo({ displayOnly = false }: ChurchLogoProps) {
             accept="image/*"
             onChange={handleLogoUpload}
           />
-          <Button
-            variant="outline"
-            onClick={() => document.getElementById("logo-upload")?.click()}
-          >
-            Update Logo
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById("logo-upload")?.click()}
+            >
+              Choose Logo
+            </Button>
+          </div>
+          {tempLogo && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="default"
+                onClick={handleApply}
+              >
+                Apply Changes
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
