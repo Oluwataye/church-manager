@@ -30,8 +30,8 @@ function App() {
           {/* Main Layout Container */}
           <div className="flex min-h-[calc(100vh-120px)]">
             {/* Sidebar Navigation - Fixed position with proper spacing and overflow handling */}
-            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] z-40 bg-white border-r border-gray-200 overflow-y-auto">
-              <div className="py-4">
+            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] z-40 bg-church-600 border-r border-church-700 overflow-y-auto w-[64px] md:w-[256px] transition-all duration-300 ease-in-out">
+              <div className="py-6">
                 <AppSidebar />
               </div>
             </aside>

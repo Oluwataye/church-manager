@@ -25,17 +25,17 @@ export const AppSidebar = () => {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            <span className="text-xl font-bold text-church-600">Church Manager</span>
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.path} className="flex items-center gap-3">
+                    <Link 
+                      to={item.path} 
+                      className="flex items-center gap-4 px-4 py-3 text-white hover:bg-church-700 transition-colors w-full rounded-md"
+                    >
                       <item.icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                      <span className="text-base font-medium">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
