@@ -30,8 +30,8 @@ function App() {
           {/* Main Layout Container */}
           <div className="flex pt-[120px] min-h-screen">
             {/* Sidebar Navigation */}
-            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] bg-church-600 border-r border-church-700 overflow-y-auto w-[64px] md:w-[256px] transition-all duration-300 ease-in-out z-20">
-              <nav className="h-full py-6">
+            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] bg-church-600 border-r border-church-700 w-[64px] md:w-[256px] transition-all duration-300 ease-in-out z-20 flex flex-col">
+              <nav className="flex-1 overflow-y-auto py-6">
                 <AppSidebar />
               </nav>
             </aside>

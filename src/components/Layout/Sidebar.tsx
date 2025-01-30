@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Bell, DollarSign, Settings } from "lucide-react";
+import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut } from "lucide-react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -10,6 +10,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -21,6 +23,15 @@ const menuItems = [
 ];
 
 export const AppSidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Here you would typically clear any auth tokens or user data
+    localStorage.clear();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -40,6 +51,25 @@ export const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Logout Section */}
+        <SidebarGroup className="mt-auto pt-6 border-t border-church-700">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-4 px-4 py-3 text-white hover:bg-church-700 transition-colors w-full rounded-md"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span className="text-base font-medium">Logout</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
