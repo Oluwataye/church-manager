@@ -5,6 +5,7 @@ import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { ThemeProvider } from "@/hooks/use-theme";
 import Dashboard from "@/pages/Dashboard";
 import Members from "@/pages/Members";
+import Groups from "@/pages/Groups";
 import Events from "@/pages/Events";
 import Announcements from "@/pages/Announcements";
 import Income from "@/pages/Income";
@@ -44,6 +45,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/members" element={<Members />} />
+                    <Route path="/groups" element={<Groups />} />
                     <Route path="/events" element={<Events />} />
                     <Route path="/announcements" element={<Announcements />} />
                     <Route path="/income" element={<Income />} />

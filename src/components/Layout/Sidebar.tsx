@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut } from "lucide-react";
+import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut, UserGroup } from "lucide-react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
   { icon: Users, label: "Members", path: "/members" },
+  { icon: UserGroup, label: "Groups", path: "/groups" },
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Bell, label: "Announcements", path: "/announcements" },
   { icon: DollarSign, label: "Income", path: "/income" },
@@ -26,7 +27,6 @@ export const AppSidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Here you would typically clear any auth tokens or user data
     localStorage.clear();
     toast.success("Logged out successfully");
     navigate("/");
@@ -55,7 +55,6 @@ export const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Logout Section */}
         <SidebarGroup className="mt-auto pt-6 border-t border-church-700">
           <SidebarGroupContent>
             <SidebarMenu>
