@@ -14,8 +14,8 @@ function App() {
     <Router>
       <SidebarProvider>
         <div className="min-h-screen bg-background">
-          {/* Header Section */}
-          <header className="fixed top-0 left-0 right-0 bg-church-600 z-10 h-[120px]">
+          {/* Header Section - Fixed at top */}
+          <header className="fixed top-0 left-0 right-0 bg-church-600 z-50 h-[120px]">
             <div className="flex items-center justify-center h-full px-4 md:px-6">
               <div className="flex flex-col items-center md:flex-row md:gap-6 max-w-[1600px] w-full">
                 <ChurchLogo displayOnly />
@@ -29,14 +29,14 @@ function App() {
 
           {/* Main Layout Container */}
           <div className="flex pt-[120px] min-h-screen">
-            {/* Sidebar Navigation */}
-            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] bg-church-600 border-r border-church-700 w-[64px] md:w-[256px] transition-all duration-300 ease-in-out z-20 flex flex-col">
+            {/* Sidebar Navigation - Fixed on left */}
+            <aside className="fixed left-0 top-[120px] h-[calc(100vh-120px)] bg-church-600 border-r border-church-700 w-[64px] md:w-[256px] transition-all duration-300 ease-in-out z-40 flex flex-col">
               <nav className="flex-1 overflow-y-auto py-6">
                 <AppSidebar />
               </nav>
             </aside>
 
-            {/* Main Content Area */}
+            {/* Main Content Area - Responsive grid */}
             <main className="flex-1 ml-[64px] md:ml-[256px] p-4 md:p-6 lg:p-8">
               <div className="max-w-[1400px] mx-auto">
                 <Routes>
