@@ -43,18 +43,56 @@ export default function Announcements() {
     }
   };
 
+  const handleAddAnnouncement = () => {
+    try {
+      // This will be replaced with actual functionality later
+      throw new Error("Feature not implemented");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Announcement creation will be available soon.",
+        });
+      }
+    }
+  };
+
+  const handleViewAnnouncement = (id: string) => {
+    try {
+      const announcement = announcements.find((a) => a.id === id);
+      if (!announcement) {
+        throw new Error("Announcement not found");
+      }
+      toast({
+        title: announcement.title,
+        description: announcement.content,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-church-600">Announcements</h1>
-        <Button onClick={() => toast({ title: "Coming soon!", description: "Announcement creation will be available soon." })}>
-          Add Announcement
-        </Button>
+        <Button onClick={handleAddAnnouncement}>Add Announcement</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {announcements.map((announcement) => (
-          <Card key={announcement.id} className="p-6">
+          <Card 
+            key={announcement.id} 
+            className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleViewAnnouncement(announcement.id)}
+          >
             <div className="flex items-start gap-4">
               <div className="bg-church-100 p-2 rounded-lg">
                 <Bell className="w-6 h-6 text-church-600" />
