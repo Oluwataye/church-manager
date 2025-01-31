@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut, UserGroup } from "lucide-react";
+import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut } from "lucide-react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -16,7 +16,7 @@ import { toast } from "sonner";
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
   { icon: Users, label: "Members", path: "/members" },
-  { icon: UserGroup, label: "Groups", path: "/groups" },
+  { icon: Users, label: "Groups", path: "/groups" },
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Bell, label: "Announcements", path: "/announcements" },
   { icon: DollarSign, label: "Income", path: "/income" },
