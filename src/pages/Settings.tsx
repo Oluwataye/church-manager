@@ -2,14 +2,34 @@ import { useState } from "react";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useTheme } from "@/hooks/use-theme";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
   const [globalLogo, setGlobalLogo] = useState<string>("/placeholder.svg");
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
 
   const handleLogoChange = (newLogo: string) => {
     setGlobalLogo(newLogo);
-    // Here you could implement persistence logic if needed
+    // Here you would typically upload to backend
     localStorage.setItem("churchLogo", newLogo);
+    toast({
+      title: "Success",
+      description: "Church logo updated successfully",
+    });
+  };
+
+  const handleThemeChange = (checked: boolean) => {
+    const newTheme = checked ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    toast({
+      title: "Theme Updated",
+      description: `Theme changed to ${newTheme} mode`,
+    });
   };
 
   return (
@@ -27,7 +47,7 @@ export default function Settings() {
             <CardTitle>Church Logo</CardTitle>
             <CardDescription>
               Update your church logo. This will be used across the application.
-              The logo should be less than 5MB in size.
+              Supported formats: PNG, JPEG, SVG. Maximum size: 2MB.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -39,14 +59,33 @@ export default function Settings() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Other Settings</CardTitle>
+            <CardTitle>Appearance</CardTitle>
             <CardDescription>
-              Additional church settings and configurations will appear here.
+              Customize the appearance of your application.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-4">
+              <Switch
+                id="theme-toggle"
+                checked={theme === "dark"}
+                onCheckedChange={handleThemeChange}
+              />
+              <Label htmlFor="theme-toggle">Dark Mode</Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Security</CardTitle>
+            <CardDescription>
+              Manage your security settings and preferences.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              No additional settings available at this time.
+              Password management and security features will be available after connecting to Supabase.
             </p>
           </CardContent>
         </Card>
