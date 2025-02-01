@@ -1,27 +1,34 @@
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
 
+export interface Group {
+  id: number;
+  name: string;
+  description: string;
+  memberCount: number;
+}
+
+// Mock data - in a real app, this would come from your backend
+export const groups = [
+  {
+    id: 1,
+    name: "Youth Fellowship",
+    description: "Group for young adults aged 18-30",
+    memberCount: 25,
+  },
+  {
+    id: 2,
+    name: "Choir",
+    description: "Church choir and music ministry",
+    memberCount: 15,
+  },
+];
+
 interface GroupListProps {
   searchQuery: string;
 }
 
 export const GroupList = ({ searchQuery }: GroupListProps) => {
-  // Mock data - in a real app, this would come from your backend
-  const groups = [
-    {
-      id: 1,
-      name: "Youth Fellowship",
-      description: "Group for young adults aged 18-30",
-      memberCount: 25,
-    },
-    {
-      id: 2,
-      name: "Choir",
-      description: "Church choir and music ministry",
-      memberCount: 15,
-    },
-  ];
-
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
   );

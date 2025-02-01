@@ -13,6 +13,7 @@ import { nigerianCities } from "@/utils/nigerianCities";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { groups } from "@/components/Groups/GroupList";
 
 interface MemberRegistrationFormProps {
   onSubmit: (member: any) => void;
@@ -43,6 +44,7 @@ export function MemberRegistrationForm({
     familyGroup: "",
     memberType: "individual",
     profilePhoto: "",
+    churchGroup: "", // New field for church group
   });
 
   const { toast } = useToast();
@@ -76,9 +78,20 @@ export function MemberRegistrationForm({
       ? formData.customLocation 
       : formData.joiningLocation;
     
+    // Update the selected group's member count
+    const selectedGroup = groups.find(group => group.id.toString() === formData.churchGroup);
+    if (selectedGroup) {
+      selectedGroup.memberCount += 1;
+    }
+    
     onSubmit({
       ...formData,
       joiningLocation: finalLocation,
+    });
+
+    toast({
+      title: "Success",
+      description: `Member registered successfully${selectedGroup ? ` to ${selectedGroup.name}` : ''}`,
     });
   };
 
@@ -136,6 +149,28 @@ export function MemberRegistrationForm({
               <Label htmlFor="family">Family</Label>
             </div>
           </RadioGroup>
+        </div>
+
+        {/* New Church Group Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="churchGroup">Church Group</Label>
+          <Select
+            value={formData.churchGroup}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, churchGroup: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a church group" />
+            </SelectTrigger>
+            <SelectContent>
+              {groups.map((group) => (
+                <SelectItem key={group.id} value={group.id.toString()}>
+                  {group.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {formData.memberType === "family" && (
@@ -330,13 +365,13 @@ export function MemberRegistrationForm({
             />
           )}
         </div>
-      </div>
 
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit">Register Member</Button>
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">Register Member</Button>
+        </div>
       </div>
     </form>
   );
