@@ -1,21 +1,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { groups } from "@/components/Groups/GroupList";
 import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
 import { MemberTypeSelection } from "./MemberTypeSelection";
+import { PersonalInfoSection } from "./PersonalInfoSection";
+import { ContactInfoSection } from "./ContactInfoSection";
+import { ChurchDatesSection } from "./ChurchDatesSection";
 import { BaptismSection } from "./BaptismSection";
 import { WofbiSection } from "./WofbiSection";
 import { LocationSection } from "./LocationSection";
+import { ChurchGroupSection } from "./ChurchGroupSection";
 
 interface MemberRegistrationFormProps {
   onSubmit: (member: any) => void;
@@ -103,93 +98,24 @@ export function MemberRegistrationForm({
           }
         />
 
-        <div>
-          <Label htmlFor="familyName">Family Name</Label>
-          <Input
-            id="familyName"
-            name="familyName"
-            value={formData.familyName}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <PersonalInfoSection
+          familyName={formData.familyName}
+          individualNames={formData.individualNames}
+          maritalStatus={formData.maritalStatus}
+          numberOfChildren={formData.numberOfChildren}
+          onChange={handleChange}
+        />
 
-        <div>
-          <Label htmlFor="individualNames">Individual Names</Label>
-          <Input
-            id="individualNames"
-            name="individualNames"
-            value={formData.individualNames}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <ContactInfoSection
+          contactNumber={formData.contactNumber}
+          contactAddress={formData.contactAddress}
+          onChange={handleChange}
+        />
 
-        <div>
-          <Label htmlFor="maritalStatus">Marital Status</Label>
-          <Select
-            value={formData.maritalStatus}
-            onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, maritalStatus: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select marital status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="single">Single</SelectItem>
-              <SelectItem value="married">Married</SelectItem>
-              <SelectItem value="widowed">Widowed</SelectItem>
-              <SelectItem value="divorced">Divorced</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="numberOfChildren">Number of Children</Label>
-          <Input
-            id="numberOfChildren"
-            name="numberOfChildren"
-            type="number"
-            min="0"
-            value={formData.numberOfChildren}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="contactNumber">Contact Number</Label>
-          <Input
-            id="contactNumber"
-            name="contactNumber"
-            type="tel"
-            value={formData.contactNumber}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="contactAddress">Contact Address</Label>
-          <Input
-            id="contactAddress"
-            name="contactAddress"
-            value={formData.contactAddress}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="foundationClassDate">LFC Join Date</Label>
-          <Input
-            id="foundationClassDate"
-            name="foundationClassDate"
-            type="date"
-            value={formData.foundationClassDate}
-            onChange={handleChange}
-          />
-        </div>
+        <ChurchDatesSection
+          foundationClassDate={formData.foundationClassDate}
+          onChange={handleChange}
+        />
 
         <LocationSection
           joiningLocation={formData.joiningLocation}
@@ -216,26 +142,12 @@ export function MemberRegistrationForm({
           }
         />
 
-        <div className="space-y-2">
-          <Label htmlFor="churchGroup">Church Group</Label>
-          <Select
-            value={formData.churchGroup}
-            onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, churchGroup: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a church group" />
-            </SelectTrigger>
-            <SelectContent>
-              {groups.map((group) => (
-                <SelectItem key={group.id} value={group.id.toString()}>
-                  {group.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <ChurchGroupSection
+          churchGroup={formData.churchGroup}
+          onChange={(value) =>
+            setFormData((prev) => ({ ...prev, churchGroup: value }))
+          }
+        />
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
