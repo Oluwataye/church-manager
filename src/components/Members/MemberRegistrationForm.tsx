@@ -31,6 +31,8 @@ export function MemberRegistrationForm({
     individualNames: "",
     maritalStatus: "",
     numberOfChildren: 0,
+    contactNumber: "",
+    contactAddress: "",
     foundationClassDate: "",
     baptism: {
       water: false,
@@ -101,19 +103,6 @@ export function MemberRegistrationForm({
           }
         />
 
-        {formData.memberType === "family" && (
-          <div>
-            <Label htmlFor="familyGroup">Family Group</Label>
-            <Input
-              id="familyGroup"
-              name="familyGroup"
-              value={formData.familyGroup}
-              onChange={handleChange}
-              placeholder="Enter family group name"
-            />
-          </div>
-        )}
-
         <div>
           <Label htmlFor="familyName">Family Name</Label>
           <Input
@@ -169,7 +158,30 @@ export function MemberRegistrationForm({
         </div>
 
         <div>
-          <Label htmlFor="foundationClassDate">Foundation Class Date</Label>
+          <Label htmlFor="contactNumber">Contact Number</Label>
+          <Input
+            id="contactNumber"
+            name="contactNumber"
+            type="tel"
+            value={formData.contactNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="contactAddress">Contact Address</Label>
+          <Input
+            id="contactAddress"
+            name="contactAddress"
+            value={formData.contactAddress}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="foundationClassDate">LFC Join Date</Label>
           <Input
             id="foundationClassDate"
             name="foundationClassDate"
@@ -179,10 +191,14 @@ export function MemberRegistrationForm({
           />
         </div>
 
-        <BaptismSection
-          baptism={formData.baptism}
-          onChange={(baptism) =>
-            setFormData((prev) => ({ ...prev, baptism }))
+        <LocationSection
+          joiningLocation={formData.joiningLocation}
+          customLocation={formData.customLocation}
+          onLocationChange={(location) =>
+            setFormData((prev) => ({ ...prev, joiningLocation: location }))
+          }
+          onCustomLocationChange={(location) =>
+            setFormData((prev) => ({ ...prev, customLocation: location }))
           }
         />
 
@@ -193,14 +209,10 @@ export function MemberRegistrationForm({
           }
         />
 
-        <LocationSection
-          joiningLocation={formData.joiningLocation}
-          customLocation={formData.customLocation}
-          onLocationChange={(location) =>
-            setFormData((prev) => ({ ...prev, joiningLocation: location }))
-          }
-          onCustomLocationChange={(location) =>
-            setFormData((prev) => ({ ...prev, customLocation: location }))
+        <BaptismSection
+          baptism={formData.baptism}
+          onChange={(baptism) =>
+            setFormData((prev) => ({ ...prev, baptism }))
           }
         />
 
