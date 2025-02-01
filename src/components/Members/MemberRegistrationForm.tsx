@@ -108,6 +108,7 @@ export function MemberRegistrationForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
+        {/* Profile Photo Upload */}
         <div className="flex items-center gap-4">
           <Avatar className="h-24 w-24">
             <AvatarImage src={formData.profilePhoto || "/placeholder.svg"} alt="Profile Photo" />
@@ -131,6 +132,7 @@ export function MemberRegistrationForm({
           </div>
         </div>
 
+        {/* Member Type Selection */}
         <div>
           <Label>Member Type</Label>
           <RadioGroup
@@ -151,28 +153,7 @@ export function MemberRegistrationForm({
           </RadioGroup>
         </div>
 
-        {/* New Church Group Selection */}
-        <div className="space-y-2">
-          <Label htmlFor="churchGroup">Church Group</Label>
-          <Select
-            value={formData.churchGroup}
-            onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, churchGroup: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a church group" />
-            </SelectTrigger>
-            <SelectContent>
-              {groups.map((group) => (
-                <SelectItem key={group.id} value={group.id.toString()}>
-                  {group.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
+        {/* Family Group (conditional) */}
         {formData.memberType === "family" && (
           <div>
             <Label htmlFor="familyGroup">Family Group</Label>
@@ -186,6 +167,7 @@ export function MemberRegistrationForm({
           </div>
         )}
 
+        {/* Basic Information */}
         <div>
           <Label htmlFor="familyName">Family Name</Label>
           <Input
@@ -332,6 +314,7 @@ export function MemberRegistrationForm({
           />
         </div>
 
+        {/* Joining Location */}
         <div className="space-y-2">
           <Label htmlFor="joiningLocation">Joining Location</Label>
           <Select
@@ -366,6 +349,29 @@ export function MemberRegistrationForm({
           )}
         </div>
 
+        {/* Church Group Selection (moved to after Joining Location) */}
+        <div className="space-y-2">
+          <Label htmlFor="churchGroup">Church Group</Label>
+          <Select
+            value={formData.churchGroup}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, churchGroup: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a church group" />
+            </SelectTrigger>
+            <SelectContent>
+              {groups.map((group) => (
+                <SelectItem key={group.id} value={group.id.toString()}>
+                  {group.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Form Actions */}
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
