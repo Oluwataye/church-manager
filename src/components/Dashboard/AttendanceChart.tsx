@@ -11,22 +11,23 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
 const data = [
-  { date: "Jan 1", attendance: 120 },
-  { date: "Jan 8", attendance: 145 },
-  { date: "Jan 15", attendance: 135 },
-  { date: "Jan 22", attendance: 150 },
-  { date: "Jan 29", attendance: 160 },
-  { date: "Feb 5", attendance: 155 },
-  { date: "Feb 12", attendance: 165 },
+  { date: "Jan 1", men: 50, women: 55, children: 15 },
+  { date: "Jan 8", men: 55, women: 60, children: 30 },
+  { date: "Jan 15", men: 52, women: 58, children: 25 },
+  { date: "Jan 22", men: 58, women: 62, children: 30 },
+  { date: "Jan 29", men: 60, women: 65, children: 35 },
+  { date: "Feb 5", men: 58, women: 67, children: 30 },
+  { date: "Feb 12", men: 62, women: 70, children: 33 },
 ];
 
 const chartConfig = {
-  attendance: {
-    color: "#2563eb",
-  },
+  men: { color: "#2563eb" },
+  women: { color: "#db2777" },
+  children: { color: "#16a34a" },
 };
 
 export function AttendanceChart() {
@@ -43,10 +44,26 @@ export function AttendanceChart() {
               <XAxis dataKey="date" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend />
               <Line
                 type="monotone"
-                dataKey="attendance"
-                stroke="var(--color-attendance)"
+                dataKey="men"
+                name="Men"
+                stroke="var(--color-men)"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="women"
+                name="Women"
+                stroke="var(--color-women)"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="children"
+                name="Children"
+                stroke="var(--color-children)"
                 strokeWidth={2}
               />
             </LineChart>

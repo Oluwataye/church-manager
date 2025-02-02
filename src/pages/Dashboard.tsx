@@ -17,13 +17,23 @@ export default function Dashboard() {
         <StatsCard
           title="Total Members"
           value="150"
-          description="+12 from last month"
+          description={
+            <div className="space-y-1">
+              <p>Men: 60 | Women: 70</p>
+              <p>Children: 20</p>
+            </div>
+          }
           icon={<Users className="h-4 w-4" />}
         />
         <StatsCard
           title="Weekly Attendance"
           value="165"
-          description="+5% vs last week"
+          description={
+            <div className="space-y-1">
+              <p>Men: 65 | Women: 75</p>
+              <p>Children: 25</p>
+            </div>
+          }
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <StatsCard
