@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut } from "lucide-react";
+import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut, ClipboardCheck } from "lucide-react";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -20,6 +20,7 @@ const menuItems = [
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Bell, label: "Announcements", path: "/announcements" },
   { icon: DollarSign, label: "Income", path: "/income" },
+  { icon: ClipboardCheck, label: "Attendance", path: "/attendance" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 

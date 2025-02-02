@@ -10,6 +10,7 @@ import Events from "@/pages/Events";
 import Announcements from "@/pages/Announcements";
 import Income from "@/pages/Income";
 import Settings from "@/pages/Settings";
+import Attendance from "@/pages/Attendance";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
                     <Route path="/announcements" element={<Announcements />} />
                     <Route path="/income" element={<Income />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/attendance" element={<Attendance />} />
                   </Routes>
 
                   <footer className="mt-12 py-4 text-center text-gray-600 border-t border-gray-200">
