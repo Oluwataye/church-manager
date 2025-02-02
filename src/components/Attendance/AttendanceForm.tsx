@@ -7,9 +7,10 @@ import { toast } from "sonner";
 
 export function AttendanceForm() {
   const [attendance, setAttendance] = useState({
-    men: "",
-    women: "",
-    children: "",
+    adultMen: "",
+    adultWomen: "",
+    boys: "",
+    girls: "",
     date: new Date().toISOString().split('T')[0],
     serviceType: "Sunday Service",
   });
@@ -29,33 +30,43 @@ export function AttendanceForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="men">Men</Label>
+              <Label htmlFor="adultMen">Adult Men</Label>
               <Input
-                id="men"
+                id="adultMen"
                 type="number"
-                value={attendance.men}
-                onChange={(e) => setAttendance({ ...attendance, men: e.target.value })}
-                placeholder="Number of men"
+                value={attendance.adultMen}
+                onChange={(e) => setAttendance({ ...attendance, adultMen: e.target.value })}
+                placeholder="Number of adult men"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="women">Women</Label>
+              <Label htmlFor="adultWomen">Adult Women</Label>
               <Input
-                id="women"
+                id="adultWomen"
                 type="number"
-                value={attendance.women}
-                onChange={(e) => setAttendance({ ...attendance, women: e.target.value })}
-                placeholder="Number of women"
+                value={attendance.adultWomen}
+                onChange={(e) => setAttendance({ ...attendance, adultWomen: e.target.value })}
+                placeholder="Number of adult women"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="children">Children</Label>
+              <Label htmlFor="boys">Boys</Label>
               <Input
-                id="children"
+                id="boys"
                 type="number"
-                value={attendance.children}
-                onChange={(e) => setAttendance({ ...attendance, children: e.target.value })}
-                placeholder="Number of children"
+                value={attendance.boys}
+                onChange={(e) => setAttendance({ ...attendance, boys: e.target.value })}
+                placeholder="Number of boys"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="girls">Girls</Label>
+              <Input
+                id="girls"
+                type="number"
+                value={attendance.girls}
+                onChange={(e) => setAttendance({ ...attendance, girls: e.target.value })}
+                placeholder="Number of girls"
               />
             </div>
             <div className="space-y-2">

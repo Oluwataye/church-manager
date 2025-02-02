@@ -13,18 +13,20 @@ const mockAttendance = [
     id: 1,
     date: "2024-02-01",
     serviceType: "Sunday Service",
-    men: 60,
-    women: 75,
-    children: 25,
+    adultMen: 60,
+    adultWomen: 75,
+    boys: 15,
+    girls: 10,
     total: 160,
   },
   {
     id: 2,
     date: "2024-02-08",
     serviceType: "Sunday Service",
-    men: 65,
-    women: 70,
-    children: 30,
+    adultMen: 65,
+    adultWomen: 70,
+    boys: 18,
+    girls: 12,
     total: 165,
   },
 ];
@@ -41,9 +43,10 @@ export function AttendanceList() {
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Service Type</TableHead>
-              <TableHead>Men</TableHead>
-              <TableHead>Women</TableHead>
-              <TableHead>Children</TableHead>
+              <TableHead>Adult Men</TableHead>
+              <TableHead>Adult Women</TableHead>
+              <TableHead>Boys</TableHead>
+              <TableHead>Girls</TableHead>
               <TableHead>Total</TableHead>
             </TableRow>
           </TableHeader>
@@ -52,9 +55,10 @@ export function AttendanceList() {
               <TableRow key={record.id}>
                 <TableCell>{record.date}</TableCell>
                 <TableCell>{record.serviceType}</TableCell>
-                <TableCell>{record.men}</TableCell>
-                <TableCell>{record.women}</TableCell>
-                <TableCell>{record.children}</TableCell>
+                <TableCell>{record.adultMen}</TableCell>
+                <TableCell>{record.adultWomen}</TableCell>
+                <TableCell>{record.boys}</TableCell>
+                <TableCell>{record.girls}</TableCell>
                 <TableCell>{record.total}</TableCell>
               </TableRow>
             ))}
