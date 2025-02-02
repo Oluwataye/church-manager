@@ -16,11 +16,11 @@ import { toast } from "sonner";
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
   { icon: Users, label: "Members", path: "/members" },
+  { icon: ClipboardCheck, label: "Attendance", path: "/attendance" },
+  { icon: DollarSign, label: "Income", path: "/income" },
   { icon: Users, label: "Groups", path: "/groups" },
   { icon: Calendar, label: "Events", path: "/events" },
   { icon: Bell, label: "Announcements", path: "/announcements" },
-  { icon: DollarSign, label: "Income", path: "/income" },
-  { icon: ClipboardCheck, label: "Attendance", path: "/attendance" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
