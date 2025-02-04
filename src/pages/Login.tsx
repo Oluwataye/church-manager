@@ -23,27 +23,31 @@ export default function Login() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (signInError) {
+        throw signInError;
+      }
 
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
+      if (data?.user) {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
 
-      // Redirect to the page they tried to visit or to dashboard
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
+        // Redirect to the page they tried to visit or to dashboard
+        const from = location.state?.from?.pathname || "/";
+        navigate(from, { replace: true });
+      }
     } catch (error: any) {
       setError(error.message);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to login. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -59,6 +63,9 @@ export default function Login() {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Sign in to your account
         </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Living Faith Church Chanchaga
+        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -79,6 +86,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  placeholder="Enter your email"
                   className="block w-full"
                 />
               </div>
@@ -93,6 +101,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  placeholder="Enter your password"
                   className="block w-full"
                 />
               </div>
@@ -100,11 +109,19 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-church-600 hover:bg-church-700"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
+
+            <div className="mt-4 text-sm text-center text-gray-600">
+              Default credentials for testing:
+              <br />
+              Email: admin@lfcc.com
+              <br />
+              Password: 123admin
+            </div>
           </form>
         </div>
       </div>
