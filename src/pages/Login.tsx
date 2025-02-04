@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,6 +14,8 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,9 +29,22 @@ export default function Login() {
       });
 
       if (error) throw error;
-      navigate("/");
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+
+      // Redirect to the page they tried to visit or to dashboard
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
     } catch (error: any) {
       setError(error.message);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +79,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="block w-full"
                 />
               </div>
             </div>
@@ -76,6 +93,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="block w-full"
                 />
               </div>
             </div>
