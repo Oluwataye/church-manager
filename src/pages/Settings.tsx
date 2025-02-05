@@ -1,25 +1,20 @@
-import { useState } from "react";
-import { ChurchLogo } from "@/components/Layout/ChurchLogo";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "@/hooks/use-theme";
 import { useToast } from "@/hooks/use-toast";
+import { ChurchLogo } from "@/components/Layout/ChurchLogo";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Settings() {
-  const [globalLogo, setGlobalLogo] = useState<string>("/placeholder.svg");
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleLogoChange = (newLogo: string) => {
-    setGlobalLogo(newLogo);
-    // Here you would typically upload to backend
-    localStorage.setItem("churchLogo", newLogo);
-    toast({
-      title: "Success",
-      description: "Church logo updated successfully",
-    });
+    queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
   };
 
   const handleThemeChange = (checked: boolean) => {
@@ -47,7 +42,7 @@ export default function Settings() {
             <CardTitle>Church Logo</CardTitle>
             <CardDescription>
               Update your church logo. This will be used across the application.
-              Supported formats: PNG, JPEG, SVG. Maximum size: 2MB.
+              Supported formats: PNG, JPEG, SVG. Maximum size: 5MB.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,7 +80,7 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Password management and security features will be available after connecting to Supabase.
+              Password management and security features will be available soon.
             </p>
           </CardContent>
         </Card>

@@ -1,17 +1,87 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ChurchLogoProps {
   displayOnly?: boolean;
   onLogoChange?: (logo: string) => void;
 }
 
+async function fetchChurchSettings() {
+  const { data, error } = await supabase
+    .from('church_settings')
+    .select('logo_url')
+    .single();
+  
+  if (error) throw error;
+  return data;
+}
+
+async function uploadLogo(file: File) {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${crypto.randomUUID()}.${fileExt}`;
+  const filePath = `logos/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('church-assets')
+    .upload(filePath, file);
+
+  if (uploadError) throw uploadError;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('church-assets')
+    .getPublicUrl(filePath);
+
+  const { error: updateError } = await supabase
+    .from('church_settings')
+    .update({ 
+      logo_url: publicUrl,
+      updated_at: new Date().toISOString()
+    })
+    .eq('church_name', 'LIVING FAITH CHURCH');
+
+  if (updateError) throw updateError;
+
+  return publicUrl;
+}
+
 export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProps) {
-  const [logo, setLogo] = useState<string>("/placeholder.svg");
   const [tempLogo, setTempLogo] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['churchSettings'],
+    queryFn: fetchChurchSettings
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: uploadLogo,
+    onSuccess: (publicUrl) => {
+      queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+      if (onLogoChange) {
+        onLogoChange(publicUrl);
+      }
+      toast({
+        title: "Success",
+        description: "Church logo updated successfully",
+      });
+      setTempLogo(null);
+      setSelectedFile(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -25,6 +95,7 @@ export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProp
         return;
       }
 
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setTempLogo(e.target?.result as string);
@@ -33,28 +104,31 @@ export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProp
     }
   };
 
-  const handleApply = () => {
-    if (tempLogo) {
-      setLogo(tempLogo);
-      if (onLogoChange) {
-        onLogoChange(tempLogo);
-      }
-      setTempLogo(null);
-      toast({
-        title: "Success",
-        description: "Church logo updated successfully",
-      });
+  const handleApply = async () => {
+    if (selectedFile) {
+      uploadMutation.mutate(selectedFile);
     }
   };
 
   const handleCancel = () => {
     setTempLogo(null);
+    setSelectedFile(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center">
+        <Avatar className="h-24 w-24 animate-pulse">
+          <AvatarFallback>Logo</AvatarFallback>
+        </Avatar>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-4">
       <Avatar className="h-24 w-24">
-        <AvatarImage src={tempLogo || logo} alt="Church Logo" />
+        <AvatarImage src={tempLogo || settings?.logo_url || "/placeholder.svg"} alt="Church Logo" />
         <AvatarFallback>Logo</AvatarFallback>
       </Avatar>
       {!displayOnly && (
@@ -79,12 +153,14 @@ export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProp
               <Button
                 variant="default"
                 onClick={handleApply}
+                disabled={uploadMutation.isPending}
               >
-                Apply Changes
+                {uploadMutation.isPending ? "Uploading..." : "Apply Changes"}
               </Button>
               <Button
                 variant="outline"
                 onClick={handleCancel}
+                disabled={uploadMutation.isPending}
               >
                 Cancel
               </Button>
