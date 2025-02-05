@@ -64,27 +64,27 @@ export default function Members() {
       member.individual_names.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddMember = async (newMember: Omit<Member, "id">) => {
+  const handleAddMember = async (memberData: Omit<Member, "id">) => {
     try {
       const { data, error } = await supabase
         .from('members')
-        .insert([newMember])
+        .insert([memberData])
         .select()
         .single();
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['members'] });
+      await queryClient.invalidateQueries({ queryKey: ['members'] });
       setShowRegistrationForm(false);
       toast({
         title: "Success!",
         description: "Member has been registered successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding member:', error);
       toast({
         title: "Error",
-        description: "Failed to register member. Please try again.",
+        description: error.message || "Failed to register member. Please try again.",
         variant: "destructive",
       });
     }
