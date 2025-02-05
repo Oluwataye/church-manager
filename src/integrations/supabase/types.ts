@@ -33,6 +33,72 @@ export type Database = {
         }
         Relationships: []
       }
+      members: {
+        Row: {
+          baptism_holy_ghost: boolean | null
+          baptism_water: boolean | null
+          baptism_year: string | null
+          church_group: string | null
+          contact_address: string | null
+          contact_number: string | null
+          created_at: string
+          family_name: string
+          foundation_class_date: string | null
+          id: string
+          individual_names: string
+          joining_location: string | null
+          marital_status: string | null
+          member_type: string | null
+          number_of_children: number | null
+          profile_photo: string | null
+          updated_at: string
+          wofbi_class_type: string | null
+          wofbi_year: string | null
+        }
+        Insert: {
+          baptism_holy_ghost?: boolean | null
+          baptism_water?: boolean | null
+          baptism_year?: string | null
+          church_group?: string | null
+          contact_address?: string | null
+          contact_number?: string | null
+          created_at?: string
+          family_name: string
+          foundation_class_date?: string | null
+          id?: string
+          individual_names: string
+          joining_location?: string | null
+          marital_status?: string | null
+          member_type?: string | null
+          number_of_children?: number | null
+          profile_photo?: string | null
+          updated_at?: string
+          wofbi_class_type?: string | null
+          wofbi_year?: string | null
+        }
+        Update: {
+          baptism_holy_ghost?: boolean | null
+          baptism_water?: boolean | null
+          baptism_year?: string | null
+          church_group?: string | null
+          contact_address?: string | null
+          contact_number?: string | null
+          created_at?: string
+          family_name?: string
+          foundation_class_date?: string | null
+          id?: string
+          individual_names?: string
+          joining_location?: string | null
+          marital_status?: string | null
+          member_type?: string | null
+          number_of_children?: number | null
+          profile_photo?: string | null
+          updated_at?: string
+          wofbi_class_type?: string | null
+          wofbi_year?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
