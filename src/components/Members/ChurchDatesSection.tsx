@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -12,10 +13,10 @@ export function ChurchDatesSection({
 }: ChurchDatesSectionProps) {
   return (
     <div>
-      <Label htmlFor="foundationClassDate">LFC Join Date</Label>
+      <Label htmlFor="foundation_class_date">LFC Join Date</Label>
       <Input
-        id="foundationClassDate"
-        name="foundationClassDate"
+        id="foundation_class_date"
+        name="foundation_class_date"
         type="date"
         value={foundationClassDate}
         onChange={onChange}

@@ -47,6 +47,15 @@ export function MemberRegistrationForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.family_name || !formData.individual_names) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const finalLocation = formData.joining_location === "other" 
       ? formData.customLocation 
       : formData.joining_location;
@@ -117,7 +126,9 @@ export function MemberRegistrationForm({
 
         <ChurchDatesSection
           foundationClassDate={formData.foundation_class_date}
-          onChange={handleChange}
+          onChange={(e) => 
+            setFormData(prev => ({ ...prev, foundation_class_date: e.target.value }))
+          }
         />
 
         <LocationSection
@@ -151,12 +162,12 @@ export function MemberRegistrationForm({
             holyGhost: formData.baptism_holy_ghost,
             year: formData.baptism_year,
           }}
-          onChange={(baptism) =>
+          onChange={({ water, holyGhost, year }) =>
             setFormData((prev) => ({
               ...prev,
-              baptism_water: baptism.water,
-              baptism_holy_ghost: baptism.holyGhost,
-              baptism_year: baptism.year,
+              baptism_water: water,
+              baptism_holy_ghost: holyGhost,
+              baptism_year: year,
             }))
           }
         />

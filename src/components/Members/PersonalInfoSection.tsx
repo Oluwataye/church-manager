@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -26,10 +27,10 @@ export function PersonalInfoSection({
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="familyName">Family Name</Label>
+        <Label htmlFor="family_name">Family Name</Label>
         <Input
-          id="familyName"
-          name="familyName"
+          id="family_name"
+          name="family_name"
           value={familyName}
           onChange={onChange}
           required
@@ -37,10 +38,10 @@ export function PersonalInfoSection({
       </div>
 
       <div>
-        <Label htmlFor="individualNames">Individual Names</Label>
+        <Label htmlFor="individual_names">Individual Names</Label>
         <Input
-          id="individualNames"
-          name="individualNames"
+          id="individual_names"
+          name="individual_names"
           value={individualNames}
           onChange={onChange}
           required
@@ -48,12 +49,12 @@ export function PersonalInfoSection({
       </div>
 
       <div>
-        <Label htmlFor="maritalStatus">Marital Status</Label>
+        <Label htmlFor="marital_status">Marital Status</Label>
         <Select
           value={maritalStatus}
           onValueChange={(value) =>
             onChange({
-              target: { name: "maritalStatus", value },
+              target: { name: "marital_status", value },
             } as React.ChangeEvent<HTMLSelectElement>)
           }
         >
@@ -70,10 +71,10 @@ export function PersonalInfoSection({
       </div>
 
       <div>
-        <Label htmlFor="numberOfChildren">Number of Children</Label>
+        <Label htmlFor="number_of_children">Number of Children</Label>
         <Input
-          id="numberOfChildren"
-          name="numberOfChildren"
+          id="number_of_children"
+          name="number_of_children"
           type="number"
           min="0"
           value={numberOfChildren}

@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -15,10 +16,10 @@ export function ContactInfoSection({
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="contactNumber">Contact Number</Label>
+        <Label htmlFor="contact_number">Contact Number</Label>
         <Input
-          id="contactNumber"
-          name="contactNumber"
+          id="contact_number"
+          name="contact_number"
           type="tel"
           value={contactNumber}
           onChange={onChange}
@@ -27,10 +28,10 @@ export function ContactInfoSection({
       </div>
 
       <div>
-        <Label htmlFor="contactAddress">Contact Address</Label>
+        <Label htmlFor="contact_address">Contact Address</Label>
         <Input
-          id="contactAddress"
-          name="contactAddress"
+          id="contact_address"
+          name="contact_address"
           value={contactAddress}
           onChange={onChange}
           required
