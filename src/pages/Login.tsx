@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -43,6 +44,7 @@ export default function Login() {
         navigate(from, { replace: true });
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       setError(error.message);
       toast({
         variant: "destructive",

@@ -1,6 +1,7 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "You have been logged out successfully.",
       });
     } catch (error: any) {
+      console.error("Logout error:", error);
       toast({
         variant: "destructive",
         title: "Error logging out",
