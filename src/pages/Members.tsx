@@ -50,6 +50,7 @@ interface Member {
   church_group?: string;
   contact_number: string;
   contact_address: string;
+  member_type: string;  // Added this required property
 }
 
 export default function Members() {
