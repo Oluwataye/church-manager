@@ -1,37 +1,40 @@
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Group {
-  id: number;
+  id: string;
   name: string;
-  description: string;
-  memberCount: number;
+  description: string | null;
+  created_at: string;
 }
-
-// Mock data - in a real app, this would come from your backend
-export const groups = [
-  {
-    id: 1,
-    name: "Youth Fellowship",
-    description: "Group for young adults aged 18-30",
-    memberCount: 25,
-  },
-  {
-    id: 2,
-    name: "Choir",
-    description: "Church choir and music ministry",
-    memberCount: 15,
-  },
-];
 
 interface GroupListProps {
   searchQuery: string;
 }
 
 export const GroupList = ({ searchQuery }: GroupListProps) => {
+  const { data: groups = [], isLoading } = useQuery({
+    queryKey: ["groups"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("groups")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return <p className="text-center">Loading groups...</p>;
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -44,9 +47,6 @@ export const GroupList = ({ searchQuery }: GroupListProps) => {
             <div>
               <h3 className="font-semibold">{group.name}</h3>
               <p className="text-sm text-gray-500">{group.description}</p>
-              <p className="text-sm text-church-600 mt-2">
-                {group.memberCount} members
-              </p>
             </div>
           </div>
         </Card>

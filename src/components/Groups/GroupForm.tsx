@@ -12,16 +12,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type GroupFormData = {
-  name: string;
-  description: string;
-};
+const groupSchema = z.object({
+  name: z.string().min(1, "Group name is required"),
+  description: z.string().optional(),
+});
+
+type GroupFormData = z.infer<typeof groupSchema>;
 
 export const GroupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<GroupFormData>({
+    resolver: zodResolver(groupSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -31,13 +37,20 @@ export const GroupForm = () => {
   const onSubmit = async (data: GroupFormData) => {
     setIsSubmitting(true);
     try {
-      // In a real app, this would save to your backend
-      console.log("Saving group:", data);
+      const { error } = await supabase.from("groups").insert([
+        {
+          name: data.name,
+          description: data.description || null,
+        },
+      ]);
+
+      if (error) throw error;
+
       toast.success("Group created successfully!");
       form.reset();
     } catch (error) {
-      toast.error("Failed to create group");
-      console.error(error);
+      console.error("Error creating group:", error);
+      toast.error("Failed to create group. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
