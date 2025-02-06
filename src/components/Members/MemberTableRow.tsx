@@ -6,11 +6,20 @@ interface Member {
   id: string;
   family_name: string;
   individual_names: string;
+  marital_status: string;
+  number_of_children: number;
   contact_number: string;
   contact_address: string;
-  church_group?: string;
-  profile_photo?: string;
+  foundation_class_date: string;
+  baptism_water: boolean;
+  baptism_holy_ghost: boolean;
+  baptism_year: string;
+  wofbi_class_type: string;
+  wofbi_year: string;
+  joining_location: string;
   member_type: string;
+  profile_photo?: string;
+  church_group?: string;
 }
 
 interface MemberTableRowProps {
