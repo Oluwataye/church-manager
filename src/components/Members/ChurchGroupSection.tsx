@@ -6,7 +6,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { groups } from "@/components/Groups/GroupList";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Group } from "@/components/Groups/GroupList";
 
 interface ChurchGroupSectionProps {
   churchGroup: string;
@@ -17,6 +19,19 @@ export function ChurchGroupSection({
   churchGroup,
   onChange,
 }: ChurchGroupSectionProps) {
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ["groups"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("groups")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="space-y-2">
       <Label htmlFor="churchGroup">Church Group</Label>
@@ -26,7 +41,7 @@ export function ChurchGroupSection({
         </SelectTrigger>
         <SelectContent>
           {groups.map((group) => (
-            <SelectItem key={group.id} value={group.id.toString()}>
+            <SelectItem key={group.id} value={group.id}>
               {group.name}
             </SelectItem>
           ))}

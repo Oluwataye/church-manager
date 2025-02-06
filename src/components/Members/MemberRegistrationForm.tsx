@@ -90,9 +90,9 @@ export function MemberRegistrationForm({
           setFormData((prev) => ({ ...prev, profile_photo: photo }))
         }
       />
-
+      
       <MemberTypeSelection
-        memberType={formData.member_type}
+        value={formData.member_type}
         onChange={(value) =>
           setFormData((prev) => ({ ...prev, member_type: value }))
         }
