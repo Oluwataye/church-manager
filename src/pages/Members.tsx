@@ -1,15 +1,37 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { MemberRegistrationForm } from "@/components/Members/MemberRegistrationForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { generateMemberProfile } from "@/utils/pdfGenerator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface Member {
   id: string;
@@ -33,6 +55,9 @@ interface Member {
 export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -85,6 +110,62 @@ export default function Members() {
       toast({
         title: "Error",
         description: error.message || "Failed to register member. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateMember = async (memberData: Omit<Member, "id">) => {
+    if (!selectedMember) return;
+
+    try {
+      const { error } = await supabase
+        .from('members')
+        .update(memberData)
+        .eq('id', selectedMember.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['members'] });
+      setShowEditForm(false);
+      setSelectedMember(null);
+      toast({
+        title: "Success!",
+        description: "Member has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error updating member:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update member. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteMember = async () => {
+    if (!selectedMember) return;
+
+    try {
+      const { error } = await supabase
+        .from('members')
+        .delete()
+        .eq('id', selectedMember.id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['members'] });
+      setShowDeleteDialog(false);
+      setSelectedMember(null);
+      toast({
+        title: "Success!",
+        description: "Member has been deleted successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error deleting member:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete member. Please try again.",
         variant: "destructive",
       });
     }
@@ -143,13 +224,22 @@ export default function Members() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMembers.length > 0 ? (
-              filteredMembers.map((member) => (
-                <Card key={member.id} className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-church-100 rounded-full flex items-center justify-center">
+          <Card className="p-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Profile</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Group</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredMembers.map((member) => (
+                  <TableRow key={member.id}>
+                    <TableCell>
+                      <div className="w-12 h-12 bg-church-100 rounded-full flex items-center justify-center">
                         {member.profile_photo ? (
                           <img
                             src={member.profile_photo}
@@ -157,36 +247,108 @@ export default function Members() {
                             className="w-full h-full rounded-full object-cover"
                           />
                         ) : (
-                          <span className="text-2xl text-church-600">
+                          <span className="text-xl text-church-600">
                             {member.family_name[0]}
                           </span>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell>
                       <div>
-                        <h3 className="font-semibold">{member.family_name}</h3>
+                        <p className="font-medium">{member.family_name}</p>
                         <p className="text-sm text-gray-500">
                           {member.individual_names}
                         </p>
                       </div>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => handleDownloadProfile(member)}
-                    >
-                      Download Profile
-                    </Button>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              <p className="text-gray-500 col-span-full text-center">
-                No members found
-              </p>
-            )}
-          </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="text-sm">{member.contact_number}</p>
+                        <p className="text-sm text-gray-500">
+                          {member.contact_address}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{member.church_group}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setShowEditForm(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadProfile(member)}
+                        >
+                          Download
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setShowDeleteDialog(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         </>
       )}
+
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit Member</DialogTitle>
+          </DialogHeader>
+          {selectedMember && (
+            <MemberRegistrationForm
+              onSubmit={handleUpdateMember}
+              onCancel={() => {
+                setShowEditForm(false);
+                setSelectedMember(null);
+              }}
+              initialData={selectedMember}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the member's
+              profile and remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowDeleteDialog(false);
+              setSelectedMember(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteMember}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
