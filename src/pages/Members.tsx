@@ -23,6 +23,8 @@ interface Member {
   individual_names: string;
   marital_status: string;
   number_of_children: number;
+  contact_number: string;
+  contact_address: string;
   foundation_class_date: string;
   baptism_water: boolean;
   baptism_holy_ghost: boolean;
@@ -30,11 +32,9 @@ interface Member {
   wofbi_class_type: string;
   wofbi_year: string;
   joining_location: string;
+  member_type: string;
   profile_photo?: string;
   church_group?: string;
-  contact_number: string;
-  contact_address: string;
-  member_type: string;
 }
 
 export default function Members() {
@@ -64,7 +64,19 @@ export default function Members() {
         return [];
       }
 
-      return data as Member[];
+      return data.map((member) => ({
+        ...member,
+        marital_status: member.marital_status || '',
+        number_of_children: member.number_of_children || 0,
+        foundation_class_date: member.foundation_class_date || '',
+        baptism_water: member.baptism_water || false,
+        baptism_holy_ghost: member.baptism_holy_ghost || false,
+        baptism_year: member.baptism_year || '',
+        wofbi_class_type: member.wofbi_class_type || '',
+        wofbi_year: member.wofbi_year || '',
+        joining_location: member.joining_location || '',
+        member_type: member.member_type || 'individual',
+      })) as Member[];
     },
   });
 
@@ -210,11 +222,35 @@ export default function Members() {
             <MemberTable
               members={filteredMembers}
               onEdit={(member) => {
-                setSelectedMember(member);
+                setSelectedMember({
+                  ...member,
+                  marital_status: member.marital_status || '',
+                  number_of_children: member.number_of_children || 0,
+                  foundation_class_date: member.foundation_class_date || '',
+                  baptism_water: member.baptism_water || false,
+                  baptism_holy_ghost: member.baptism_holy_ghost || false,
+                  baptism_year: member.baptism_year || '',
+                  wofbi_class_type: member.wofbi_class_type || '',
+                  wofbi_year: member.wofbi_year || '',
+                  joining_location: member.joining_location || '',
+                  member_type: member.member_type || 'individual',
+                });
                 setShowEditForm(true);
               }}
               onDelete={(member) => {
-                setSelectedMember(member);
+                setSelectedMember({
+                  ...member,
+                  marital_status: member.marital_status || '',
+                  number_of_children: member.number_of_children || 0,
+                  foundation_class_date: member.foundation_class_date || '',
+                  baptism_water: member.baptism_water || false,
+                  baptism_holy_ghost: member.baptism_holy_ghost || false,
+                  baptism_year: member.baptism_year || '',
+                  wofbi_class_type: member.wofbi_class_type || '',
+                  wofbi_year: member.wofbi_year || '',
+                  joining_location: member.joining_location || '',
+                  member_type: member.member_type || 'individual',
+                });
                 setShowDeleteDialog(true);
               }}
               onDownload={handleDownloadProfile}
