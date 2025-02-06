@@ -48,7 +48,8 @@ export function MemberTable({
           <TableHead>Name</TableHead>
           <TableHead>Contact</TableHead>
           <TableHead>Group</TableHead>
-          <TableHead>>
+          <TableHead>Actions</TableHead>
+        </TableRow>
       </TableHeader>
       <TableBody>
         {members.map((member) => (
