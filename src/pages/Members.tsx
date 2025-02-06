@@ -1,22 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { MemberRegistrationForm } from "@/components/Members/MemberRegistrationForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { generateMemberProfile } from "@/utils/pdfGenerator";
 import {
   Dialog,
@@ -24,14 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { MemberSearch } from "@/components/Members/MemberSearch";
+import { MemberTable } from "@/components/Members/MemberTable";
+import { DeleteMemberDialog } from "@/components/Members/DeleteMemberDialog";
 
 interface Member {
   id: string;
@@ -50,7 +34,7 @@ interface Member {
   church_group?: string;
   contact_number: string;
   contact_address: string;
-  member_type: string;  // Added this required property
+  member_type: string;
 }
 
 export default function Members() {
@@ -217,95 +201,24 @@ export default function Members() {
         </Card>
       ) : (
         <>
-          <div className="max-w-md">
-            <Input
-              placeholder="Search members..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+          <MemberSearch
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
 
           <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Profile</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Group</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredMembers.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell>
-                      <div className="w-12 h-12 bg-church-100 rounded-full flex items-center justify-center">
-                        {member.profile_photo ? (
-                          <img
-                            src={member.profile_photo}
-                            alt={member.family_name}
-                            className="w-full h-full rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-xl text-church-600">
-                            {member.family_name[0]}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{member.family_name}</p>
-                        <p className="text-sm text-gray-500">
-                          {member.individual_names}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="text-sm">{member.contact_number}</p>
-                        <p className="text-sm text-gray-500">
-                          {member.contact_address}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{member.church_group}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedMember(member);
-                            setShowEditForm(true);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadProfile(member)}
-                        >
-                          Download
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedMember(member);
-                            setShowDeleteDialog(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <MemberTable
+              members={filteredMembers}
+              onEdit={(member) => {
+                setSelectedMember(member);
+                setShowEditForm(true);
+              }}
+              onDelete={(member) => {
+                setSelectedMember(member);
+                setShowDeleteDialog(true);
+              }}
+              onDownload={handleDownloadProfile}
+            />
           </Card>
         </>
       )}
@@ -328,28 +241,15 @@ export default function Members() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the member's
-              profile and remove all associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setShowDeleteDialog(false);
-              setSelectedMember(null);
-            }}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteMember}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteMemberDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDeleteMember}
+        onCancel={() => {
+          setShowDeleteDialog(false);
+          setSelectedMember(null);
+        }}
+      />
     </div>
   );
 }
