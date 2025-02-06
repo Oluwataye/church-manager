@@ -11,6 +11,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
 const data = [
@@ -31,9 +32,12 @@ const chartConfig = {
 
 export function IncomeWidget() {
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50">
       <CardHeader>
-        <CardTitle>Monthly Income Distribution</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Monthly Income Distribution</span>
+          <span className="text-sm text-muted-foreground">Click to view details</span>
+        </CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ChartContainer config={chartConfig}>
@@ -42,7 +46,15 @@ export function IncomeWidget() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
+              />
+              <Legend 
+                verticalAlign="top" 
+                height={36}
+                wrapperStyle={{ paddingBottom: '10px' }}
+              />
               <Bar
                 dataKey="tithe"
                 name="Tithe"

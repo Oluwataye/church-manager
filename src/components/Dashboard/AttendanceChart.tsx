@@ -32,9 +32,12 @@ const chartConfig = {
 
 export function AttendanceChart() {
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50">
       <CardHeader>
-        <CardTitle>Weekly Attendance</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Weekly Attendance</span>
+          <span className="text-sm text-muted-foreground">Click to view details</span>
+        </CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ChartContainer config={chartConfig}>
@@ -43,14 +46,22 @@ export function AttendanceChart() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Legend />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                cursor={{ strokeDasharray: '3 3' }}
+              />
+              <Legend 
+                verticalAlign="top" 
+                height={36}
+                wrapperStyle={{ paddingBottom: '10px' }}
+              />
               <Line
                 type="monotone"
                 dataKey="men"
                 name="Men"
                 stroke="var(--color-men)"
                 strokeWidth={2}
+                activeDot={{ r: 6 }}
               />
               <Line
                 type="monotone"
@@ -58,6 +69,7 @@ export function AttendanceChart() {
                 name="Women"
                 stroke="var(--color-women)"
                 strokeWidth={2}
+                activeDot={{ r: 6 }}
               />
               <Line
                 type="monotone"
@@ -65,6 +77,7 @@ export function AttendanceChart() {
                 name="Children"
                 stroke="var(--color-children)"
                 strokeWidth={2}
+                activeDot={{ r: 6 }}
               />
             </LineChart>
           </ResponsiveContainer>
