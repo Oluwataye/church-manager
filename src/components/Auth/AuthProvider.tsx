@@ -23,20 +23,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        // Check for existing session
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        
+        // Set up real-time subscription to auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state changed:', event);
+          setUser(session?.user ?? null);
+          
+          if (event === 'SIGNED_OUT') {
+            navigate('/login');
+          } else if (event === 'SIGNED_IN') {
+            // Get the intended path or default to '/'
+            const intendedPath = sessionStorage.getItem('intendedPath') || '/';
+            sessionStorage.removeItem('intendedPath'); // Clean up
+            navigate(intendedPath);
+          }
+        });
 
-    // Listen for changes on auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+        setIsLoading(false);
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        setIsLoading(false);
+      }
+    };
 
-    return () => subscription.unsubscribe();
-  }, []);
+    initializeAuth();
+  }, [navigate]);
 
   const logout = async () => {
     try {
