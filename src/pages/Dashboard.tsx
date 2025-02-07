@@ -1,114 +1,181 @@
-import { Users, TrendingUp, Church, Calendar } from "lucide-react";
-import { StatsCard } from "@/components/Dashboard/StatsCard";
-import { AttendanceChart } from "@/components/Dashboard/AttendanceChart";
-import { IncomeWidget } from "@/components/Dashboard/IncomeWidget";
-import { useNavigate } from "react-router-dom";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Card } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Users, Calendar, Bell, TrendingUp } from "lucide-react";
 
-export default function Dashboard() {
-  const navigate = useNavigate();
+const Dashboard = () => {
+  // Fetch members count
+  const { data: membersCount = 0 } = useQuery({
+    queryKey: ["membersCount"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("members")
+        .select("*", { count: "exact", head: true });
+      return count || 0;
+    },
+  });
+
+  // Fetch upcoming events
+  const { data: upcomingEvents = [] } = useQuery({
+    queryKey: ["upcomingEvents"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("*")
+        .gte("start_date", new Date().toISOString())
+        .order("start_date", { ascending: true })
+        .limit(3);
+      return data || [];
+    },
+  });
+
+  // Fetch recent announcements
+  const { data: announcements = [] } = useQuery({
+    queryKey: ["recentAnnouncements"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+  });
+
+  // Mock data for the chart
+  const incomeData = [
+    { month: "Jan", amount: 4000 },
+    { month: "Feb", amount: 3000 },
+    { month: "Mar", amount: 2000 },
+    { month: "Apr", amount: 2780 },
+    { month: "May", amount: 1890 },
+    { month: "Jun", amount: 2390 },
+  ];
 
   return (
     <div className="space-y-8">
-      <div className="mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold">Dashboard</h2>
-        <p className="text-muted-foreground mt-2">
-          Overview of your church's key metrics
-        </p>
+      {/* Welcome Section */}
+      <div className="bg-gradient-to-r from-church-600 to-church-700 rounded-lg p-8 text-white">
+        <h1 className="text-3xl font-bold mb-2">Welcome to Church Manager</h1>
+        <p className="text-church-100">Manage your church efficiently and effectively</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div onClick={() => navigate("/members")} className="cursor-pointer">
-                <StatsCard
-                  title="Total Members"
-                  value="150"
-                  description={
-                    <div className="space-y-1">
-                      <p>Men: 60 | Women: 70</p>
-                      <p>Children: 20</p>
-                    </div>
-                  }
-                  icon={<Users className="h-4 w-4" />}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click to view members list</p>
-            </TooltipContent>
-          </Tooltip>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-church-50 rounded-lg">
+              <Users className="h-6 w-6 text-church-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Members</p>
+              <h3 className="text-2xl font-bold text-church-600">{membersCount}</h3>
+            </div>
+          </div>
+        </Card>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div onClick={() => navigate("/attendance")} className="cursor-pointer">
-                <StatsCard
-                  title="Weekly Attendance"
-                  value="165"
-                  description={
-                    <div className="space-y-1">
-                      <p>Men: 65 | Women: 75</p>
-                      <p>Children: 25</p>
-                    </div>
-                  }
-                  icon={<TrendingUp className="h-4 w-4" />}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click to view attendance records</p>
-            </TooltipContent>
-          </Tooltip>
+        <Card className="p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-orange-50 rounded-lg">
+              <Calendar className="h-6 w-6 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Upcoming Events</p>
+              <h3 className="text-2xl font-bold text-orange-600">{upcomingEvents.length}</h3>
+            </div>
+          </div>
+        </Card>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div onClick={() => navigate("/groups")} className="cursor-pointer">
-                <StatsCard
-                  title="Active Groups"
-                  value="8"
-                  description="Small groups and ministries"
-                  icon={<Church className="h-4 w-4" />}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click to manage church groups</p>
-            </TooltipContent>
-          </Tooltip>
+        <Card className="p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <Bell className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Announcements</p>
+              <h3 className="text-2xl font-bold text-purple-600">{announcements.length}</h3>
+            </div>
+          </div>
+        </Card>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div onClick={() => navigate("/events")} className="cursor-pointer">
-                <StatsCard
-                  title="Upcoming Events"
-                  value="3"
-                  description="Next 7 days"
-                  icon={<Calendar className="h-4 w-4" />}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click to view upcoming events</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Card className="p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-50 rounded-lg">
+              <TrendingUp className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Monthly Income</p>
+              <h3 className="text-2xl font-bold text-green-600">₦45,000</h3>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <div 
-          className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-          onClick={() => navigate("/attendance")}
-        >
-          <AttendanceChart />
-        </div>
-        <div 
-          className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-          onClick={() => navigate("/income")}
-        >
-          <IncomeWidget />
-        </div>
+      {/* Charts and Lists Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Income Chart */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Income Overview</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={incomeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="amount" fill="#2563EB" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Recent Events */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
+          <div className="space-y-4">
+            {upcomingEvents.map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="min-w-[48px] h-12 bg-church-100 rounded-lg flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-church-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">{event.title}</h4>
+                  <p className="text-sm text-gray-500">
+                    {new Date(event.start_date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Recent Announcements */}
+        <Card className="p-6 lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4">Recent Announcements</h3>
+          <div className="space-y-4">
+            {announcements.map((announcement) => (
+              <div
+                key={announcement.id}
+                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-gray-900">{announcement.title}</h4>
+                  <span className="text-sm text-gray-500">
+                    {new Date(announcement.publish_date).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-gray-600 line-clamp-2">{announcement.content}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
