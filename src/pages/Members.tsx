@@ -16,6 +16,7 @@ import {
 import { MemberSearch } from "@/components/Members/MemberSearch";
 import { MemberTable } from "@/components/Members/MemberTable";
 import { DeleteMemberDialog } from "@/components/Members/DeleteMemberDialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Member {
   id: string;
@@ -260,20 +261,22 @@ export default function Members() {
       )}
 
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Edit Member</DialogTitle>
           </DialogHeader>
-          {selectedMember && (
-            <MemberRegistrationForm
-              onSubmit={handleUpdateMember}
-              onCancel={() => {
-                setShowEditForm(false);
-                setSelectedMember(null);
-              }}
-              initialData={selectedMember}
-            />
-          )}
+          <ScrollArea className="h-[calc(90vh-8rem)]">
+            {selectedMember && (
+              <MemberRegistrationForm
+                onSubmit={handleUpdateMember}
+                onCancel={() => {
+                  setShowEditForm(false);
+                  setSelectedMember(null);
+                }}
+                initialData={selectedMember}
+              />
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
