@@ -1,3 +1,4 @@
+
 import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut, ClipboardCheck } from "lucide-react";
 import { 
   Sidebar, 
@@ -11,7 +12,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useAuth } from "@/components/Auth/AuthProvider";
+import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -25,12 +27,19 @@ const menuItems = [
 ];
 
 export const AppSidebar = () => {
-  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { toast } = useToast();
 
-  const handleLogout = () => {
-    localStorage.clear();
-    toast.success("Logged out successfully");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error logging out",
+        description: error.message,
+      });
+    }
   };
 
   return (
