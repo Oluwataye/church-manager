@@ -116,14 +116,6 @@ export default function Login() {
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
-
-            <div className="mt-4 text-sm text-center text-gray-600">
-              Default credentials for testing:
-              <br />
-              Email: admin@lfcc.com
-              <br />
-              Password: 123admin
-            </div>
           </form>
         </div>
       </div>

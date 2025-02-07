@@ -1,6 +1,9 @@
+
 import { Card } from "@/components/ui/card";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/Layout/Sidebar";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 const Dashboard = () => {
   return (
@@ -15,61 +18,99 @@ const Dashboard = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="p-6">
-                <h3 className="font-semibold text-lg mb-2">Total Members</h3>
-                <p className="text-3xl font-bold text-church-500">150</p>
-              </Card>
+              <Link to="/members">
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Total Members</h3>
+                      <p className="text-3xl font-bold text-church-500">150</p>
+                    </div>
+                    <ArrowRight className="text-church-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </Card>
+              </Link>
               
-              <Card className="p-6">
-                <h3 className="font-semibold text-lg mb-2">Upcoming Events</h3>
-                <p className="text-3xl font-bold text-church-500">3</p>
-              </Card>
+              <Link to="/events">
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Upcoming Events</h3>
+                      <p className="text-3xl font-bold text-church-500">3</p>
+                    </div>
+                    <ArrowRight className="text-church-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </Card>
+              </Link>
               
-              <Card className="p-6">
-                <h3 className="font-semibold text-lg mb-2">New Members</h3>
-                <p className="text-3xl font-bold text-church-500">12</p>
-              </Card>
+              <Link to="/members">
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">New Members</h3>
+                      <p className="text-3xl font-bold text-church-500">12</p>
+                    </div>
+                    <ArrowRight className="text-church-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </Card>
+              </Link>
               
-              <Card className="p-6">
-                <h3 className="font-semibold text-lg mb-2">Announcements</h3>
-                <p className="text-3xl font-bold text-church-500">5</p>
-              </Card>
+              <Link to="/announcements">
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Announcements</h3>
+                      <p className="text-3xl font-bold text-church-500">5</p>
+                    </div>
+                    <ArrowRight className="text-church-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </Card>
+              </Link>
             </div>
 
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="p-6">
-                <h3 className="font-semibold text-xl mb-4">Recent Members</h3>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-10 h-10 bg-church-100 rounded-full flex items-center justify-center">
-                        <span className="text-church-600 font-semibold">JD</span>
+              <Link to="/members">
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-xl">Recent Members</h3>
+                    <ArrowRight className="text-church-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-church-100 rounded-full flex items-center justify-center">
+                          <span className="text-church-600 font-semibold">JD</span>
+                        </div>
+                        <div>
+                          <p className="font-medium">John Doe</p>
+                          <p className="text-sm text-gray-500">Joined 2 days ago</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">John Doe</p>
-                        <p className="text-sm text-gray-500">Joined 2 days ago</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                </Card>
+              </Link>
 
-              <Card className="p-6">
-                <h3 className="font-semibold text-xl mb-4">Upcoming Events</h3>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-10 h-10 bg-church-100 rounded-full flex items-center justify-center">
-                        <span className="text-church-600 font-semibold">{i}</span>
+              <Link to="/events">
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer group">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-xl">Upcoming Events</h3>
+                    <ArrowRight className="text-church-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-church-100 rounded-full flex items-center justify-center">
+                          <span className="text-church-600 font-semibold">{i}</span>
+                        </div>
+                        <div>
+                          <p className="font-medium">Sunday Service</p>
+                          <p className="text-sm text-gray-500">Sunday, 9:00 AM</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">Sunday Service</p>
-                        <p className="text-sm text-gray-500">Sunday, 9:00 AM</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                </Card>
+              </Link>
             </div>
           </main>
         </div>
