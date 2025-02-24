@@ -1,69 +1,111 @@
-# Welcome to your Lovable project
 
-## Project info
+# Church Management System
 
-**URL**: https://lovable.dev/projects/34950c5b-87fc-4c89-bbfb-11aa6aa11230
+A comprehensive church management application that works both online and offline.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- ✨ Works offline
+- 📱 Install as desktop app
+- 🔄 Automatic updates when online
+- 🔒 Secure authentication
+- 👥 Member management
+- 📊 Attendance tracking
+- 💰 Income management
+- 📅 Event planning
 
-**Use Lovable**
+## Installation Guide
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/34950c5b-87fc-4c89-bbfb-11aa6aa11230) and start prompting.
+### For Users (No Coding Required)
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **First-Time Setup**
+   - Open your web browser (Chrome, Edge, or Firefox recommended)
+   - Visit: https://lovable.dev/projects/34950c5b-87fc-4c89-bbfb-11aa6aa11230
+   - When you visit for the first time, you'll see a prompt to "Install" the app
+   - Click "Install" to add it to your desktop
 
-**Use your preferred IDE**
+2. **Using the Shortcut**
+   - After installation, you'll find an icon on your desktop
+   - Click the icon to launch the app
+   - The app will work even without internet connection
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+3. **Updates**
+   - The app will automatically check for updates when you're online
+   - You'll see a notification when updates are available
+   - Click "Update" when prompted to get the latest features
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Troubleshooting
 
-Follow these steps:
+**If the app isn't working:**
+1. Check your internet connection
+2. Try refreshing the page
+3. If problems persist, uninstall and reinstall the app
+
+**To uninstall:**
+1. Find the app icon on your desktop
+2. Right-click and select "Uninstall" or "Remove"
+
+### For Developers
+
+**Local Development Setup**
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate to project folder
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+**Building for Production**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+# Create production build
+npm run build
 
-**Use GitHub Codespaces**
+# Preview production build
+npm run preview
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Technical Details
 
-## What technologies are used for this project?
-
-This project is built with .
-
+This project uses:
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase for backend
+- PWA for offline capabilities
 
-## How can I deploy this project?
+## Support
 
-Simply open [Lovable](https://lovable.dev/projects/34950c5b-87fc-4c89-bbfb-11aa6aa11230) and click on Share -> Publish.
+If you need help:
+1. Check the troubleshooting section above
+2. Contact your system administrator
+3. Visit our [documentation](https://docs.lovable.dev/)
 
-## I want to use a custom domain - is that possible?
+## Updates and Maintenance
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- The app automatically checks for updates when online
+- Updates are downloaded in the background
+- You'll be notified when updates are ready to install
+- Always keep your browser updated for best performance
+
+## Security
+
+- All data is encrypted
+- Authentication is required
+- Offline data is stored securely
+- Regular security updates are provided
+
+## License
+
+This project is protected by copyright law. All rights reserved.
+
