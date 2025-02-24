@@ -1,14 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
+import { GoogleLoginButton } from "@/components/Login/GoogleLoginButton";
+import { LoginForm } from "@/components/Login/LoginForm";
+import { OfflineAlert } from "@/components/Login/OfflineAlert";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -58,7 +56,6 @@ export default function Login() {
       }
 
       if (data?.user) {
-        // Cache the authentication state for offline access
         localStorage.setItem('lastLoginTime', new Date().toISOString());
         
         toast({
@@ -66,7 +63,6 @@ export default function Login() {
           description: "You have successfully logged in.",
         });
 
-        // Redirect to the page they tried to visit or to dashboard
         const from = location.state?.from?.pathname || "/";
         navigate(from, { replace: true });
       }
@@ -74,7 +70,6 @@ export default function Login() {
       console.error("Login error:", error);
       let errorMessage = error.message;
       
-      // Provide more user-friendly error messages
       if (error.message.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password. Please try again.';
       } else if (error.message.includes('network')) {
@@ -103,7 +98,7 @@ export default function Login() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -180,41 +175,12 @@ export default function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {isOffline && (
-            <Alert className="mb-4" variant="destructive">
-              <AlertDescription>
-                You are currently offline. Some features may be limited.
-              </AlertDescription>
-            </Alert>
-          )}
+          {isOffline && <OfflineAlert />}
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full mb-6"
-            onClick={handleGoogleLogin}
-            disabled={isOffline || isLoading}
-          >
-            <svg className="mr-2 h-4 w-4" aria-hidden="true" viewBox="0 0 24 24">
-              <path
-                d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z"
-                fill="#EA4335"
-              />
-              <path
-                d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.08 18.1L19.945 21.1C22.2 19.01 23.49 15.92 23.49 12.275Z"
-                fill="#4285F4"
-              />
-              <path
-                d="M5.26498 14.2949C5.02498 13.5699 4.88501 12.7999 4.88501 11.9999C4.88501 11.1999 5.01998 10.4299 5.27028 9.7049L1.28027 6.60986C0.47027 8.22986 0 10.0599 0 11.9999C0 13.9399 0.47027 15.7699 1.28027 17.3899L5.26498 14.2949Z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12.0003 24C15.2353 24 17.9502 22.935 19.9452 21.095L16.0802 18.095C15.0002 18.82 13.6203 19.245 12.0003 19.245C8.87028 19.245 6.21525 17.135 5.26498 14.29L1.28027 17.385C3.25527 21.31 7.31028 24 12.0003 24Z"
-                fill="#34A853"
-              />
-            </svg>
-            Continue with Google
-          </Button>
+          <GoogleLoginButton 
+            onClick={handleGoogleLogin} 
+            disabled={isOffline || isLoading} 
+          />
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
@@ -225,65 +191,16 @@ export default function Login() {
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div>
-              <Label htmlFor="email">Email address</Label>
-              <div className="mt-1">
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="Enter your email"
-                  className="block w-full"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <div className="mt-1">
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Enter your password"
-                  className="block w-full"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <Button
-                type="submit"
-                className="flex-1 bg-church-600 hover:bg-church-700"
-                disabled={isLoading || isOffline}
-              >
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={handleSignUp}
-                disabled={isLoading || isOffline}
-              >
-                Sign up
-              </Button>
-            </div>
-          </form>
+          <LoginForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            error={error}
+            isLoading={isLoading || isOffline}
+            onSubmit={handleLogin}
+            onSignUp={handleSignUp}
+          />
         </div>
       </div>
     </div>
