@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,35 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isOffline) {
+      toast({
+        variant: "destructive",
+        title: "Offline",
+        description: "Please check your internet connection and try again.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -35,6 +58,9 @@ export default function Login() {
       }
 
       if (data?.user) {
+        // Cache the authentication state for offline access
+        localStorage.setItem('lastLoginTime', new Date().toISOString());
+        
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
@@ -46,11 +72,20 @@ export default function Login() {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      setError(error.message);
+      let errorMessage = error.message;
+      
+      // Provide more user-friendly error messages
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (error.message.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to login. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -58,6 +93,15 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
+    if (isOffline) {
+      toast({
+        variant: "destructive",
+        title: "Offline",
+        description: "Google login requires an internet connection.",
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -73,13 +117,22 @@ export default function Login() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to login with Google. Please try again.",
+        description: "Failed to login with Google. Please try again.",
       });
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isOffline) {
+      toast({
+        variant: "destructive",
+        title: "Offline",
+        description: "Sign up requires an internet connection.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -127,11 +180,20 @@ export default function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {isOffline && (
+            <Alert className="mb-4" variant="destructive">
+              <AlertDescription>
+                You are currently offline. Some features may be limited.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Button
             type="button"
             variant="outline"
             className="w-full mb-6"
             onClick={handleGoogleLogin}
+            disabled={isOffline || isLoading}
           >
             <svg className="mr-2 h-4 w-4" aria-hidden="true" viewBox="0 0 24 24">
               <path
@@ -181,6 +243,7 @@ export default function Login() {
                   required
                   placeholder="Enter your email"
                   className="block w-full"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -196,6 +259,7 @@ export default function Login() {
                   required
                   placeholder="Enter your password"
                   className="block w-full"
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -204,7 +268,7 @@ export default function Login() {
               <Button
                 type="submit"
                 className="flex-1 bg-church-600 hover:bg-church-700"
-                disabled={isLoading}
+                disabled={isLoading || isOffline}
               >
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
@@ -214,7 +278,7 @@ export default function Login() {
                 variant="outline"
                 className="flex-1"
                 onClick={handleSignUp}
-                disabled={isLoading}
+                disabled={isLoading || isOffline}
               >
                 Sign up
               </Button>
