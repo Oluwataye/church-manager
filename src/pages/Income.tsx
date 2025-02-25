@@ -28,7 +28,7 @@ const Income = () => {
             </Card>
             <Card className="p-4">
               <h3 className="font-semibold">Total Tithes (This Month)</h3>
-              <p className="text-2xl font-bold">₦234,567</p>
+              <p className="text-2xl font-bold text-green-600">₦234,567</p>
             </Card>
             <Card className="p-4">
               <h3 className="font-semibold">Special Offerings</h3>
