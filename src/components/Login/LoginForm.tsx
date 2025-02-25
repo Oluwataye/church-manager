@@ -12,7 +12,6 @@ interface LoginFormProps {
   error: string | null;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => Promise<void>;
-  onSignUp: (e: React.FormEvent) => Promise<void>;
 }
 
 export function LoginForm({
@@ -23,7 +22,6 @@ export function LoginForm({
   error,
   isLoading,
   onSubmit,
-  onSignUp,
 }: LoginFormProps) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -42,7 +40,7 @@ export function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            placeholder="Enter your email"
+            placeholder="Enter admin email"
             className="block w-full"
             disabled={isLoading}
           />
@@ -58,32 +56,20 @@ export function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            placeholder="Enter your password"
+            placeholder="Enter admin password"
             className="block w-full"
             disabled={isLoading}
           />
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <Button
-          type="submit"
-          className="flex-1 bg-church-600 hover:bg-church-700"
-          disabled={isLoading}
-        >
-          {isLoading ? "Signing in..." : "Sign in"}
-        </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          onClick={onSignUp}
-          disabled={isLoading}
-        >
-          Sign up
-        </Button>
-      </div>
+      <Button
+        type="submit"
+        className="w-full bg-church-600 hover:bg-church-700"
+        disabled={isLoading}
+      >
+        {isLoading ? "Signing in..." : "Sign in"}
+      </Button>
     </form>
   );
 }

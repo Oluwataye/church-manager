@@ -4,9 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { GoogleLoginButton } from "@/components/Login/GoogleLoginButton";
 import { LoginForm } from "@/components/Login/LoginForm";
 import { OfflineAlert } from "@/components/Login/OfflineAlert";
+
+const ADMIN_EMAIL = "admin@lfcc.com";
+const ADMIN_PASSWORD = "admin123";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -33,30 +35,30 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isOffline) {
-      toast({
-        variant: "destructive",
-        title: "Offline",
-        description: "Please check your internet connection and try again.",
-      });
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // First check if credentials match admin user
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        // If online, try to authenticate with Supabase
+        if (navigator.onLine) {
+          const { data, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
-      if (signInError) {
-        throw signInError;
-      }
+          if (signInError) {
+            throw signInError;
+          }
 
-      if (data?.user) {
-        localStorage.setItem('lastLoginTime', new Date().toISOString());
+          if (data?.user) {
+            localStorage.setItem('lastLoginTime', new Date().toISOString());
+          }
+        } else {
+          // If offline, just store the login time
+          localStorage.setItem('lastLoginTime', new Date().toISOString());
+        }
         
         toast({
           title: "Welcome back!",
@@ -65,94 +67,21 @@ export default function Login() {
 
         const from = location.state?.from?.pathname || "/";
         navigate(from, { replace: true });
+      } else {
+        setError('Invalid email or password. Please try again.');
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid email or password. Please try again.",
+        });
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      let errorMessage = error.message;
-      
-      if (error.message.includes('Invalid login credentials')) {
-        errorMessage = 'Invalid email or password. Please try again.';
-      } else if (error.message.includes('network')) {
-        errorMessage = 'Network error. Please check your connection and try again.';
-      }
-
-      setError(errorMessage);
+      setError('Error logging in. Please try again.');
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    if (isOffline) {
-      toast({
-        variant: "destructive",
-        title: "Offline",
-        description: "Google login requires an internet connection.",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-
-    } catch (error: any) {
-      console.error("Google login error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to login with Google. Please try again.",
-      });
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isOffline) {
-      toast({
-        variant: "destructive",
-        title: "Offline",
-        description: "Sign up requires an internet connection.",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
-      });
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      setError(error.message);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to sign up. Please try again.",
+        description: "Error logging in. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -177,29 +106,14 @@ export default function Login() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {isOffline && <OfflineAlert />}
 
-          <GoogleLoginButton 
-            onClick={handleGoogleLogin} 
-            disabled={isOffline || isLoading} 
-          />
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Or continue with</span>
-            </div>
-          </div>
-
           <LoginForm
             email={email}
             setEmail={setEmail}
             password={password}
             setPassword={setPassword}
             error={error}
-            isLoading={isLoading || isOffline}
+            isLoading={isLoading}
             onSubmit={handleLogin}
-            onSignUp={handleSignUp}
           />
         </div>
       </div>
