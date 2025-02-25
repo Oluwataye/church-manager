@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Users, Calendar, Bell, TrendingUp } from "lucide-react";
+import { AttendanceWidget } from "@/components/Dashboard/AttendanceWidget";
+import { IncomeWidget } from "@/components/Dashboard/IncomeWidget";
 
 const Dashboard = () => {
   // Fetch members count
@@ -42,16 +43,6 @@ const Dashboard = () => {
       return data || [];
     },
   });
-
-  // Mock data for the chart
-  const incomeData = [
-    { month: "Jan", amount: 4000 },
-    { month: "Feb", amount: 3000 },
-    { month: "Mar", amount: 2000 },
-    { month: "Apr", amount: 2780 },
-    { month: "May", amount: 1890 },
-    { month: "Jun", amount: 2390 },
-  ];
 
   return (
     <div className="space-y-8">
@@ -112,25 +103,14 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Charts and Lists Section */}
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Income Chart */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Income Overview</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={incomeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="amount" fill="#2563EB" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        <AttendanceWidget />
+        <IncomeWidget />
+      </div>
 
-        {/* Recent Events */}
+      {/* Recent Events and Announcements */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
           <div className="space-y-4">
@@ -153,8 +133,7 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Recent Announcements */}
-        <Card className="p-6 lg:col-span-2">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Recent Announcements</h3>
           <div className="space-y-4">
             {announcements.map((announcement) => (

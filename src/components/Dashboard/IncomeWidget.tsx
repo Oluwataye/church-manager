@@ -1,9 +1,5 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import {
   BarChart,
   Bar,
@@ -12,7 +8,9 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Legend,
+  Tooltip,
 } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const data = [
   { month: "Jan", tithe: 250000, offering: 180000, project: 320000, special: 150000 },
@@ -23,16 +21,14 @@ const data = [
   { month: "Jun", tithe: 285000, offering: 175000, project: 330000, special: 145000 },
 ];
 
-const chartConfig = {
-  tithe: { color: "#2563eb" },
-  offering: { color: "#16a34a" },
-  project: { color: "#d97706" },
-  special: { color: "#dc2626" },
-};
-
 export function IncomeWidget() {
+  const navigate = useNavigate();
+
   return (
-    <Card className="col-span-4 transition-all duration-300 hover:shadow-lg hover:border-primary/50">
+    <Card 
+      className="col-span-1 transition-all duration-300 hover:shadow-lg hover:border-primary/50 cursor-pointer"
+      onClick={() => navigate("/income")}
+    >
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Monthly Income Distribution</span>
@@ -40,52 +36,43 @@ export function IncomeWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
-        <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <ChartTooltip 
-                content={<ChartTooltipContent />}
-                cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }}
-              />
-              <Legend 
-                verticalAlign="top" 
-                height={36}
-                wrapperStyle={{ paddingBottom: '10px' }}
-              />
-              <Bar
-                dataKey="tithe"
-                name="Tithe"
-                stackId="a"
-                fill="var(--color-tithe)"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="offering"
-                name="Offering"
-                stackId="a"
-                fill="var(--color-offering)"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="project"
-                name="Project"
-                stackId="a"
-                fill="var(--color-project)"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="special"
-                name="Special"
-                stackId="a"
-                fill="var(--color-special)"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar
+              dataKey="tithe"
+              name="Tithe"
+              stackId="a"
+              fill="#2563eb"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="offering"
+              name="Offering"
+              stackId="a"
+              fill="#16a34a"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="project"
+              name="Project"
+              stackId="a"
+              fill="#d97706"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar
+              dataKey="special"
+              name="Special"
+              stackId="a"
+              fill="#dc2626"
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );
