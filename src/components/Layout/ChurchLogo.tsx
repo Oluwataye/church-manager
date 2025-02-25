@@ -9,6 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 interface ChurchLogoProps {
   displayOnly?: boolean;
   onLogoChange?: (logo: string) => void;
+  className?: string;
 }
 
 async function fetchChurchSettings() {
@@ -49,7 +50,7 @@ async function uploadLogo(file: File) {
   return publicUrl;
 }
 
-export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProps) {
+export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }: ChurchLogoProps) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -115,10 +116,12 @@ export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProp
     setSelectedFile(null);
   };
 
+  const avatarClassName = `${displayOnly ? "h-16 w-16 md:h-24 md:w-24" : "h-24 w-24"} ${className}`;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center">
-        <Avatar className="h-24 w-24 animate-pulse">
+        <Avatar className={avatarClassName + " animate-pulse"}>
           <AvatarFallback>Logo</AvatarFallback>
         </Avatar>
       </div>
@@ -126,8 +129,8 @@ export function ChurchLogo({ displayOnly = false, onLogoChange }: ChurchLogoProp
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <Avatar className="h-24 w-24">
+    <div className={`flex flex-col items-center ${!displayOnly ? "gap-4" : ""}`}>
+      <Avatar className={avatarClassName}>
         <AvatarImage src={tempLogo || settings?.logo_url || "/placeholder.svg"} alt="Church Logo" />
         <AvatarFallback>Logo</AvatarFallback>
       </Avatar>
