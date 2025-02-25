@@ -35,7 +35,7 @@ export function AttendanceStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">+5.2%</div>
-          <p className="text-xs text-muted-foreground">vs last month</p>
+          <p className="text-xs text-red-600">vs last month</p>
         </CardContent>
       </Card>
     </div>;
