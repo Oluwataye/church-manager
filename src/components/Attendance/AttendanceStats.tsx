@@ -24,7 +24,7 @@ export function AttendanceStats() {
           <div className="text-2xl font-bold">158</div>
           <div className="text-xs text-muted-foreground mt-1">
             <p className="text-red-600">Men: 62 | Women: 71</p>
-            <p>Children: 25</p>
+            <p className="text-red-600">Children: 25</p>
           </div>
         </CardContent>
       </Card>
