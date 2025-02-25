@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, UserCheck } from "lucide-react";
-
 export function AttendanceStats() {
-  return (
-    <div className="grid gap-4 md:grid-cols-3">
+  return <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Last Sunday</CardTitle>
@@ -12,7 +10,7 @@ export function AttendanceStats() {
         <CardContent>
           <div className="text-2xl font-bold">165</div>
           <div className="text-xs text-muted-foreground mt-1">
-            <p>Men: 65 | Women: 75</p>
+            <p className="text-red-600">Men: 65 | Women: 75</p>
             <p>Children: 25</p>
           </div>
         </CardContent>
@@ -40,6 +38,5 @@ export function AttendanceStats() {
           <p className="text-xs text-muted-foreground">vs last month</p>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
