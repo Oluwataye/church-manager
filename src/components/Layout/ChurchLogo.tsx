@@ -23,31 +23,39 @@ async function fetchChurchSettings() {
 }
 
 async function uploadLogo(file: File) {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  const filePath = `logos/${fileName}`;
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `logos/${fileName}`;
 
-  const { error: uploadError } = await supabase.storage
-    .from('church-assets')
-    .upload(filePath, file);
+    // First upload the file to storage
+    const { error: uploadError } = await supabase.storage
+      .from('church-assets')
+      .upload(filePath, file);
 
-  if (uploadError) throw uploadError;
+    if (uploadError) throw uploadError;
 
-  const { data: { publicUrl } } = supabase.storage
-    .from('church-assets')
-    .getPublicUrl(filePath);
+    // Get the public URL of the uploaded file
+    const { data: { publicUrl } } = supabase.storage
+      .from('church-assets')
+      .getPublicUrl(filePath);
 
-  const { error: updateError } = await supabase
-    .from('church_settings')
-    .update({ 
-      logo_url: publicUrl,
-      updated_at: new Date().toISOString()
-    })
-    .eq('church_name', 'LIVING FAITH CHURCH');
+    // Update the church settings with the new logo URL
+    const { error: updateError } = await supabase
+      .from('church_settings')
+      .update({ 
+        logo_url: publicUrl,
+        updated_at: new Date().toISOString()
+      })
+      .eq('church_name', 'LIVING FAITH CHURCH');
 
-  if (updateError) throw updateError;
+    if (updateError) throw updateError;
 
-  return publicUrl;
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    throw error;
+  }
 }
 
 export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }: ChurchLogoProps) {
@@ -58,27 +66,37 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['churchSettings'],
-    queryFn: fetchChurchSettings
+    queryFn: fetchChurchSettings,
+    staleTime: 0, // This ensures we always get fresh data
   });
 
   const uploadMutation = useMutation({
     mutationFn: uploadLogo,
     onSuccess: (publicUrl) => {
+      // Invalidate and refetch church settings
       queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+      
+      // Update any parent components
       if (onLogoChange) {
         onLogoChange(publicUrl);
       }
+
+      // Show success message
       toast({
-        title: "Success",
-        description: "Church logo updated successfully",
+        title: "Success!",
+        description: "Church logo has been updated successfully",
+        variant: "default",
       });
+
+      // Reset the form
       setTempLogo(null);
       setSelectedFile(null);
     },
     onError: (error: Error) => {
+      // Show error message
       toast({
         title: "Error",
-        description: error.message,
+        description: `Failed to update logo: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -87,10 +105,21 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Error",
           description: "Logo file size must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select an image file",
           variant: "destructive",
         });
         return;
@@ -114,6 +143,11 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   const handleCancel = () => {
     setTempLogo(null);
     setSelectedFile(null);
+    toast({
+      title: "Cancelled",
+      description: "Logo update cancelled",
+      variant: "default",
+    });
   };
 
   const avatarClassName = `${displayOnly ? "h-16 w-16 md:h-24 md:w-24" : "h-24 w-24"} ${className}`;
