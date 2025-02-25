@@ -32,7 +32,7 @@ const Income = () => {
             </Card>
             <Card className="p-4">
               <h3 className="font-semibold">Special Offerings</h3>
-              <p className="text-2xl font-bold">₦123,456</p>
+              <p className="text-2xl font-bold text-green-600">₦123,456</p>
             </Card>
             <Card className="p-4">
               <h3 className="font-semibold">Project Offerings</h3>
