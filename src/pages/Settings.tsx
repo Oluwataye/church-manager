@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -7,28 +6,30 @@ import { useTheme } from "@/hooks/use-theme";
 import { useToast } from "@/hooks/use-toast";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { useQueryClient } from "@tanstack/react-query";
-
 export default function Settings() {
-  const { theme, setTheme } = useTheme();
-  const { toast } = useToast();
+  const {
+    theme,
+    setTheme
+  } = useTheme();
+  const {
+    toast
+  } = useToast();
   const queryClient = useQueryClient();
-
   const handleLogoChange = (newLogo: string) => {
-    queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+    queryClient.invalidateQueries({
+      queryKey: ['churchSettings']
+    });
   };
-
   const handleThemeChange = (checked: boolean) => {
     const newTheme = checked ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
     toast({
       title: "Theme Updated",
-      description: `Theme changed to ${newTheme} mode`,
+      description: `Theme changed to ${newTheme} mode`
     });
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground">
@@ -61,11 +62,7 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-4">
-              <Switch
-                id="theme-toggle"
-                checked={theme === "dark"}
-                onCheckedChange={handleThemeChange}
-              />
+              <Switch id="theme-toggle" checked={theme === "dark"} onCheckedChange={handleThemeChange} className="bg-gray-950 hover:bg-gray-800" />
               <Label htmlFor="theme-toggle">Dark Mode</Label>
             </div>
           </CardContent>
@@ -85,6 +82,5 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 }
