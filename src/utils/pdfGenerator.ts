@@ -1,6 +1,5 @@
 
 import jsPDF from "jspdf";
-import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 
 interface Member {
   family_name: string;
@@ -16,7 +15,7 @@ interface Member {
   wofbi_class_type: string;
   wofbi_year: string;
   joining_location: string;
-  church_group?: string;
+  group_name?: string;
 }
 
 export async function generateMemberProfile(member: Member): Promise<boolean> {
@@ -49,7 +48,7 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
       `WOFBI Class: ${member.wofbi_class_type || 'N/A'}`,
       `WOFBI Year: ${member.wofbi_year || 'N/A'}`,
       `Joining Location: ${member.joining_location}`,
-      `Church Group: ${member.church_group || 'N/A'}`
+      `Church Group: ${member.group_name || 'No Group'}`
     ];
     
     details.forEach((detail, index) => {

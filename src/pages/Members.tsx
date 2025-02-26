@@ -36,6 +36,7 @@ interface Member {
   member_type: string;
   profile_photo?: string;
   church_group?: string;
+  group_name?: string;
 }
 
 export default function Members() {
@@ -52,7 +53,12 @@ export default function Members() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('members')
-        .select('*')
+        .select(`
+          *,
+          groups:church_group (
+            name
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -67,6 +73,7 @@ export default function Members() {
 
       return data.map((member) => ({
         ...member,
+        group_name: member.groups?.name,
         marital_status: member.marital_status || '',
         number_of_children: member.number_of_children || 0,
         foundation_class_date: member.foundation_class_date || '',

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
@@ -20,6 +21,7 @@ interface Member {
   member_type: string;
   profile_photo?: string;
   church_group?: string;
+  group_name?: string; // Add this field for the group name
 }
 
 interface MemberTableRowProps {
@@ -64,7 +66,7 @@ export function MemberTableRow({
           <p className="text-sm text-gray-500">{member.contact_address}</p>
         </div>
       </TableCell>
-      <TableCell>{member.church_group}</TableCell>
+      <TableCell>{member.group_name || 'No Group'}</TableCell>
       <TableCell>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onEdit(member)}>
