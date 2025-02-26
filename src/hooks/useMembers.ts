@@ -40,11 +40,7 @@ export function useMembers() {
 
       if (error) {
         console.error('Error fetching members:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch members. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Failed to fetch members. Please try again.");
         return [];
       }
 

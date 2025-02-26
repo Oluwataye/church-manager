@@ -18,18 +18,11 @@ export function useMemberActions() {
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast({
-        title: "Success!",
-        description: "Member has been registered successfully.",
-      });
+      toast("Member has been registered successfully");
       return true;
     } catch (error: any) {
       console.error('Error adding member:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to register member. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to register member. Please try again.");
       return false;
     }
   };
@@ -44,18 +37,11 @@ export function useMemberActions() {
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast({
-        title: "Success!",
-        description: "Member has been updated successfully.",
-      });
+      toast("Member has been updated successfully");
       return true;
     } catch (error: any) {
       console.error('Error updating member:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update member. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to update member. Please try again.");
       return false;
     }
   };
@@ -70,18 +56,11 @@ export function useMemberActions() {
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast({
-        title: "Success!",
-        description: "Member has been deleted successfully.",
-      });
+      toast("Member has been deleted successfully");
       return true;
     } catch (error: any) {
       console.error('Error deleting member:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete member. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete member. Please try again.");
       return false;
     }
   };

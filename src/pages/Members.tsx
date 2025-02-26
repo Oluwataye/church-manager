@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -40,18 +39,11 @@ export default function Members() {
     try {
       const success = await generateMemberProfile(member);
       if (success) {
-        toast({
-          title: "Success",
-          description: "Profile downloaded successfully.",
-        });
+        toast("Profile downloaded successfully");
       }
     } catch (error) {
       console.error('Error downloading profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to download profile. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to download profile. Please try again.");
     }
   };
 
