@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const groupSchema = z.object({
   name: z.string().min(1, "Group name is required"),
@@ -25,6 +27,7 @@ type GroupFormData = z.infer<typeof groupSchema>;
 
 export const GroupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const form = useForm<GroupFormData>({
     resolver: zodResolver(groupSchema),
@@ -34,26 +37,30 @@ export const GroupForm = () => {
     },
   });
 
-  const onSubmit = async (data: GroupFormData) => {
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.from("groups").insert([
-        {
+  const { mutate: saveGroup } = useMutation({
+    mutationFn: async (data: GroupFormData) => {
+      const { error } = await supabase
+        .from('groups')
+        .insert([{
           name: data.name,
-          description: data.description || null,
-        },
-      ]);
+          description: data.description,
+        }]);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
       toast.success("Group created successfully!");
       form.reset();
-    } catch (error) {
-      console.error("Error creating group:", error);
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+    },
+    onError: (error) => {
+      console.error('Error creating group:', error);
       toast.error("Failed to create group. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = async (data: GroupFormData) => {
+    saveGroup(data);
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -11,51 +12,64 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-type EventFormData = {
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  type: string;
-  description: string;
-};
+const eventSchema = z.object({
+  title: z.string().min(1, "Event title is required"),
+  description: z.string().optional(),
+  location: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+});
+
+type EventFormData = z.infer<typeof eventSchema>;
 
 export const EventForm = () => {
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<EventFormData>({
+    resolver: zodResolver(eventSchema),
     defaultValues: {
       title: "",
-      date: "",
-      time: "",
-      location: "",
-      type: "",
       description: "",
+      location: "",
+      startDate: "",
+      endDate: "",
+    },
+  });
+
+  const { mutate: saveEvent } = useMutation({
+    mutationFn: async (data: EventFormData) => {
+      const { error } = await supabase
+        .from('events')
+        .insert([{
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          start_date: data.startDate,
+          end_date: data.endDate || null,
+        }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Event created successfully!");
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+    onError: (error) => {
+      console.error('Error creating event:', error);
+      toast.error("Failed to create event. Please try again.");
     },
   });
 
   const onSubmit = async (data: EventFormData) => {
-    setIsSubmitting(true);
-    try {
-      // In a real app, this would save to your CSV service
-      console.log("Saving event:", data);
-      toast.success("Event created successfully!");
-      form.reset();
-    } catch (error) {
-      toast.error("Failed to create event");
-      console.error(error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    saveEvent(data);
   };
 
   return (
@@ -70,74 +84,6 @@ export const EventForm = () => {
               <FormControl>
                 <Input placeholder="Enter event title" {...field} />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="time"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Time</FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter event location" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Event Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="service">Service</SelectItem>
-                  <SelectItem value="meeting">Meeting</SelectItem>
-                  <SelectItem value="program">Program</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -160,6 +106,50 @@ export const EventForm = () => {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter event location" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="startDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="endDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>End Date (Optional)</FormLabel>
+                <FormControl>
+                  <Input type="datetime-local" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Creating..." : "Create Event"}

@@ -1,3 +1,4 @@
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -23,7 +24,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { saveToCsv } from "@/utils/csvService";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const incomeFormSchema = z.object({
   date: z.date(),
@@ -34,6 +37,7 @@ const incomeFormSchema = z.object({
 });
 
 export function IncomeForm() {
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof incomeFormSchema>>({
     resolver: zodResolver(incomeFormSchema),
     defaultValues: {
@@ -41,10 +45,31 @@ export function IncomeForm() {
     },
   });
 
+  const { mutate: saveIncome, isPending } = useMutation({
+    mutationFn: async (values: z.infer<typeof incomeFormSchema>) => {
+      const { error } = await supabase.from('incomes').insert([{
+        date: values.date,
+        service_type: values.serviceType,
+        category: values.category,
+        amount: parseFloat(values.amount),
+        description: values.description,
+      }]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Income recorded successfully");
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['incomes'] });
+    },
+    onError: (error) => {
+      console.error('Error saving income:', error);
+      toast.error("Failed to record income. Please try again.");
+    },
+  });
+
   function onSubmit(values: z.infer<typeof incomeFormSchema>) {
-    // Save to CSV
-    saveToCsv([values], "income.csv");
-    form.reset();
+    saveIncome(values);
   }
 
   return (
@@ -169,7 +194,9 @@ export function IncomeForm() {
           )}
         />
 
-        <Button type="submit">Record Income</Button>
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Recording..." : "Record Income"}
+        </Button>
       </form>
     </Form>
   );

@@ -36,6 +36,42 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance_records: {
+        Row: {
+          adult_men: number
+          adult_women: number
+          boys: number
+          created_at: string | null
+          date: string
+          girls: number
+          id: string
+          service_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          adult_men?: number
+          adult_women?: number
+          boys?: number
+          created_at?: string | null
+          date: string
+          girls?: number
+          id?: string
+          service_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          adult_men?: number
+          adult_women?: number
+          boys?: number
+          created_at?: string | null
+          date?: string
+          girls?: number
+          id?: string
+          service_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       church_settings: {
         Row: {
           church_name: string
@@ -113,6 +149,39 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      incomes: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          service_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          service_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          service_type?: string
           updated_at?: string | null
         }
         Relationships: []
