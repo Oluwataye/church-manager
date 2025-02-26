@@ -47,7 +47,9 @@ async function uploadLogo(file: File) {
         logo_url: publicUrl,
         updated_at: new Date().toISOString()
       })
-      .eq('church_name', 'LIVING FAITH CHURCH');
+      .eq('church_name', 'LIVING FAITH CHURCH')
+      .select()
+      .single();
 
     if (updateError) throw updateError;
 
@@ -85,7 +87,6 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
       toast({
         title: "Success!",
         description: "Church logo has been updated successfully",
-        variant: "default",
       });
 
       // Reset the form
@@ -146,7 +147,6 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
     toast({
       title: "Cancelled",
       description: "Logo update cancelled",
-      variant: "default",
     });
   };
 

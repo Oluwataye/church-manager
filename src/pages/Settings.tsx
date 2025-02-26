@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
@@ -6,20 +7,17 @@ import { useTheme } from "@/hooks/use-theme";
 import { useToast } from "@/hooks/use-toast";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { useQueryClient } from "@tanstack/react-query";
+
 export default function Settings() {
-  const {
-    theme,
-    setTheme
-  } = useTheme();
-  const {
-    toast
-  } = useToast();
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+
   const handleLogoChange = (newLogo: string) => {
-    queryClient.invalidateQueries({
-      queryKey: ['churchSettings']
-    });
+    // Force a refresh of the church settings data
+    queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
   };
+
   const handleThemeChange = (checked: boolean) => {
     const newTheme = checked ? "dark" : "light";
     setTheme(newTheme);
@@ -29,7 +27,9 @@ export default function Settings() {
       description: `Theme changed to ${newTheme} mode`
     });
   };
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground">
@@ -82,5 +82,6 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 }
