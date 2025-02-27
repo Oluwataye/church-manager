@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useAuth } from "@/components/Auth/AuthProvider";
 
 export interface Member {
   id: string;
@@ -21,43 +21,48 @@ export interface Member {
   member_type: string;
   profile_photo?: string;
   church_group?: string;
-  group_name?: string;
 }
 
 export function useMembers() {
-  return useQuery({
+  const { isOffline } = useAuth();
+
+  return useQuery<Member[]>({
     queryKey: ['members'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('members')
-        .select(`
-          *,
-          groups:church_group (
-            name
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching members:', error);
-        toast.error("Failed to fetch members. Please try again.");
-        return [];
+      // First try to get data from local storage
+      const localMembers = localStorage.getItem('localMembers');
+      const localMembersData = localMembers ? JSON.parse(localMembers) : [];
+      
+      // If offline, just return local data
+      if (isOffline) {
+        console.log('Offline mode: returning local members data');
+        return localMembersData;
       }
-
-      return data.map((member) => ({
-        ...member,
-        group_name: member.groups?.name,
-        marital_status: member.marital_status || '',
-        number_of_children: member.number_of_children || 0,
-        foundation_class_date: member.foundation_class_date || '',
-        baptism_water: member.baptism_water || false,
-        baptism_holy_ghost: member.baptism_holy_ghost || false,
-        baptism_year: member.baptism_year || '',
-        wofbi_class_type: member.wofbi_class_type || '',
-        wofbi_year: member.wofbi_year || '',
-        joining_location: member.joining_location || '',
-        member_type: member.member_type || 'individual',
-      })) as Member[];
+      
+      // If online, try to get from Supabase and update local storage
+      try {
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching members from Supabase:', error);
+          throw error;
+        }
+        
+        // Update local storage with the latest data
+        localStorage.setItem('localMembers', JSON.stringify(data));
+        return data;
+      } catch (error) {
+        console.error('Failed to fetch from Supabase, falling back to local data:', error);
+        return localMembersData;
+      }
+    },
+    initialData: () => {
+      // Return cached data from localStorage on initial load
+      const cached = localStorage.getItem('localMembers');
+      return cached ? JSON.parse(cached) : [];
     },
   });
 }

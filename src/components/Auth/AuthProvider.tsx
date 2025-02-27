@@ -1,8 +1,10 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { initSyncListener, processPendingSync } from "@/services/syncService";
 
 interface CustomUser {
   email: string;
@@ -48,6 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       });
+      
+      // Try to sync offline changes
+      processPendingSync();
     };
 
     const handleOffline = () => {
@@ -76,9 +81,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // Initialize sync listener
+    const cleanupSyncListener = initSyncListener();
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      cleanupSyncListener();
     };
   }, [navigate]);
 
