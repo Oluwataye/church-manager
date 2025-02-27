@@ -183,15 +183,20 @@ export default function Login() {
         throw new Error('Email already in use. Please login instead.');
       }
       
-      // If online, try to register with Supabase
+      // Only attempt online registration if we're actually online
       if (navigator.onLine) {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: regEmail,
-          password: regPassword
-        });
-        
-        if (signUpError) {
-          throw signUpError;
+        try {
+          const { data, error: signUpError } = await supabase.auth.signUp({
+            email: regEmail,
+            password: regPassword
+          });
+          
+          if (signUpError) {
+            throw signUpError;
+          }
+        } catch (error) {
+          console.log("Online registration failed, continuing with local registration");
+          // We'll continue with local registration below
         }
       }
       
@@ -212,7 +217,9 @@ export default function Login() {
       
       toast({
         title: "Registration successful!",
-        description: "Your account has been created and you're now logged in.",
+        description: isOffline 
+          ? "Your account has been created locally and you're now logged in." 
+          : "Your account has been created and you're now logged in.",
       });
       
       navigate('/', { replace: true });
