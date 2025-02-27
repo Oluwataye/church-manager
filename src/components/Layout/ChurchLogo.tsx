@@ -1,10 +1,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ChurchLogoProps {
   displayOnly?: boolean;
@@ -41,7 +41,7 @@ async function uploadLogo(file: File) {
       .getPublicUrl(filePath);
 
     // Update the church settings with the new logo URL
-    const { error: updateError } = await supabase
+    const { data, error: updateError } = await supabase
       .from('church_settings')
       .update({ 
         logo_url: publicUrl,
@@ -53,7 +53,7 @@ async function uploadLogo(file: File) {
 
     if (updateError) throw updateError;
 
-    return publicUrl;
+    return { publicUrl, data };
   } catch (error) {
     console.error('Error uploading logo:', error);
     throw error;
@@ -63,42 +63,43 @@ async function uploadLogo(file: File) {
 export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }: ChurchLogoProps) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['churchSettings'],
     queryFn: fetchChurchSettings,
-    staleTime: 0, // This ensures we always get fresh data
+    staleTime: 0,
   });
 
   const uploadMutation = useMutation({
     mutationFn: uploadLogo,
-    onSuccess: (publicUrl) => {
-      // Invalidate and refetch church settings
+    onSuccess: ({ publicUrl }) => {
+      // Immediately update the cache
+      queryClient.setQueryData(['churchSettings'], (old: any) => ({
+        ...old,
+        logo_url: publicUrl
+      }));
+      
+      // Then invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
       
-      // Update any parent components
+      // Update parent components
       if (onLogoChange) {
         onLogoChange(publicUrl);
       }
 
-      // Show success message
-      toast({
-        title: "Success!",
-        description: "Church logo has been updated successfully",
-      });
-
-      // Reset the form
+      // Reset form state
       setTempLogo(null);
       setSelectedFile(null);
+      
+      // Show success message
+      toast("Logo updated successfully", {
+        description: "Your new logo is now visible in the header"
+      });
     },
     onError: (error: Error) => {
-      // Show error message
-      toast({
-        title: "Error",
-        description: `Failed to update logo: ${error.message}`,
-        variant: "destructive",
+      toast.error("Failed to update logo", {
+        description: error.message
       });
     }
   });
@@ -108,20 +109,16 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
     if (file) {
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "Logo file size must be less than 5MB",
-          variant: "destructive",
+        toast.error("File too large", {
+          description: "Logo file size must be less than 5MB"
         });
         return;
       }
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Error",
-          description: "Please select an image file",
-          variant: "destructive",
+        toast.error("Invalid file type", {
+          description: "Please select an image file"
         });
         return;
       }
@@ -144,10 +141,7 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   const handleCancel = () => {
     setTempLogo(null);
     setSelectedFile(null);
-    toast({
-      title: "Cancelled",
-      description: "Logo update cancelled",
-    });
+    toast("Logo update cancelled");
   };
 
   const avatarClassName = `${displayOnly ? "h-16 w-16 md:h-24 md:w-24" : "h-24 w-24"} ${className}`;

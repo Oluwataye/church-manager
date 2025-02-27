@@ -4,13 +4,12 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "@/hooks/use-theme";
-import { useToast } from "@/hooks/use-toast";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const handleLogoChange = (newLogo: string) => {
@@ -22,8 +21,7 @@ export default function Settings() {
     const newTheme = checked ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    toast({
-      title: "Theme Updated",
+    toast("Theme updated", {
       description: `Theme changed to ${newTheme} mode`
     });
   };
