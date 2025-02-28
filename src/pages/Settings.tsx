@@ -30,15 +30,23 @@ export default function Settings() {
   }, []);
 
   const handleLogoChange = (newLogo: string) => {
-    console.log("Logo changed:", newLogo);
+    console.log("Logo changed in Settings:", newLogo);
+    
     // Force a refresh of the church settings data
     queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
     
     // Update all header logo images
-    const headerLogoImages = document.querySelectorAll('header .header-logo .avatar-image');
-    headerLogoImages.forEach((img) => {
+    const headerLogoImage = document.querySelector('#header-logo-avatar .header-logo-image');
+    if (headerLogoImage instanceof HTMLImageElement) {
+      console.log("Updating header logo image to:", newLogo);
+      headerLogoImage.src = newLogo;
+    }
+
+    // Backup approach
+    const allHeaderImages = document.querySelectorAll('.header-logo img, .header-logo-container img, .header-logo-image');
+    allHeaderImages.forEach((img) => {
       if (img instanceof HTMLImageElement) {
-        console.log("Updating header logo image to:", newLogo);
+        console.log("Updating header image to:", newLogo);
         img.src = newLogo;
       }
     });

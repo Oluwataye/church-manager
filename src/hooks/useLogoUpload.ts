@@ -49,14 +49,24 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   });
 
   const updateHeaderLogo = (logoUrl: string) => {
-    // Find all header logo images and update them
-    const headerLogoImages = document.querySelectorAll('header .header-logo .avatar-image');
-    headerLogoImages.forEach((img) => {
+    // Find the header logo image
+    const headerLogoImage = document.querySelector('#header-logo-avatar .header-logo-image');
+    if (headerLogoImage instanceof HTMLImageElement) {
+      console.log("Updating header logo image to:", logoUrl);
+      headerLogoImage.src = logoUrl;
+    }
+
+    // If the above selector doesn't work, try this alternative approach
+    const allHeaderImages = document.querySelectorAll('.header-logo img, .header-logo-container img, .header-logo-image');
+    allHeaderImages.forEach((img) => {
       if (img instanceof HTMLImageElement) {
-        console.log("Updating header logo image to:", logoUrl);
+        console.log("Updating header image to:", logoUrl);
         img.src = logoUrl;
       }
     });
+
+    // Force React to re-render the component
+    queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
