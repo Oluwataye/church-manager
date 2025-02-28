@@ -14,14 +14,14 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     onSuccess: ({ publicUrl }) => {
       console.log("Logo upload success, URL:", publicUrl);
       
-      // Immediately update the cache
+      // Force a complete refresh of church settings data
+      queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+      
+      // Set data in the cache immediately for instant UI updates
       queryClient.setQueryData(['churchSettings'], (old: any) => ({
         ...old,
         logo_url: publicUrl
       }));
-      
-      // Then invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
       
       // Update parent components
       if (onLogoChange) {
@@ -65,8 +65,10 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       }
     });
 
-    // Force React to re-render the component
-    queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+    // Trigger a re-fetch of church settings
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+    }, 500); // Add a small delay to ensure the cache is updated
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

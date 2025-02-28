@@ -47,9 +47,53 @@ async function createDefaultSettings() {
   }
 }
 
+// Create the storage bucket if it doesn't exist
+async function ensureBucketExists() {
+  try {
+    // First check if bucket exists
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    
+    if (listError) {
+      console.error("Error listing buckets:", listError);
+      throw listError;
+    }
+    
+    // Check if our bucket exists
+    const bucketExists = buckets.some(bucket => bucket.name === 'church-assets');
+    
+    if (!bucketExists) {
+      console.log("Bucket 'church-assets' doesn't exist, creating it");
+      const { error: createError } = await supabase.storage.createBucket('church-assets', {
+        public: true,
+        fileSizeLimit: 5242880 // 5MB
+      });
+      
+      if (createError) {
+        console.error("Error creating bucket:", createError);
+        throw createError;
+      }
+      
+      console.log("Bucket 'church-assets' created successfully");
+      
+      // Add public policy to the bucket
+      const { error: policyError } = await supabase.storage.from('church-assets').setPublic();
+      
+      if (policyError) {
+        console.error("Error setting bucket public:", policyError);
+      }
+    }
+  } catch (error) {
+    console.error("Error ensuring bucket exists:", error);
+    throw error;
+  }
+}
+
 export async function uploadLogo(file: File) {
   try {
     console.log("Starting logo upload process");
+    
+    // Ensure the bucket exists before uploading
+    await ensureBucketExists();
     
     const fileExt = file.name.split('.').pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
@@ -57,29 +101,6 @@ export async function uploadLogo(file: File) {
 
     console.log("Uploading to storage path:", filePath);
     
-    // First create the storage bucket if it doesn't exist
-    try {
-      const { data: bucketData, error: bucketError } = await supabase.storage
-        .getBucket('church-assets');
-      
-      if (bucketError && bucketError.message.includes('The resource was not found')) {
-        console.log("Bucket doesn't exist, creating it");
-        const { error: createBucketError } = await supabase.storage
-          .createBucket('church-assets', {
-            public: true,
-            allowedMimeTypes: ['image/png', 'image/jpeg', 'image/svg+xml', 'image/gif'],
-            fileSizeLimit: 5242880 // 5MB
-          });
-          
-        if (createBucketError) {
-          console.error("Error creating bucket:", createBucketError);
-          throw createBucketError;
-        }
-      }
-    } catch (error) {
-      console.error("Error checking bucket:", error);
-    }
-
     // Upload the file to storage
     const { error: uploadError } = await supabase.storage
       .from('church-assets')
