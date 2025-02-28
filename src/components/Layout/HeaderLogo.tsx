@@ -6,11 +6,53 @@ import { useEffect, useState } from "react";
 
 export function HeaderLogo({ className = "" }: { className?: string }) {
   const [logoKey, setLogoKey] = useState<number>(0);
+  const [offlineLogo, setOfflineLogo] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  // Listen for online/offline status changes
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  // Check for offline logo in local storage
+  useEffect(() => {
+    const savedLogo = localStorage.getItem('offlineLogo');
+    if (savedLogo) {
+      setOfflineLogo(savedLogo);
+    }
+  }, []);
+
+  // Listen for offline logo updates
+  useEffect(() => {
+    const handleOfflineLogoUpdate = (event: StorageEvent) => {
+      if (event.key === 'offlineLogo' && event.newValue) {
+        setOfflineLogo(event.newValue);
+        setLogoKey(prevKey => prevKey + 1);
+      }
+    };
+    
+    window.addEventListener('storage', handleOfflineLogoUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleOfflineLogoUpdate);
+    };
+  }, []);
+
   const { data: settings, isLoading } = useQuery({
     queryKey: ['churchSettings'],
     queryFn: fetchChurchSettings,
     staleTime: 0,
-    refetchInterval: 5000 // Refetch every 5 seconds to ensure logo is updated
+    refetchInterval: 5000, // Refetch every 5 seconds to ensure logo is updated
+    enabled: isOnline // Only fetch from server when online
   });
 
   // Force re-render when settings change
@@ -23,7 +65,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
 
   const avatarClassName = `h-16 w-16 md:h-24 md:w-24 ${className}`;
   
-  if (isLoading) {
+  if (isLoading && isOnline && !offlineLogo) {
     return (
       <div className="flex items-center justify-center">
         <Avatar className={avatarClassName + " animate-pulse"}>
@@ -33,12 +75,15 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
     );
   }
 
+  // Use offline logo when offline, or fall back to server logo when online
+  const logoUrl = !isOnline ? offlineLogo : (settings?.logo_url || offlineLogo || "/placeholder.svg");
+
   return (
     <div className="flex flex-col items-center header-logo">
       <Avatar className={avatarClassName} id="header-logo-avatar">
         <AvatarImage 
           key={logoKey} // Force re-render when logo changes
-          src={settings?.logo_url || "/placeholder.svg"} 
+          src={logoUrl || "/placeholder.svg"} 
           alt="Church Logo" 
           className="header-logo-image"
         />

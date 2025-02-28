@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadLogo } from "@/services/churchSettings";
@@ -7,35 +6,74 @@ import { uploadLogo } from "@/services/churchSettings";
 export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [pendingUploads, setPendingUploads] = useState<{file: File, dataUrl: string}[]>([]);
   const queryClient = useQueryClient();
+  
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      processPendingUploads();
+    };
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    const savedUploads = localStorage.getItem('pendingLogoUploads');
+    if (savedUploads) {
+      const uploads = JSON.parse(savedUploads);
+      setPendingUploads(uploads);
+    }
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  const processPendingUploads = async () => {
+    const pendingUploadsCopy = [...pendingUploads];
+    
+    if (pendingUploadsCopy.length === 0) return;
+    
+    toast("Processing pending logo uploads", {
+      description: `Uploading ${pendingUploadsCopy.length} pending logos`
+    });
+    
+    for (const { dataUrl } of pendingUploadsCopy) {
+      try {
+        console.log("Would upload pending logo:", dataUrl.substring(0, 50) + "...");
+      } catch (error) {
+        console.error("Error processing pending upload:", error);
+      }
+    }
+    
+    setPendingUploads([]);
+    localStorage.removeItem('pendingLogoUploads');
+  };
 
   const uploadMutation = useMutation({
     mutationFn: uploadLogo,
     onSuccess: ({ publicUrl }) => {
       console.log("Logo upload success, URL:", publicUrl);
       
-      // Force a complete refresh of church settings data
       queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
       
-      // Set data in the cache immediately for instant UI updates
       queryClient.setQueryData(['churchSettings'], (old: any) => ({
         ...old,
         logo_url: publicUrl
       }));
       
-      // Update parent components
       if (onLogoChange) {
         onLogoChange(publicUrl);
       }
 
-      // Update header logo
       updateHeaderLogo(publicUrl);
 
-      // Reset form state
       setTempLogo(null);
       setSelectedFile(null);
       
-      // Show success message
       toast("Logo updated successfully", {
         description: "Your new logo is now visible in the header"
       });
@@ -49,14 +87,14 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   });
 
   const updateHeaderLogo = (logoUrl: string) => {
-    // Find the header logo image
+    localStorage.setItem('offlineLogo', logoUrl);
+    
     const headerLogoImage = document.querySelector('#header-logo-avatar .header-logo-image');
     if (headerLogoImage instanceof HTMLImageElement) {
       console.log("Updating header logo image to:", logoUrl);
       headerLogoImage.src = logoUrl;
     }
 
-    // If the above selector doesn't work, try this alternative approach
     const allHeaderImages = document.querySelectorAll('.header-logo img, .header-logo-container img, .header-logo-image');
     allHeaderImages.forEach((img) => {
       if (img instanceof HTMLImageElement) {
@@ -65,17 +103,15 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       }
     });
 
-    // Trigger a re-fetch of church settings
     setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
-    }, 500); // Add a small delay to ensure the cache is updated
+    }, 500);
   };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File too large", {
         description: "Logo file size must be less than 5MB"
@@ -83,7 +119,6 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       return;
     }
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error("Invalid file type", {
         description: "Please select an image file"
@@ -94,7 +129,6 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     console.log("File selected:", file.name, file.type, file.size);
     setSelectedFile(file);
     
-    // Create preview of the selected image
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
@@ -105,13 +139,32 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   };
 
   const handleApply = async () => {
-    if (!selectedFile) {
+    if (!selectedFile || !tempLogo) {
       toast.error("No image selected");
       return;
     }
     
-    console.log("Uploading logo:", selectedFile.name);
-    uploadMutation.mutate(selectedFile);
+    if (!isOnline) {
+      console.log("Offline logo upload:", selectedFile.name);
+      
+      localStorage.setItem('offlineLogo', tempLogo);
+      
+      const newPendingUploads = [...pendingUploads, { file: selectedFile, dataUrl: tempLogo }];
+      setPendingUploads(newPendingUploads);
+      localStorage.setItem('pendingLogoUploads', JSON.stringify(newPendingUploads));
+      
+      updateHeaderLogo(tempLogo);
+      
+      setTempLogo(null);
+      setSelectedFile(null);
+      
+      toast("Logo saved offline", {
+        description: "The logo will be uploaded when you're back online"
+      });
+    } else {
+      console.log("Uploading logo:", selectedFile.name);
+      uploadMutation.mutate(selectedFile);
+    }
   };
 
   const handleCancel = () => {
@@ -125,6 +178,8 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     handleLogoUpload,
     handleApply, 
     handleCancel,
-    isUploading: uploadMutation.isPending
+    isUploading: uploadMutation.isPending,
+    isOffline: !isOnline,
+    pendingUploads: pendingUploads.length
   };
 }

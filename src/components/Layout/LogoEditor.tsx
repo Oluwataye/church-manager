@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useLogoUpload } from "@/hooks/useLogoUpload";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, WifiOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface LogoEditorProps {
   onLogoChange?: (logo: string) => void;
@@ -13,11 +14,27 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
     handleLogoUpload, 
     handleApply, 
     handleCancel,
-    isUploading
+    isUploading,
+    isOffline,
+    pendingUploads
   } = useLogoUpload(onLogoChange);
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {isOffline && (
+        <div className="w-full mb-2">
+          <Badge variant="outline" className="gap-1 bg-yellow-50 text-yellow-800 border-yellow-300 px-2 py-1 w-full flex justify-center">
+            <WifiOff className="h-3.5 w-3.5 mr-1" />
+            Offline Mode
+          </Badge>
+          {pendingUploads > 0 && (
+            <p className="text-xs text-muted-foreground mt-1 text-center">
+              {pendingUploads} logo update{pendingUploads > 1 ? 's' : ''} pending
+            </p>
+          )}
+        </div>
+      )}
+      
       <input
         type="file"
         id="logo-upload"
@@ -48,7 +65,7 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Uploading...
                 </>
-              ) : "Apply Changes"}
+              ) : isOffline ? "Save Offline" : "Apply Changes"}
             </Button>
             <Button
               variant="outline"
