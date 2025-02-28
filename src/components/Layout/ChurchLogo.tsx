@@ -36,7 +36,7 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   }
 
   return (
-    <div className={`flex flex-col items-center ${!displayOnly ? "gap-4" : ""}`}>
+    <div className={`flex flex-col items-center ${!displayOnly ? "gap-4" : ""} ${displayOnly ? "header-logo" : ""}`}>
       <Avatar className={avatarClassName}>
         <AvatarImage src={logoUrl || "/placeholder.svg"} alt="Church Logo" />
         <AvatarFallback>Logo</AvatarFallback>

@@ -34,11 +34,14 @@ export default function Settings() {
     // Force a refresh of the church settings data
     queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
     
-    // Also manually trigger a refresh of the header logo
-    const headerLogoImg = document.querySelector('header .ChurchLogo img') as HTMLImageElement;
-    if (headerLogoImg) {
-      headerLogoImg.src = newLogo;
-    }
+    // Update all header logo images
+    const headerLogoImages = document.querySelectorAll('header .header-logo .avatar-image');
+    headerLogoImages.forEach((img) => {
+      if (img instanceof HTMLImageElement) {
+        console.log("Updating header logo image to:", newLogo);
+        img.src = newLogo;
+      }
+    });
   };
 
   const handleThemeChange = (checked: boolean) => {

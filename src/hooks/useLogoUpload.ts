@@ -28,6 +28,9 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
         onLogoChange(publicUrl);
       }
 
+      // Update header logo
+      updateHeaderLogo(publicUrl);
+
       // Reset form state
       setTempLogo(null);
       setSelectedFile(null);
@@ -44,6 +47,17 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       });
     }
   });
+
+  const updateHeaderLogo = (logoUrl: string) => {
+    // Find all header logo images and update them
+    const headerLogoImages = document.querySelectorAll('header .header-logo .avatar-image');
+    headerLogoImages.forEach((img) => {
+      if (img instanceof HTMLImageElement) {
+        console.log("Updating header logo image to:", logoUrl);
+        img.src = logoUrl;
+      }
+    });
+  };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

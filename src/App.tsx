@@ -38,7 +38,7 @@ function AuthenticatedApp() {
         <header className="fixed top-0 left-0 right-0 bg-church-600 z-50 h-[120px]">
           <div className="flex items-center justify-center h-full px-4 md:px-6">
             <div className="flex flex-col items-center md:flex-row md:gap-6 max-w-[1600px] w-full">
-              <ChurchLogo displayOnly />
+              <ChurchLogo displayOnly className="header-logo-container" />
               <div className="text-center md:text-left mt-2 md:mt-0">
                 <h1 className="text-2xl md:text-3xl font-bold text-white">LIVING FAITH CHURCH</h1>
                 <p className="text-lg md:text-xl text-church-100">Chanchaga</p>
