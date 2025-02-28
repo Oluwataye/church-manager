@@ -12,6 +12,8 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const uploadMutation = useMutation({
     mutationFn: uploadLogo,
     onSuccess: ({ publicUrl }) => {
+      console.log("Logo upload success, URL:", publicUrl);
+      
       // Immediately update the cache
       queryClient.setQueryData(['churchSettings'], (old: any) => ({
         ...old,
@@ -35,45 +37,55 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
         description: "Your new logo is now visible in the header"
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      console.error("Logo upload error:", error);
       toast.error("Failed to update logo", {
-        description: error.message
+        description: error.message || "An unexpected error occurred"
       });
     }
   });
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File too large", {
-          description: "Logo file size must be less than 5MB"
-        });
-        return;
-      }
-
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error("Invalid file type", {
-          description: "Please select an image file"
-        });
-        return;
-      }
-
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setTempLogo(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File too large", {
+        description: "Logo file size must be less than 5MB"
+      });
+      return;
     }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Invalid file type", {
+        description: "Please select an image file"
+      });
+      return;
+    }
+
+    console.log("File selected:", file.name, file.type, file.size);
+    setSelectedFile(file);
+    
+    // Create preview of the selected image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      console.log("Image preview created");
+      setTempLogo(result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleApply = async () => {
-    if (selectedFile) {
-      uploadMutation.mutate(selectedFile);
+    if (!selectedFile) {
+      toast.error("No image selected");
+      return;
     }
+    
+    console.log("Uploading logo:", selectedFile.name);
+    uploadMutation.mutate(selectedFile);
   };
 
   const handleCancel = () => {

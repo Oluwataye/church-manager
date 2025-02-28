@@ -6,46 +6,157 @@ export interface ChurchSettings {
 }
 
 export async function fetchChurchSettings(): Promise<ChurchSettings> {
-  const { data, error } = await supabase
-    .from('church_settings')
-    .select('logo_url')
-    .single();
-  
-  if (error) throw error;
-  return data;
+  try {
+    console.log("Fetching church settings");
+    const { data, error } = await supabase
+      .from('church_settings')
+      .select('logo_url')
+      .single();
+    
+    if (error) {
+      console.error("Error fetching church settings:", error);
+      // If no settings exist, create default settings
+      if (error.code === 'PGRST116') {
+        await createDefaultSettings();
+        return { logo_url: undefined };
+      }
+      throw error;
+    }
+    
+    console.log("Settings fetched:", data);
+    return data;
+  } catch (error) {
+    console.error("Error in fetchChurchSettings:", error);
+    return { logo_url: undefined };
+  }
+}
+
+async function createDefaultSettings() {
+  try {
+    const { error } = await supabase
+      .from('church_settings')
+      .insert({
+        church_name: 'LIVING FAITH CHURCH',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error creating default settings:", error);
+  }
 }
 
 export async function uploadLogo(file: File) {
   try {
+    console.log("Starting logo upload process");
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = `logos/${fileName}`;
 
-    // First upload the file to storage
+    console.log("Uploading to storage path:", filePath);
+    
+    // First create the storage bucket if it doesn't exist
+    try {
+      const { data: bucketData, error: bucketError } = await supabase.storage
+        .getBucket('church-assets');
+      
+      if (bucketError && bucketError.message.includes('The resource was not found')) {
+        console.log("Bucket doesn't exist, creating it");
+        const { error: createBucketError } = await supabase.storage
+          .createBucket('church-assets', {
+            public: true,
+            allowedMimeTypes: ['image/png', 'image/jpeg', 'image/svg+xml', 'image/gif'],
+            fileSizeLimit: 5242880 // 5MB
+          });
+          
+        if (createBucketError) {
+          console.error("Error creating bucket:", createBucketError);
+          throw createBucketError;
+        }
+      }
+    } catch (error) {
+      console.error("Error checking bucket:", error);
+    }
+
+    // Upload the file to storage
     const { error: uploadError } = await supabase.storage
       .from('church-assets')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw uploadError;
+    }
+
+    console.log("File uploaded successfully");
 
     // Get the public URL of the uploaded file
     const { data: { publicUrl } } = supabase.storage
       .from('church-assets')
       .getPublicUrl(filePath);
 
-    // Update the church settings with the new logo URL
-    const { data, error: updateError } = await supabase
+    console.log("Public URL generated:", publicUrl);
+
+    // Check if there are existing settings
+    const { data: existingSettings, error: fetchError } = await supabase
       .from('church_settings')
-      .update({ 
-        logo_url: publicUrl,
-        updated_at: new Date().toISOString()
-      })
+      .select('*')
       .eq('church_name', 'LIVING FAITH CHURCH')
-      .select()
-      .single();
+      .maybeSingle();
 
-    if (updateError) throw updateError;
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error("Error fetching settings:", fetchError);
+      throw fetchError;
+    }
+    
+    let data;
+    if (existingSettings) {
+      // Update existing settings
+      console.log("Updating existing settings");
+      const { data: updateData, error: updateError } = await supabase
+        .from('church_settings')
+        .update({ 
+          logo_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('church_name', 'LIVING FAITH CHURCH')
+        .select()
+        .single();
 
+      if (updateError) {
+        console.error("Update error:", updateError);
+        throw updateError;
+      }
+      
+      data = updateData;
+    } else {
+      // Create new settings
+      console.log("Creating new settings");
+      const { data: insertData, error: insertError } = await supabase
+        .from('church_settings')
+        .insert({ 
+          church_name: 'LIVING FAITH CHURCH',
+          logo_url: publicUrl,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
+      
+      data = insertData;
+    }
+
+    console.log("Settings updated successfully:", data);
     return { publicUrl, data };
   } catch (error) {
     console.error('Error uploading logo:', error);

@@ -12,7 +12,7 @@ interface ChurchLogoProps {
 }
 
 export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }: ChurchLogoProps) {
-  const { tempLogo } = useLogoUpload();
+  const { tempLogo } = useLogoUpload(onLogoChange);
   
   const { data: settings, isLoading } = useQuery({
     queryKey: ['churchSettings'],
@@ -21,6 +21,9 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   });
 
   const avatarClassName = `${displayOnly ? "h-16 w-16 md:h-24 md:w-24" : "h-24 w-24"} ${className}`;
+  const logoUrl = tempLogo || settings?.logo_url;
+
+  console.log("ChurchLogo rendering with URL:", logoUrl);
 
   if (isLoading) {
     return (
@@ -35,7 +38,7 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   return (
     <div className={`flex flex-col items-center ${!displayOnly ? "gap-4" : ""}`}>
       <Avatar className={avatarClassName}>
-        <AvatarImage src={tempLogo || settings?.logo_url || "/placeholder.svg"} alt="Church Logo" />
+        <AvatarImage src={logoUrl || "/placeholder.svg"} alt="Church Logo" />
         <AvatarFallback>Logo</AvatarFallback>
       </Avatar>
       {!displayOnly && <LogoEditor onLogoChange={onLogoChange} />}

@@ -7,14 +7,38 @@ import { useTheme } from "@/hooks/use-theme";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useEffect, useState } from "react";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Monitor online status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleLogoChange = (newLogo: string) => {
+    console.log("Logo changed:", newLogo);
     // Force a refresh of the church settings data
     queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+    
+    // Also manually trigger a refresh of the header logo
+    const headerLogoImg = document.querySelector('header .ChurchLogo img') as HTMLImageElement;
+    if (headerLogoImg) {
+      headerLogoImg.src = newLogo;
+    }
   };
 
   const handleThemeChange = (checked: boolean) => {
@@ -34,6 +58,15 @@ export default function Settings() {
           Manage your church settings and preferences.
         </p>
       </div>
+      
+      {!isOnline && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>Offline Mode</AlertTitle>
+          <AlertDescription>
+            You are currently offline. Logo uploads will not work until you have an internet connection.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="grid gap-6">
         <Card>
