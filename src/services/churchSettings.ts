@@ -64,7 +64,7 @@ async function ensureBucketExists() {
     if (!bucketExists) {
       console.log("Bucket 'church-assets' doesn't exist, creating it");
       const { error: createError } = await supabase.storage.createBucket('church-assets', {
-        public: true,
+        public: true,  // This will create the bucket as public already
         fileSizeLimit: 5242880 // 5MB
       });
       
@@ -75,12 +75,8 @@ async function ensureBucketExists() {
       
       console.log("Bucket 'church-assets' created successfully");
       
-      // Add public policy to the bucket
-      const { error: policyError } = await supabase.storage.from('church-assets').setPublic();
-      
-      if (policyError) {
-        console.error("Error setting bucket public:", policyError);
-      }
+      // Note: Removing the setPublic() call as it's not available in the API
+      // The bucket is already set as public during creation with the 'public: true' option
     }
   } catch (error) {
     console.error("Error ensuring bucket exists:", error);
