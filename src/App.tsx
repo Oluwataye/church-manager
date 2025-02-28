@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AppSidebar } from "@/components/Layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -70,7 +71,7 @@ function AuthenticatedApp() {
               </Routes>
 
               <footer className="mt-12 py-4 text-center text-gray-600 border-t border-gray-200">
-                2025 © T-TECH GENERAL SERVICES
+                2025 © T-TECH GENERAL SERVICES. ALL RIGHTS RESERVED.
               </footer>
             </div>
           </main>
