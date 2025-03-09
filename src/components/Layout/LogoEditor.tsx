@@ -1,9 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { useLogoUpload } from "@/hooks/useLogoUpload";
 import { Loader2, Upload, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/components/Auth/AuthProvider";
+import { useAuth } from "@/components/Auth/AuthContext";
 
 interface LogoEditorProps {
   onLogoChange?: (logo: string) => void;

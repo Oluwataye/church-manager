@@ -4,18 +4,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { LoginForm } from "@/components/Login/LoginForm";
 import { OfflineAlert } from "@/components/Login/OfflineAlert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Default admin credentials for offline setup
-const ADMIN_EMAIL = "admin@lfcc.com";
-const ADMIN_PASSWORD = "admin123";
+import { 
+  LoginForm, 
+  RegistrationForm 
+} from "@/components/Auth/LoginComponents";
+import { 
+  checkFirstTimeSetup, 
+  initializeLocalUsers, 
+  useAuthStatus 
+} from "@/components/Auth/AuthUtils";
 
 export default function Login() {
   // Login state
@@ -30,38 +31,16 @@ export default function Login() {
   // Common state
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [activeTab, setActiveTab] = useState<string>("login");
   
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Check if this is a first-time setup (no users exist in local storage)
-  const checkFirstTimeSetup = () => {
-    return !localStorage.getItem('lastLoginTime') && !localStorage.getItem('localUsers');
-  };
+  const { isOffline } = useAuthStatus();
 
   useEffect(() => {
     // Initialize local users storage if it doesn't exist
-    if (!localStorage.getItem('localUsers')) {
-      localStorage.setItem('localUsers', JSON.stringify([
-        { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, role: 'admin' }
-      ]));
-    }
+    initializeLocalUsers();
     
     // If it's a first-time setup, switch to the register tab
     if (checkFirstTimeSetup()) {
@@ -201,7 +180,7 @@ export default function Login() {
       }
       
       // Add to local users regardless of online status
-      const isFirstUser = localUsers.length === 1 && localUsers[0].email === ADMIN_EMAIL;
+      const isFirstUser = localUsers.length === 1 && localUsers[0].email === "admin@lfcc.com";
       const newRole = isFirstUser ? 'admin' : 'user';
       
       localUsers.push({ email: regEmail, password: regPassword, role: newRole });
@@ -273,133 +252,54 @@ export default function Login() {
               </TabsList>
               
               <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email address</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      placeholder="Enter your email"
-                      className="block w-full"
-                      disabled={isLoading}
-                    />
+                <LoginForm
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  error={error}
+                  isLoading={isLoading}
+                  onSubmit={handleLogin}
+                />
+                
+                {!checkFirstTimeSetup() && (
+                  <div className="text-center mt-4">
+                    <Button 
+                      variant="link" 
+                      type="button"
+                      onClick={() => setActiveTab("register")}
+                    >
+                      Don't have an account? Sign up
+                    </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      placeholder="Enter your password"
-                      className="block w-full"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-church-600 hover:bg-church-700"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Signing in..." : "Sign in"}
-                  </Button>
-                  
-                  {!checkFirstTimeSetup() && (
-                    <div className="text-center mt-2">
-                      <Button 
-                        variant="link" 
-                        type="button"
-                        onClick={() => setActiveTab("register")}
-                      >
-                        Don't have an account? Sign up
-                      </Button>
-                    </div>
-                  )}
-                </form>
+                )}
               </TabsContent>
               
               <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-email">Email address</Label>
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      required
-                      placeholder="Enter your email"
-                      className="block w-full"
-                      disabled={isLoading}
-                    />
+                <RegistrationForm
+                  email={regEmail}
+                  setEmail={setRegEmail}
+                  password={regPassword}
+                  setPassword={setRegPassword}
+                  confirmPassword={regConfirmPassword}
+                  setConfirmPassword={setRegConfirmPassword}
+                  error={error}
+                  isLoading={isLoading}
+                  onSubmit={handleRegister}
+                  isFirstTimeSetup={checkFirstTimeSetup()}
+                />
+                
+                {!checkFirstTimeSetup() && (
+                  <div className="text-center mt-4">
+                    <Button 
+                      variant="link" 
+                      type="button"
+                      onClick={() => setActiveTab("login")}
+                    >
+                      Already have an account? Sign in
+                    </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-password">Password</Label>
-                    <Input
-                      id="reg-password"
-                      type="password"
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
-                      required
-                      placeholder="Create a password"
-                      className="block w-full"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-confirm-password">Confirm Password</Label>
-                    <Input
-                      id="reg-confirm-password"
-                      type="password"
-                      value={regConfirmPassword}
-                      onChange={(e) => setRegConfirmPassword(e.target.value)}
-                      required
-                      placeholder="Confirm your password"
-                      className="block w-full"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-church-600 hover:bg-church-700"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Creating account..." : (checkFirstTimeSetup() ? "Set Up Admin Account" : "Create Account")}
-                  </Button>
-                  
-                  {!checkFirstTimeSetup() && (
-                    <div className="text-center mt-2">
-                      <Button 
-                        variant="link" 
-                        type="button"
-                        onClick={() => setActiveTab("login")}
-                      >
-                        Already have an account? Sign in
-                      </Button>
-                    </div>
-                  )}
-                </form>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>

@@ -1,4 +1,3 @@
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchChurchSettings } from "@/services/churchSettings";
@@ -6,6 +5,7 @@ import { LogoEditor } from "./LogoEditor";
 import { useLogoUpload } from "@/hooks/useLogoUpload";
 import { useEffect, useState } from "react";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useAuth } from "@/components/Auth/AuthContext";
 
 interface ChurchLogoProps {
   displayOnly?: boolean;
@@ -18,14 +18,12 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   const [offlineLogo, setOfflineLogo] = useState<string | null>(null);
   const { isOffline } = useOnlineStatus();
   
-  // Check for offline logo
   useEffect(() => {
     const savedLogo = localStorage.getItem('offlineLogo');
     if (savedLogo) {
       setOfflineLogo(savedLogo);
     }
     
-    // Listen for storage changes to update in real-time across tabs
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'offlineLogo' && event.newValue) {
         setOfflineLogo(event.newValue);

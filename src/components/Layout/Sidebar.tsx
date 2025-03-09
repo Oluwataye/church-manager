@@ -1,4 +1,3 @@
-
 import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut, ClipboardCheck } from "lucide-react";
 import { 
   Sidebar, 
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/components/Auth/AuthProvider";
+import { useAuth } from "@/components/Auth/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const menuItems = [
