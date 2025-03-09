@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { useLogoUpload } from "@/hooks/useLogoUpload";
 import { Loader2, Upload, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/components/Auth/AuthProvider";
 
 interface LogoEditorProps {
   onLogoChange?: (logo: string) => void;
 }
 
 export function LogoEditor({ onLogoChange }: LogoEditorProps) {
+  const { user } = useAuth();
   const { 
     tempLogo, 
     handleLogoUpload, 
@@ -33,6 +35,12 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
             </p>
           )}
         </div>
+      )}
+      
+      {!user && (
+        <Badge variant="outline" className="mb-2 w-full text-center py-1">
+          Login required to save changes permanently
+        </Badge>
       )}
       
       <input

@@ -1,38 +1,45 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadLogo } from "@/services/churchSettings";
+import { useOnlineStatus } from "./useOnlineStatus";
+import { useAuth } from "@/components/Auth/AuthProvider";
 
 export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const { isOffline } = useOnlineStatus();
+  const { user } = useAuth();
   const [pendingUploads, setPendingUploads] = useState<{file: File, dataUrl: string}[]>([]);
   const queryClient = useQueryClient();
   
   useEffect(() => {
     const handleOnline = () => {
-      setIsOnline(true);
       processPendingUploads();
     };
-    const handleOffline = () => setIsOnline(false);
     
     window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
     
     const savedUploads = localStorage.getItem('pendingLogoUploads');
     if (savedUploads) {
-      const uploads = JSON.parse(savedUploads);
-      setPendingUploads(uploads);
+      try {
+        const uploads = JSON.parse(savedUploads);
+        setPendingUploads(uploads);
+      } catch (error) {
+        console.error('Error parsing pending uploads:', error);
+        localStorage.removeItem('pendingLogoUploads');
+      }
     }
     
     return () => {
       window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
     };
   }, []);
   
   const processPendingUploads = async () => {
+    if (isOffline || !user) return;
+    
     const pendingUploadsCopy = [...pendingUploads];
     
     if (pendingUploadsCopy.length === 0) return;
@@ -41,9 +48,10 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       description: `Uploading ${pendingUploadsCopy.length} pending logos`
     });
     
-    for (const { dataUrl } of pendingUploadsCopy) {
+    for (const { file, dataUrl } of pendingUploadsCopy) {
       try {
-        console.log("Would upload pending logo:", dataUrl.substring(0, 50) + "...");
+        console.log("Uploading pending logo:", file.name);
+        await uploadMutation.mutateAsync(file);
       } catch (error) {
         console.error("Error processing pending upload:", error);
       }
@@ -144,15 +152,23 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       return;
     }
     
-    if (!isOnline) {
+    if (isOffline) {
       console.log("Offline logo upload:", selectedFile.name);
       
+      // Save for offline display
       localStorage.setItem('offlineLogo', tempLogo);
       
+      // Add to pending uploads for when we're back online
       const newPendingUploads = [...pendingUploads, { file: selectedFile, dataUrl: tempLogo }];
       setPendingUploads(newPendingUploads);
-      localStorage.setItem('pendingLogoUploads', JSON.stringify(newPendingUploads));
       
+      try {
+        localStorage.setItem('pendingLogoUploads', JSON.stringify(newPendingUploads));
+      } catch (error) {
+        console.error('Error saving pending uploads:', error);
+      }
+      
+      // Update display right away
       updateHeaderLogo(tempLogo);
       
       setTempLogo(null);
@@ -162,6 +178,13 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
         description: "The logo will be uploaded when you're back online"
       });
     } else {
+      if (!user) {
+        toast.error("Authentication required", {
+          description: "You must be logged in to upload a logo"
+        });
+        return;
+      }
+      
       console.log("Uploading logo:", selectedFile.name);
       uploadMutation.mutate(selectedFile);
     }
@@ -179,7 +202,7 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     handleApply, 
     handleCancel,
     isUploading: uploadMutation.isPending,
-    isOffline: !isOnline,
+    isOffline,
     pendingUploads: pendingUploads.length
   };
 }

@@ -3,25 +3,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchChurchSettings } from "@/services/churchSettings";
 import { useEffect, useState } from "react";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export function HeaderLogo({ className = "" }: { className?: string }) {
   const [logoKey, setLogoKey] = useState<number>(0);
   const [offlineLogo, setOfflineLogo] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  
-  // Listen for online/offline status changes
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  const { isOffline } = useOnlineStatus();
   
   // Check for offline logo in local storage
   useEffect(() => {
@@ -52,7 +39,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
     queryFn: fetchChurchSettings,
     staleTime: 0,
     refetchInterval: 5000, // Refetch every 5 seconds to ensure logo is updated
-    enabled: isOnline // Only fetch from server when online
+    enabled: !isOffline // Only fetch from server when online
   });
 
   // Force re-render when settings change
@@ -65,7 +52,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
 
   const avatarClassName = `h-16 w-16 md:h-24 md:w-24 ${className}`;
   
-  if (isLoading && isOnline && !offlineLogo) {
+  if (isLoading && !isOffline && !offlineLogo) {
     return (
       <div className="flex items-center justify-center">
         <Avatar className={avatarClassName + " animate-pulse"}>
@@ -76,7 +63,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
   }
 
   // Use offline logo when offline, or fall back to server logo when online
-  const logoUrl = !isOnline ? offlineLogo : (settings?.logo_url || offlineLogo || "/placeholder.svg");
+  const logoUrl = isOffline ? offlineLogo : (settings?.logo_url || offlineLogo || "/placeholder.svg");
 
   return (
     <div className="flex flex-col items-center header-logo">

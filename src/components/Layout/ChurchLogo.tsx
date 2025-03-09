@@ -5,6 +5,7 @@ import { fetchChurchSettings } from "@/services/churchSettings";
 import { LogoEditor } from "./LogoEditor";
 import { useLogoUpload } from "@/hooks/useLogoUpload";
 import { useEffect, useState } from "react";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 interface ChurchLogoProps {
   displayOnly?: boolean;
@@ -15,21 +16,7 @@ interface ChurchLogoProps {
 export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }: ChurchLogoProps) {
   const { tempLogo } = useLogoUpload(onLogoChange);
   const [offlineLogo, setOfflineLogo] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  
-  // Monitor online status
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  const { isOffline } = useOnlineStatus();
   
   // Check for offline logo
   useEffect(() => {
@@ -37,21 +24,34 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
     if (savedLogo) {
       setOfflineLogo(savedLogo);
     }
+    
+    // Listen for storage changes to update in real-time across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'offlineLogo' && event.newValue) {
+        setOfflineLogo(event.newValue);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   
   const { data: settings, isLoading } = useQuery({
     queryKey: ['churchSettings'],
     queryFn: fetchChurchSettings,
     staleTime: 0,
-    enabled: isOnline
+    enabled: !isOffline
   });
 
   const avatarClassName = `${displayOnly ? "h-16 w-16 md:h-24 md:w-24" : "h-24 w-24"} ${className}`;
-  const logoUrl = tempLogo || (!isOnline ? offlineLogo : settings?.logo_url) || offlineLogo || "/placeholder.svg";
+  const logoUrl = tempLogo || (isOffline ? offlineLogo : settings?.logo_url) || offlineLogo || "/placeholder.svg";
 
   console.log("ChurchLogo rendering with URL:", logoUrl);
 
-  if (isLoading && isOnline && !offlineLogo) {
+  if (isLoading && !isOffline && !offlineLogo) {
     return (
       <div className="flex items-center justify-center">
         <Avatar className={avatarClassName + " animate-pulse"}>
