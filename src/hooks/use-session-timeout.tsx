@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import { useAuth } from '@/components/Auth/AuthProvider';
+import { useAuth } from '@/components/Auth/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 const TIMEOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds

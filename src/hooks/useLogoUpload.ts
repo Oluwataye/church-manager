@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadLogo } from "@/services/churchSettings";
 import { useOnlineStatus } from "./useOnlineStatus";
-import { useAuth } from "@/components/Auth/AuthProvider";
+import { useAuth } from "@/components/Auth/AuthContext";
 
 export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);

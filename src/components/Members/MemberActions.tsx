@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import type { Member } from "@/hooks/useMembers";
-import { useAuth } from "@/components/Auth/AuthProvider";
+import { useAuth } from "@/components/Auth/AuthContext";
 
 export function useMemberActions() {
   const queryClient = useQueryClient();

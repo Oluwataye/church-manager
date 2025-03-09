@@ -19,7 +19,7 @@ import { useMembers } from "@/hooks/useMembers";
 import { useMemberActions } from "@/components/Members/MemberActions";
 import type { Member } from "@/hooks/useMembers";
 import { toast } from "sonner";
-import { useAuth } from "@/components/Auth/AuthProvider";
+import { useAuth } from "@/components/Auth/AuthContext";
 
 export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
