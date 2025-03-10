@@ -1,71 +1,23 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadLogo } from "@/services/churchSettings";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useAuth } from "@/components/Auth/AuthContext";
-
-// Define a custom event for logo updates
-interface LogoUpdatedEvent extends CustomEvent {
-  detail: { logoUrl: string };
-}
+import { updateHeaderLogo } from "@/utils/logoEvents";
+import { useOfflineLogoUpload } from "./useOfflineLogoUpload";
+import { usePendingLogoUploads } from "./usePendingLogoUploads";
 
 export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { isOffline } = useOnlineStatus();
   const { user } = useAuth();
-  const [pendingUploads, setPendingUploads] = useState<{file: File, dataUrl: string}[]>([]);
   const queryClient = useQueryClient();
-  
-  useEffect(() => {
-    const handleOnline = () => {
-      processPendingUploads();
-    };
-    
-    window.addEventListener('online', handleOnline);
-    
-    const savedUploads = localStorage.getItem('pendingLogoUploads');
-    if (savedUploads) {
-      try {
-        const uploads = JSON.parse(savedUploads);
-        setPendingUploads(uploads);
-      } catch (error) {
-        console.error('Error parsing pending uploads:', error);
-        localStorage.removeItem('pendingLogoUploads');
-      }
-    }
-    
-    return () => {
-      window.removeEventListener('online', handleOnline);
-    };
-  }, []);
-  
-  const processPendingUploads = async () => {
-    if (isOffline || !user) return;
-    
-    const pendingUploadsCopy = [...pendingUploads];
-    
-    if (pendingUploadsCopy.length === 0) return;
-    
-    toast("Processing pending logo uploads", {
-      description: `Uploading ${pendingUploadsCopy.length} pending logos`
-    });
-    
-    for (const { file, dataUrl } of pendingUploadsCopy) {
-      try {
-        console.log("Uploading pending logo:", file.name);
-        await uploadMutation.mutateAsync(file);
-      } catch (error) {
-        console.error("Error processing pending upload:", error);
-      }
-    }
-    
-    setPendingUploads([]);
-    localStorage.removeItem('pendingLogoUploads');
-  };
+  const { pendingUploads, saveOfflineLogo } = useOfflineLogoUpload();
 
+  // Set up the upload mutation
   const uploadMutation = useMutation({
     mutationFn: uploadLogo,
     onSuccess: ({ publicUrl }) => {
@@ -99,38 +51,12 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     }
   });
 
-  const updateHeaderLogo = (logoUrl: string) => {
-    // Save logo to local storage
-    localStorage.setItem('offlineLogo', logoUrl);
-    
-    // Dispatch custom event for direct component updates
-    const logoUpdatedEvent = new CustomEvent('logoUpdated', {
-      detail: { logoUrl }
-    }) as LogoUpdatedEvent;
-    
-    window.dispatchEvent(logoUpdatedEvent);
-    
-    // Try to directly update DOM elements as a fallback
-    const headerLogoImage = document.querySelector('#header-logo-avatar .header-logo-image');
-    if (headerLogoImage instanceof HTMLImageElement) {
-      console.log("Updating header logo image to:", logoUrl);
-      headerLogoImage.src = logoUrl;
-    }
+  // Set up pending uploads processing
+  usePendingLogoUploads(uploadMutation.mutateAsync);
 
-    const allHeaderImages = document.querySelectorAll('.header-logo img, .header-logo-container img, .header-logo-image');
-    allHeaderImages.forEach((img) => {
-      if (img instanceof HTMLImageElement) {
-        console.log("Updating header image to:", logoUrl);
-        img.src = logoUrl;
-      }
-    });
-
-    // Force a query invalidation after a short delay
-    setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
-    }, 500);
-  };
-
+  /**
+   * Handle file selection from the input
+   */
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -161,6 +87,9 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     reader.readAsDataURL(file);
   };
 
+  /**
+   * Apply the selected logo changes
+   */
   const handleApply = async () => {
     if (!selectedFile || !tempLogo) {
       toast.error("No image selected");
@@ -168,30 +97,9 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     }
     
     if (isOffline) {
-      console.log("Offline logo upload:", selectedFile.name);
-      
-      // Save for offline display
-      localStorage.setItem('offlineLogo', tempLogo);
-      
-      // Add to pending uploads for when we're back online
-      const newPendingUploads = [...pendingUploads, { file: selectedFile, dataUrl: tempLogo }];
-      setPendingUploads(newPendingUploads);
-      
-      try {
-        localStorage.setItem('pendingLogoUploads', JSON.stringify(newPendingUploads));
-      } catch (error) {
-        console.error('Error saving pending uploads:', error);
-      }
-      
-      // Update display right away using the custom event
-      updateHeaderLogo(tempLogo);
-      
+      saveOfflineLogo(selectedFile, tempLogo);
       setTempLogo(null);
       setSelectedFile(null);
-      
-      toast("Logo saved offline", {
-        description: "The logo will be uploaded when you're back online"
-      });
     } else {
       if (!user) {
         toast.error("Authentication required", {
@@ -205,6 +113,9 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     }
   };
 
+  /**
+   * Cancel logo selection
+   */
   const handleCancel = () => {
     setTempLogo(null);
     setSelectedFile(null);
