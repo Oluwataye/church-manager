@@ -17,65 +17,72 @@ interface ChurchLogoProps {
 export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }: ChurchLogoProps) {
   const { tempLogo } = useLogoUpload(onLogoChange);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [logoKey, setLogoKey] = useState<number>(0);
   const { isOffline } = useOnlineStatus();
   const logoRef = useRef<HTMLImageElement>(null);
   
-  // Check for offline logo in local storage
+  // Load initial logo from localStorage
   useEffect(() => {
     const savedLogo = localStorage.getItem('offlineLogo');
     if (savedLogo) {
-      console.log("ChurchLogo: Found offline logo in localStorage");
+      console.log("ChurchLogo: Loading logo from localStorage");
       setLogoUrl(savedLogo);
-      setLogoKey(prevKey => prevKey + 1);
+      
+      if (logoRef.current) {
+        logoRef.current.src = savedLogo;
+      }
+      
+      // Propagate change if callback provided
+      if (onLogoChange) {
+        onLogoChange(savedLogo);
+      }
     }
-  }, []);
+  }, [onLogoChange]);
   
-  // Listen for storage changes
+  // Listen for localStorage events
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'offlineLogo' && event.newValue) {
-        console.log("ChurchLogo: Storage event with new logo:", event.newValue.substring(0, 50) + "...");
+        console.log("ChurchLogo: Storage event with new logo");
         setLogoUrl(event.newValue);
-        setLogoKey(prevKey => prevKey + 1);
+        
+        if (logoRef.current) {
+          logoRef.current.src = event.newValue;
+        }
+        
+        // Propagate change if callback provided
+        if (onLogoChange) {
+          onLogoChange(event.newValue);
+        }
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [onLogoChange]);
   
   // Listen for custom logo update events
   useEffect(() => {
-    const handleLogoUpdatedEvent = (event: Event) => {
+    const handleLogoUpdated = (event: Event) => {
       const customEvent = event as CustomEvent;
-      if (customEvent.detail && customEvent.detail.logoUrl) {
-        console.log("ChurchLogo: Custom event with new logo:", customEvent.detail.logoUrl.substring(0, 50) + "...");
-        setLogoUrl(customEvent.detail.logoUrl);
-        setLogoKey(prevKey => prevKey + 1);
+      if (customEvent.detail?.logoUrl) {
+        console.log("ChurchLogo: Received custom logoUpdated event");
+        const newLogoUrl = customEvent.detail.logoUrl;
         
-        // Update ref directly too
+        setLogoUrl(newLogoUrl);
+        
         if (logoRef.current) {
-          logoRef.current.src = customEvent.detail.logoUrl;
+          logoRef.current.src = newLogoUrl;
         }
         
-        // Propagate the change if callback provided
+        // Propagate change if callback provided
         if (onLogoChange) {
-          onLogoChange(customEvent.detail.logoUrl);
+          onLogoChange(newLogoUrl);
         }
       }
     };
     
-    document.addEventListener('logoUpdated', handleLogoUpdatedEvent);
-    window.addEventListener('logoUpdated', handleLogoUpdatedEvent);
-    
-    return () => {
-      document.removeEventListener('logoUpdated', handleLogoUpdatedEvent);
-      window.removeEventListener('logoUpdated', handleLogoUpdatedEvent);
-    };
+    document.addEventListener('logoUpdated', handleLogoUpdated);
+    return () => document.removeEventListener('logoUpdated', handleLogoUpdated);
   }, [onLogoChange]);
   
   // Fetch settings from server when online
@@ -83,38 +90,40 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
     queryKey: ['churchSettings'],
     queryFn: fetchChurchSettings,
     staleTime: 0,
-    enabled: !isOffline
-  });
-
-  // Update from settings when they change
-  useEffect(() => {
-    if (settings?.logo_url) {
-      console.log("ChurchLogo: Received new logo from settings:", settings.logo_url);
-      setLogoUrl(settings.logo_url);
-      localStorage.setItem('offlineLogo', settings.logo_url);
-      setLogoKey(prevKey => prevKey + 1);
+    enabled: !isOffline,
+    onSuccess: (data) => {
+      if (data?.logo_url) {
+        console.log("ChurchLogo: New logo from server:", data.logo_url);
+        setLogoUrl(data.logo_url);
+        localStorage.setItem('offlineLogo', data.logo_url);
+        
+        if (logoRef.current) {
+          logoRef.current.src = data.logo_url;
+        }
+        
+        // Propagate change if callback provided
+        if (onLogoChange) {
+          onLogoChange(data.logo_url);
+        }
+      }
     }
-  }, [settings?.logo_url]);
+  });
 
   const avatarClassName = `${displayOnly ? "h-16 w-16 md:h-24 md:w-24" : "h-24 w-24"} ${className}`;
   const currentLogoUrl = tempLogo || logoUrl || settings?.logo_url || "/placeholder.svg";
-
-  console.log("ChurchLogo rendering with URL:", currentLogoUrl);
 
   return (
     <div className={`flex flex-col items-center ${!displayOnly ? "gap-4" : ""} ${displayOnly ? "header-logo" : ""}`}>
       <Avatar className={avatarClassName}>
         <AvatarImage 
-          key={logoKey}
           ref={logoRef}
           src={currentLogoUrl} 
           alt="Church Logo" 
           className="header-logo-image"
-          onError={() => {
+          onError={(e) => {
             console.log("ChurchLogo: Image failed to load, falling back to placeholder");
-            if (logoRef.current) {
-              logoRef.current.src = "/placeholder.svg";
-            }
+            const img = e.currentTarget;
+            img.src = "/placeholder.svg";
           }}
         />
         <AvatarFallback>Logo</AvatarFallback>

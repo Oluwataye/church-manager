@@ -4,113 +4,106 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchChurchSettings } from "@/services/churchSettings";
 import { useEffect, useState, useRef } from "react";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { toast } from "sonner";
 
 export function HeaderLogo({ className = "" }: { className?: string }) {
-  const [logoKey, setLogoKey] = useState<number>(0);
   const [logoUrl, setLogoUrl] = useState<string>("/placeholder.svg");
   const { isOffline } = useOnlineStatus();
   const logoRef = useRef<HTMLImageElement>(null);
   
-  // Check for offline logo in local storage on initial load
+  // Load initial logo from localStorage on mount
   useEffect(() => {
     const savedLogo = localStorage.getItem('offlineLogo');
     if (savedLogo) {
-      console.log("HeaderLogo: Found offline logo in localStorage:", savedLogo);
+      console.log("HeaderLogo: Loading logo from localStorage");
       setLogoUrl(savedLogo);
-      setLogoKey(prevKey => prevKey + 1);
+      
+      // Ensure the ref is updated too
+      if (logoRef.current) {
+        logoRef.current.src = savedLogo;
+      }
     }
   }, []);
 
-  // Listen for offline logo updates via localStorage events
+  // Listen for localStorage changes (works across tabs)
   useEffect(() => {
-    const handleStorageEvent = (event: StorageEvent) => {
+    const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'offlineLogo' && event.newValue) {
-        console.log("HeaderLogo: Storage event detected with new logo:", event.newValue);
+        console.log("HeaderLogo: Storage event with new logo");
         setLogoUrl(event.newValue);
-        setLogoKey(prevKey => prevKey + 1);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageEvent);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageEvent);
-    };
-  }, []);
-  
-  // Listen for direct updates via custom event
-  useEffect(() => {
-    const handleLogoUpdatedEvent = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail && customEvent.detail.logoUrl) {
-        console.log("HeaderLogo: Custom logoUpdated event detected:", customEvent.detail.logoUrl);
-        setLogoUrl(customEvent.detail.logoUrl);
-        setLogoKey(prevKey => prevKey + 1);
         
-        // Also update the ref directly as an additional measure
+        // Update ref directly
         if (logoRef.current) {
-          logoRef.current.src = customEvent.detail.logoUrl;
+          logoRef.current.src = event.newValue;
         }
       }
     };
     
-    // Listen on both document and window for maximum compatibility
-    document.addEventListener('logoUpdated', handleLogoUpdatedEvent);
-    window.addEventListener('logoUpdated', handleLogoUpdatedEvent);
-    
-    return () => {
-      document.removeEventListener('logoUpdated', handleLogoUpdatedEvent);
-      window.removeEventListener('logoUpdated', handleLogoUpdatedEvent);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+  
+  // Listen for custom logoUpdated events
+  useEffect(() => {
+    const handleLogoUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.logoUrl) {
+        console.log("HeaderLogo: Received custom logoUpdated event");
+        const newLogoUrl = customEvent.detail.logoUrl;
+        
+        // Update state
+        setLogoUrl(newLogoUrl);
+        
+        // Update ref directly for immediate visual feedback
+        if (logoRef.current) {
+          logoRef.current.src = newLogoUrl;
+        }
+      }
     };
+    
+    // Listen on document level
+    document.addEventListener('logoUpdated', handleLogoUpdated);
+    return () => document.removeEventListener('logoUpdated', handleLogoUpdated);
   }, []);
 
-  // Fetch church settings from server when online
+  // Fetch logo from server (when online)
   const { data: settings } = useQuery({
     queryKey: ['churchSettings'],
     queryFn: fetchChurchSettings,
     staleTime: 0,
-    refetchInterval: 5000, // Refetch every 5 seconds to ensure logo is updated
-    enabled: !isOffline // Only fetch from server when online
-  });
-
-  // Update logo when settings change
-  useEffect(() => {
-    if (settings?.logo_url) {
-      console.log("HeaderLogo: Received new logo URL from settings:", settings.logo_url);
-      setLogoUrl(settings.logo_url);
-      localStorage.setItem('offlineLogo', settings.logo_url); // Save for offline use
-      setLogoKey(prevKey => prevKey + 1);
+    enabled: !isOffline,
+    onSuccess: (data) => {
+      if (data?.logo_url) {
+        console.log("HeaderLogo: New logo from server:", data.logo_url);
+        setLogoUrl(data.logo_url);
+        localStorage.setItem('offlineLogo', data.logo_url);
+        
+        // Update ref directly
+        if (logoRef.current) {
+          logoRef.current.src = data.logo_url;
+        }
+      }
+    },
+    onError: (error) => {
+      console.error("Error fetching settings:", error);
+      toast.error("Failed to load logo from server");
     }
-  }, [settings?.logo_url]);
+  });
 
   const avatarClassName = `h-16 w-16 md:h-24 md:w-24 ${className}`;
   
-  if (!logoUrl) {
-    return (
-      <div className="flex items-center justify-center">
-        <Avatar className={avatarClassName + " animate-pulse"}>
-          <AvatarFallback>Logo</AvatarFallback>
-        </Avatar>
-      </div>
-    );
-  }
-
-  console.log("HeaderLogo rendering with logoUrl:", logoUrl, "key:", logoKey);
-
   return (
-    <div className="flex flex-col items-center header-logo">
+    <div className="flex flex-col items-center header-logo" id="header-logo-container">
       <Avatar className={avatarClassName} id="header-logo-avatar">
         <AvatarImage 
-          key={logoKey} // Force re-render when logo changes
           ref={logoRef}
           src={logoUrl} 
           alt="Church Logo" 
           className="header-logo-image"
-          onError={() => {
+          onError={(e) => {
             console.log("HeaderLogo: Image failed to load, falling back to placeholder");
-            if (logoRef.current) {
-              logoRef.current.src = "/placeholder.svg";
-            }
+            const img = e.currentTarget;
+            img.src = "/placeholder.svg";
           }}
         />
         <AvatarFallback>Logo</AvatarFallback>

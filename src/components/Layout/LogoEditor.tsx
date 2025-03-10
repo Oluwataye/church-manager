@@ -5,6 +5,7 @@ import { Loader2, Upload, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/Auth/AuthContext";
 import { useState, useEffect } from "react";
+import { updateHeaderLogo } from "@/utils/logoEvents";
 
 interface LogoEditorProps {
   onLogoChange?: (logo: string) => void;
@@ -32,11 +33,25 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
   const { 
     tempLogo, 
     handleLogoUpload, 
-    handleApply, 
     handleCancel,
     isUploading,
     isOffline
   } = useLogoUpload(onLogoChange);
+
+  // Handle the Apply button click
+  const handleApply = () => {
+    if (!tempLogo) return;
+    
+    console.log("LogoEditor: Apply button clicked with tempLogo:", tempLogo);
+    
+    // Force an immediate update to the header logo
+    updateHeaderLogo(tempLogo);
+    
+    // Call the hook's handleApply method which handles storage/upload
+    if (useLogoUpload.prototype && typeof useLogoUpload.prototype.handleApply === 'function') {
+      useLogoUpload.prototype.handleApply();
+    }
+  };
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">

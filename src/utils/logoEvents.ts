@@ -21,9 +21,11 @@ export function dispatchLogoUpdatedEvent(logoUrl: string): void {
   
   console.log("Dispatching logoUpdated event with URL:", logoUrl);
   
-  // Dispatch at both document and window level for maximum compatibility
+  // Dispatch at document level for maximum compatibility
   document.dispatchEvent(logoUpdatedEvent);
-  window.dispatchEvent(logoUpdatedEvent);
+  
+  // Store in localStorage for persistence and cross-tab updates
+  localStorage.setItem('offlineLogo', logoUrl);
 }
 
 /**
@@ -38,33 +40,21 @@ export function updateHeaderLogo(logoUrl: string): void {
   // Dispatch custom event for direct component updates
   dispatchLogoUpdatedEvent(logoUrl);
   
-  // Direct DOM update as a fallback approach
-  // This ensures even components not listening for events get updated
+  // Force direct DOM updates as a reliable fallback
   setTimeout(() => {
     try {
-      // Try to directly update DOM elements as a fallback
-      // Target all possible logo image elements by selector
-      const headerLogoElements = document.querySelectorAll(
-        '#header-logo-avatar .header-logo-image, ' +
-        '.header-logo img, ' + 
-        '.header-logo-container img, ' + 
-        '.avatar-image, ' +
-        '.header-logo-image'
-      );
+      // Update all possible logo image elements
+      const logoImages = document.querySelectorAll('img.header-logo-image, img.avatar-image');
+      console.log(`Found ${logoImages.length} logo elements to update directly`);
       
-      if (headerLogoElements.length > 0) {
-        console.log(`Found ${headerLogoElements.length} header logo elements to update`);
-        headerLogoElements.forEach((img) => {
-          if (img instanceof HTMLImageElement) {
-            console.log("Directly updating logo image element to:", logoUrl);
-            img.src = logoUrl;
-          }
-        });
-      } else {
-        console.log("No logo elements found for direct update");
-      }
+      logoImages.forEach(img => {
+        if (img instanceof HTMLImageElement) {
+          console.log("Directly updating image element:", img);
+          img.src = logoUrl;
+        }
+      });
     } catch (error) {
-      console.error("Error updating logo elements:", error);
+      console.error("Error during direct DOM update:", error);
     }
-  }, 100); // Small delay to ensure components have rendered
+  }, 100);
 }
