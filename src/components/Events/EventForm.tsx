@@ -45,17 +45,22 @@ export const EventForm = () => {
 
   const { mutate: saveEvent } = useMutation({
     mutationFn: async (data: EventFormData) => {
+      setIsSubmitting(true);
+      
       const { error } = await supabase
         .from('events')
         .insert([{
           title: data.title,
-          description: data.description,
-          location: data.location,
+          description: data.description || null,
+          location: data.location || null,
           start_date: data.startDate,
           end_date: data.endDate || null,
         }]);
 
       if (error) throw error;
+      
+      setIsSubmitting(false);
+      return data;
     },
     onSuccess: () => {
       toast.success("Event created successfully!");
@@ -63,12 +68,19 @@ export const EventForm = () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
     onError: (error) => {
+      setIsSubmitting(false);
       console.error('Error creating event:', error);
       toast.error("Failed to create event. Please try again.");
     },
   });
 
-  const onSubmit = async (data: EventFormData) => {
+  const onSubmit = (data: EventFormData) => {
+    // Validate that start date is before end date if both are provided
+    if (data.endDate && data.startDate > data.endDate) {
+      toast.error("End date must be after start date");
+      return;
+    }
+    
     saveEvent(data);
   };
 
@@ -100,6 +112,7 @@ export const EventForm = () => {
                   placeholder="Enter event description"
                   className="min-h-[100px]"
                   {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
@@ -114,7 +127,7 @@ export const EventForm = () => {
             <FormItem>
               <FormLabel>Location</FormLabel>
               <FormControl>
-                <Input placeholder="Enter event location" {...field} />
+                <Input placeholder="Enter event location" {...field} value={field.value || ""} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,7 +156,7 @@ export const EventForm = () => {
               <FormItem>
                 <FormLabel>End Date (Optional)</FormLabel>
                 <FormControl>
-                  <Input type="datetime-local" {...field} />
+                  <Input type="datetime-local" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
