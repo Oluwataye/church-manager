@@ -15,6 +15,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
     const savedLogo = localStorage.getItem('offlineLogo');
     if (savedLogo) {
       setOfflineLogo(savedLogo);
+      setLogoKey(prevKey => prevKey + 1);
     }
   }, []);
 
@@ -29,8 +30,19 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
     
     window.addEventListener('storage', handleOfflineLogoUpdate);
     
+    // Listen for direct updates via custom event
+    const handleLogoUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.logoUrl) {
+        setOfflineLogo(event.detail.logoUrl);
+        setLogoKey(prevKey => prevKey + 1);
+      }
+    };
+    
+    window.addEventListener('logoUpdated', handleLogoUpdate as EventListener);
+    
     return () => {
       window.removeEventListener('storage', handleOfflineLogoUpdate);
+      window.removeEventListener('logoUpdated', handleLogoUpdate as EventListener);
     };
   }, []);
 
@@ -46,6 +58,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
   useEffect(() => {
     if (settings?.logo_url) {
       console.log("HeaderLogo received new logo URL:", settings.logo_url);
+      localStorage.setItem('offlineLogo', settings.logo_url);
       setLogoKey(prevKey => prevKey + 1);
     }
   }, [settings?.logo_url]);
@@ -64,6 +77,7 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
 
   // Use offline logo when offline, or fall back to server logo when online
   const logoUrl = isOffline ? offlineLogo : (settings?.logo_url || offlineLogo || "/placeholder.svg");
+  console.log("HeaderLogo rendering with logoUrl:", logoUrl, "key:", logoKey);
 
   return (
     <div className="flex flex-col items-center header-logo">

@@ -35,7 +35,14 @@ export default function Settings() {
     // Force a refresh of the church settings data
     queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
     
-    // Update all header logo images
+    // Create a custom event for direct component updates
+    const logoUpdatedEvent = new CustomEvent('logoUpdated', { 
+      detail: { logoUrl: newLogo } 
+    });
+    
+    window.dispatchEvent(logoUpdatedEvent);
+    
+    // Update all header logo images as fallback
     const headerLogoImage = document.querySelector('#header-logo-avatar .header-logo-image');
     if (headerLogoImage instanceof HTMLImageElement) {
       console.log("Updating header logo image to:", newLogo);

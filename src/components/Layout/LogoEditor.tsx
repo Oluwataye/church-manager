@@ -22,7 +22,7 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
   } = useLogoUpload(onLogoChange);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 w-full">
       {isOffline && (
         <div className="w-full mb-2">
           <Badge variant="outline" className="gap-1 bg-yellow-50 text-yellow-800 border-yellow-300 px-2 py-1 w-full flex justify-center">

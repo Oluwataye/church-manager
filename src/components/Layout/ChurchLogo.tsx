@@ -1,3 +1,4 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchChurchSettings } from "@/services/churchSettings";
@@ -18,6 +19,7 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
   const [offlineLogo, setOfflineLogo] = useState<string | null>(null);
   const { isOffline } = useOnlineStatus();
   
+  // Listen for changes to offline logo
   useEffect(() => {
     const savedLogo = localStorage.getItem('offlineLogo');
     if (savedLogo) {
@@ -32,10 +34,23 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
     
     window.addEventListener('storage', handleStorageChange);
     
+    // Custom event listener for direct updates
+    const handleLogoUpdate = (event: CustomEvent) => {
+      if (event.detail && event.detail.logoUrl) {
+        setOfflineLogo(event.detail.logoUrl);
+        if (onLogoChange) {
+          onLogoChange(event.detail.logoUrl);
+        }
+      }
+    };
+    
+    window.addEventListener('logoUpdated', handleLogoUpdate as EventListener);
+    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('logoUpdated', handleLogoUpdate as EventListener);
     };
-  }, []);
+  }, [onLogoChange]);
   
   const { data: settings, isLoading } = useQuery({
     queryKey: ['churchSettings'],

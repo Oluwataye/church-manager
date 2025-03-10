@@ -6,6 +6,11 @@ import { uploadLogo } from "@/services/churchSettings";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useAuth } from "@/components/Auth/AuthContext";
 
+// Define a custom event for logo updates
+interface LogoUpdatedEvent extends CustomEvent {
+  detail: { logoUrl: string };
+}
+
 export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -95,8 +100,17 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   });
 
   const updateHeaderLogo = (logoUrl: string) => {
+    // Save logo to local storage
     localStorage.setItem('offlineLogo', logoUrl);
     
+    // Dispatch custom event for direct component updates
+    const logoUpdatedEvent = new CustomEvent('logoUpdated', {
+      detail: { logoUrl }
+    }) as LogoUpdatedEvent;
+    
+    window.dispatchEvent(logoUpdatedEvent);
+    
+    // Try to directly update DOM elements as a fallback
     const headerLogoImage = document.querySelector('#header-logo-avatar .header-logo-image');
     if (headerLogoImage instanceof HTMLImageElement) {
       console.log("Updating header logo image to:", logoUrl);
@@ -111,6 +125,7 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       }
     });
 
+    // Force a query invalidation after a short delay
     setTimeout(() => {
       queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
     }, 500);
@@ -168,7 +183,7 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
         console.error('Error saving pending uploads:', error);
       }
       
-      // Update display right away
+      // Update display right away using the custom event
       updateHeaderLogo(tempLogo);
       
       setTempLogo(null);
