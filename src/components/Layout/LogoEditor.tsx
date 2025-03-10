@@ -4,6 +4,7 @@ import { useLogoUpload } from "@/hooks/useLogoUpload";
 import { Loader2, Upload, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/Auth/AuthContext";
+import { useState, useEffect } from "react";
 
 interface LogoEditorProps {
   onLogoChange?: (logo: string) => void;
@@ -11,14 +12,30 @@ interface LogoEditorProps {
 
 export function LogoEditor({ onLogoChange }: LogoEditorProps) {
   const { user } = useAuth();
+  const [pendingCount, setPendingCount] = useState(0);
+  
+  // Check for pending uploads on mount
+  useEffect(() => {
+    try {
+      const savedUploads = localStorage.getItem('pendingLogoUploads');
+      if (savedUploads) {
+        const uploads = JSON.parse(savedUploads);
+        if (Array.isArray(uploads)) {
+          setPendingCount(uploads.length);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking pending uploads:', error);
+    }
+  }, []);
+  
   const { 
     tempLogo, 
     handleLogoUpload, 
     handleApply, 
     handleCancel,
     isUploading,
-    isOffline,
-    pendingUploads
+    isOffline
   } = useLogoUpload(onLogoChange);
 
   return (
@@ -29,9 +46,9 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
             <WifiOff className="h-3.5 w-3.5 mr-1" />
             Offline Mode
           </Badge>
-          {pendingUploads > 0 && (
+          {pendingCount > 0 && (
             <p className="text-xs text-muted-foreground mt-1 text-center">
-              {pendingUploads} logo update{pendingUploads > 1 ? 's' : ''} pending
+              {pendingCount} logo update{pendingCount > 1 ? 's' : ''} pending
             </p>
           )}
         </div>
@@ -64,7 +81,10 @@ export function LogoEditor({ onLogoChange }: LogoEditorProps) {
           <div className="flex items-center gap-2 justify-center">
             <Button
               variant="default"
-              onClick={handleApply}
+              onClick={() => {
+                console.log("Apply button clicked");
+                handleApply();
+              }}
               disabled={isUploading}
               className="w-full"
             >

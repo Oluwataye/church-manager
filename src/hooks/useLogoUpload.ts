@@ -15,7 +15,7 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const { isOffline } = useOnlineStatus();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { pendingUploads, saveOfflineLogo } = useOfflineLogoUpload();
+  const { saveOfflineLogo } = useOfflineLogoUpload();
 
   // Set up the upload mutation
   const uploadMutation = useMutation({
@@ -23,6 +23,10 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     onSuccess: ({ publicUrl }) => {
       console.log("Logo upload success, URL:", publicUrl);
       
+      // Immediately update the UI via event system
+      updateHeaderLogo(publicUrl);
+      
+      // Also update via React Query for components using the hook
       queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
       
       queryClient.setQueryData(['churchSettings'], (old: any) => ({
@@ -30,12 +34,12 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
         logo_url: publicUrl
       }));
       
+      // Call callback if provided
       if (onLogoChange) {
         onLogoChange(publicUrl);
       }
 
-      updateHeaderLogo(publicUrl);
-
+      // Clear temporary state
       setTempLogo(null);
       setSelectedFile(null);
       
@@ -96,10 +100,21 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       return;
     }
     
+    // Immediately update UI regardless of online/offline status
+    updateHeaderLogo(tempLogo);
+    
     if (isOffline) {
+      // Save for offline use and pending uploads
+      console.log("Saving logo offline:", tempLogo.substring(0, 50) + "...");
       saveOfflineLogo(selectedFile, tempLogo);
+      
+      // Clear temporary state after saving
       setTempLogo(null);
       setSelectedFile(null);
+      
+      toast.success("Logo updated (offline mode)", {
+        description: "Changes will be synced when you're back online"
+      });
     } else {
       if (!user) {
         toast.error("Authentication required", {
@@ -108,7 +123,7 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
         return;
       }
       
-      console.log("Uploading logo:", selectedFile.name);
+      console.log("Uploading logo to server:", selectedFile.name);
       uploadMutation.mutate(selectedFile);
     }
   };
@@ -129,6 +144,6 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     handleCancel,
     isUploading: uploadMutation.isPending,
     isOffline,
-    pendingUploads: pendingUploads.length
+    pendingUploads: 0 // This is now handled by usePendingLogoUploads
   };
 }
