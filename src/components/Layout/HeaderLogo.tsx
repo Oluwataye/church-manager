@@ -72,7 +72,13 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
     queryFn: fetchChurchSettings,
     staleTime: 0,
     enabled: !isOffline,
-    onSuccess: (data) => {
+    onSettled: (data, error) => {
+      if (error) {
+        console.error("Error fetching settings:", error);
+        toast.error("Failed to load logo from server");
+        return;
+      }
+      
       if (data?.logo_url) {
         console.log("HeaderLogo: New logo from server:", data.logo_url);
         setLogoUrl(data.logo_url);
@@ -83,10 +89,6 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
           logoRef.current.src = data.logo_url;
         }
       }
-    },
-    onError: (error) => {
-      console.error("Error fetching settings:", error);
-      toast.error("Failed to load logo from server");
     }
   });
 
