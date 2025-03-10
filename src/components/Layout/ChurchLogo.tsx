@@ -91,21 +91,20 @@ export function ChurchLogo({ displayOnly = false, onLogoChange, className = "" }
     queryFn: fetchChurchSettings,
     staleTime: 0,
     enabled: !isOffline,
-    meta: {
-      onSuccess: (data) => {
-        if (data?.logo_url) {
-          console.log("ChurchLogo: New logo from server:", data.logo_url);
-          setLogoUrl(data.logo_url);
-          localStorage.setItem('offlineLogo', data.logo_url);
-          
-          if (logoRef.current) {
-            logoRef.current.src = data.logo_url;
-          }
-          
-          // Propagate change if callback provided
-          if (onLogoChange) {
-            onLogoChange(data.logo_url);
-          }
+    gcTime: 0,
+    onSuccess: (data) => {
+      if (data?.logo_url) {
+        console.log("ChurchLogo: New logo from server:", data.logo_url);
+        setLogoUrl(data.logo_url);
+        localStorage.setItem('offlineLogo', data.logo_url);
+        
+        if (logoRef.current) {
+          logoRef.current.src = data.logo_url;
+        }
+        
+        // Propagate change if callback provided
+        if (onLogoChange) {
+          onLogoChange(data.logo_url);
         }
       }
     }
