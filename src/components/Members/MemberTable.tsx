@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -6,6 +7,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MemberTableRow } from "./MemberTableRow";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Member {
   id: string;
@@ -32,6 +35,9 @@ interface MemberTableProps {
   onEdit: (member: Member) => void;
   onDelete: (member: Member) => void;
   onDownload: (member: Member) => void;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
 export function MemberTable({
@@ -39,29 +45,66 @@ export function MemberTable({
   onEdit,
   onDelete,
   onDownload,
+  currentPage,
+  totalPages,
+  onPageChange,
 }: MemberTableProps) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Profile</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Contact</TableHead>
-          <TableHead>Group</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {members.map((member) => (
-          <MemberTableRow
-            key={member.id}
-            member={member}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onDownload={onDownload}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="space-y-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Profile</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead>Group</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {members.length === 0 ? (
+            <TableRow>
+              <td colSpan={5} className="h-24 text-center">
+                No members found
+              </td>
+            </TableRow>
+          ) : (
+            members.map((member) => (
+              <MemberTableRow
+                key={member.id}
+                member={member}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onDownload={onDownload}
+              />
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      {totalPages > 1 && (
+        <div className="flex justify-end items-center gap-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

@@ -20,9 +20,11 @@ import { useMemberActions } from "@/components/Members/MemberActions";
 import type { Member } from "@/hooks/useMembers";
 import { toast } from "sonner";
 import { useAuth } from "@/components/Auth/AuthContext";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -32,17 +34,38 @@ export default function Members() {
   const { handleAddMember, handleUpdateMember, handleDeleteMember } = useMemberActions();
   const { isOffline } = useAuth();
 
+  // Filter members based on search query
   const filteredMembers = members.filter(
     (member) =>
       member.family_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.individual_names.toLowerCase().includes(searchQuery.toLowerCase())
+      member.individual_names.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.contact_number && member.contact_number.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  // Pagination logic
+  const MEMBERS_PER_PAGE = 5;
+  const totalPages = Math.max(1, Math.ceil(filteredMembers.length / MEMBERS_PER_PAGE));
+  
+  // Reset to first page when search query changes
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  // Ensure current page is valid when filtered members change
+  if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+
+  // Get current page members
+  const startIndex = (currentPage - 1) * MEMBERS_PER_PAGE;
+  const paginatedMembers = filteredMembers.slice(startIndex, startIndex + MEMBERS_PER_PAGE);
 
   const handleDownloadProfile = async (member: Member) => {
     try {
       const success = await generateMemberProfile(member);
       if (success) {
-        toast("Profile downloaded successfully");
+        toast.success("Profile downloaded successfully");
       }
     } catch (error) {
       console.error('Error downloading profile:', error);
@@ -76,7 +99,10 @@ export default function Members() {
           <MemberRegistrationForm
             onSubmit={async (data) => {
               const success = await handleAddMember(data);
-              if (success) setShowRegistrationForm(false);
+              if (success) {
+                setShowRegistrationForm(false);
+                toast.success("Member added successfully");
+              }
             }}
             onCancel={() => setShowRegistrationForm(false)}
           />
@@ -85,12 +111,12 @@ export default function Members() {
         <>
           <MemberSearch
             searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
+            onSearchChange={handleSearchChange}
           />
 
           <Card className="p-6">
             <MemberTable
-              members={filteredMembers}
+              members={paginatedMembers}
               onEdit={(member) => {
                 setSelectedMember(member);
                 setShowEditForm(true);
@@ -100,6 +126,9 @@ export default function Members() {
                 setShowDeleteDialog(true);
               }}
               onDownload={handleDownloadProfile}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
             />
           </Card>
         </>
@@ -118,6 +147,7 @@ export default function Members() {
                   if (success) {
                     setShowEditForm(false);
                     setSelectedMember(null);
+                    toast.success("Member updated successfully");
                   }
                 }}
                 onCancel={() => {
@@ -140,6 +170,7 @@ export default function Members() {
             if (success) {
               setShowDeleteDialog(false);
               setSelectedMember(null);
+              toast.success("Member deleted successfully");
             }
           }
         }}
@@ -151,6 +182,3 @@ export default function Members() {
     </div>
   );
 }
-
-// Import missing components
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
