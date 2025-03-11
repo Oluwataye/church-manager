@@ -77,11 +77,15 @@ export function useMemberActions() {
 
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast("Member has been registered successfully" + (isOffline ? " (offline mode)" : ""));
+      toast.success("Member registered", {
+        description: "Member has been registered successfully" + (isOffline ? " (offline mode)" : "")
+      });
       return true;
     } catch (error: any) {
       console.error('Error adding member:', error);
-      toast.error("Failed to register member. Please try again.");
+      toast.error("Registration failed", {
+        description: "Failed to register member. Please try again."
+      });
       return false;
     }
   };
@@ -118,11 +122,15 @@ export function useMemberActions() {
 
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast("Member has been updated successfully" + (isOffline ? " (offline mode)" : ""));
+      toast.success("Member updated", {
+        description: "Member has been updated successfully" + (isOffline ? " (offline mode)" : "")
+      });
       return true;
     } catch (error: any) {
       console.error('Error updating member:', error);
-      toast.error("Failed to update member. Please try again.");
+      toast.error("Update failed", {
+        description: "Failed to update member. Please try again."
+      });
       return false;
     }
   };
@@ -155,11 +163,15 @@ export function useMemberActions() {
 
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast("Member has been deleted successfully" + (isOffline ? " (offline mode)" : ""));
+      toast.success("Member deleted", {
+        description: "Member has been deleted successfully" + (isOffline ? " (offline mode)" : "")
+      });
       return true;
     } catch (error: any) {
       console.error('Error deleting member:', error);
-      toast.error("Failed to delete member. Please try again.");
+      toast.error("Deletion failed", {
+        description: "Failed to delete member. Please try again."
+      });
       return false;
     }
   };

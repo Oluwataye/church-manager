@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const announcementSchema = z.object({
@@ -58,7 +57,6 @@ export function AnnouncementDialog({
   onSuccess,
 }: AnnouncementDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   const isEditing = !!announcement;
 
   const form = useForm<AnnouncementFormData>({
@@ -86,8 +84,7 @@ export function AnnouncementDialog({
           .eq("id", announcement.id);
 
         if (error) throw error;
-        toast({
-          title: "Announcement updated",
+        toast.success("Announcement updated", {
           description: "The announcement has been updated successfully.",
         });
       } else {
@@ -102,8 +99,7 @@ export function AnnouncementDialog({
           });
 
         if (error) throw error;
-        toast({
-          title: "Announcement created",
+        toast.success("Announcement created", {
           description: "The announcement has been created successfully.",
         });
       }
@@ -113,9 +109,7 @@ export function AnnouncementDialog({
       form.reset();
     } catch (error) {
       console.error("Error saving announcement:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to save the announcement. Please try again.",
       });
     } finally {

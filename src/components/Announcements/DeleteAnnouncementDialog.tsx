@@ -9,8 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface DeleteAnnouncementDialogProps {
   open: boolean;
@@ -25,8 +25,6 @@ export function DeleteAnnouncementDialog({
   announcementId,
   onSuccess,
 }: DeleteAnnouncementDialogProps) {
-  const { toast } = useToast();
-
   const handleDelete = async () => {
     try {
       const { error } = await supabase
@@ -36,17 +34,14 @@ export function DeleteAnnouncementDialog({
 
       if (error) throw error;
 
-      toast({
-        title: "Announcement deleted",
+      toast.success("Announcement deleted", {
         description: "The announcement has been deleted successfully.",
       });
       
       onSuccess();
     } catch (error) {
       console.error("Error deleting announcement:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to delete the announcement. Please try again.",
       });
     } finally {
