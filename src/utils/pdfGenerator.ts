@@ -1,4 +1,3 @@
-
 import jsPDF from "jspdf";
 
 interface Member {
@@ -52,8 +51,8 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
         
         // Add image with transparency
         doc.saveGraphicsState();
-        // Fix the GState creation by using the appropriate API
-        doc.setGState(doc.internal.getGState({ opacity: 0.2 }));
+        // Set global alpha for transparency
+        doc.setGState({ opacity: 0.2 });
         doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
         doc.restoreGraphicsState();
       } catch (err) {
