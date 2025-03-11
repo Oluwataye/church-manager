@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -60,7 +59,9 @@ const Income = () => {
         </TabsContent>
 
         <TabsContent value="record">
-          <IncomeForm />
+          <Card className="p-6">
+            <IncomeForm />
+          </Card>
         </TabsContent>
 
         <TabsContent value="tithe">

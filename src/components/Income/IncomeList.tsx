@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -7,20 +8,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-
-const mockData = [
-  {
-    id: 1,
-    date: new Date(),
-    serviceType: "Sunday Service",
-    category: "Tithe",
-    amount: 50000,
-    description: "Weekly tithe collection",
-  },
-  // Add more mock data as needed
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function IncomeList() {
+  const { data: incomes = [], isLoading } = useQuery({
+    queryKey: ['incomes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('incomes')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(5);
+        
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -33,12 +42,12 @@ export function IncomeList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockData.map((item) => (
+          {incomes.map((item) => (
             <TableRow key={item.id}>
-              <TableCell>{format(item.date, "PPP")}</TableCell>
-              <TableCell>{item.serviceType}</TableCell>
+              <TableCell>{format(new Date(item.date), "PPP")}</TableCell>
+              <TableCell>{item.service_type}</TableCell>
               <TableCell>{item.category}</TableCell>
-              <TableCell className="text-right">₦{item.amount.toLocaleString()}</TableCell>
+              <TableCell className="text-right">₦{Number(item.amount).toLocaleString()}</TableCell>
             </TableRow>
           ))}
         </TableBody>

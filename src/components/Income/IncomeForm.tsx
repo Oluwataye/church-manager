@@ -47,18 +47,18 @@ export function IncomeForm() {
 
   const { mutate: saveIncome, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof incomeFormSchema>) => {
-      // Convert Date object to ISO string and format it as YYYY-MM-DD
       const formattedDate = format(values.date, "yyyy-MM-dd");
 
-      const { error } = await supabase.from('incomes').insert({
+      const { data, error } = await supabase.from('incomes').insert({
         date: formattedDate,
         service_type: values.serviceType,
         category: values.category,
         amount: parseFloat(values.amount),
         description: values.description,
-      });
+      }).select().single();
 
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       toast.success("Income recorded successfully");
