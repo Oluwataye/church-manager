@@ -1,4 +1,3 @@
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchChurchSettings } from "@/services/churchSettings";
@@ -61,7 +60,6 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
       }
     };
     
-    // Listen on document level
     document.addEventListener('logoUpdated', handleLogoUpdated);
     return () => document.removeEventListener('logoUpdated', handleLogoUpdated);
   }, []);
@@ -73,21 +71,23 @@ export function HeaderLogo({ className = "" }: { className?: string }) {
     staleTime: 0,
     enabled: !isOffline,
     gcTime: 0,
-    onSuccess: (data) => {
-      if (data?.logo_url) {
-        console.log("HeaderLogo: New logo from server:", data.logo_url);
-        setLogoUrl(data.logo_url);
-        localStorage.setItem('offlineLogo', data.logo_url);
-        
-        // Update ref directly
-        if (logoRef.current) {
-          logoRef.current.src = data.logo_url;
+    meta: {
+      onSuccess: (data) => {
+        if (data?.logo_url) {
+          console.log("HeaderLogo: New logo from server:", data.logo_url);
+          setLogoUrl(data.logo_url);
+          localStorage.setItem('offlineLogo', data.logo_url);
+          
+          // Update ref directly
+          if (logoRef.current) {
+            logoRef.current.src = data.logo_url;
+          }
         }
+      },
+      onError: (error) => {
+        console.error("Error fetching settings:", error);
+        toast.error("Failed to load logo from server");
       }
-    },
-    onError: (error) => {
-      console.error("Error fetching settings:", error);
-      toast.error("Failed to load logo from server");
     }
   });
 
