@@ -64,4 +64,9 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Add this section for Electron build
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true
+  }
 }))

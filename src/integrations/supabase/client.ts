@@ -6,6 +6,10 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://zohcoyfqfcbfznaedxbl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvaGNveWZxZmNiZnpuYWVkeGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzOTkwMDUsImV4cCI6MjA1NTk3NTAwNX0.eoi4HC_Eqpt4T1B2n5_1pCwiL_LVKYps0mOzNBufx54";
 
+// Check if we're running in Electron
+const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
+const API_BASE_URL = isElectron ? window.electronAPI?.apiBaseUrl : '';
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -16,3 +20,247 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     detectSessionInUrl: true
   }
 });
+
+// Create a local API client for Electron mode
+export const localApi = {
+  from: (table) => {
+    return {
+      select: (columns = '*') => {
+        return {
+          order: (column, { ascending = true } = {}) => {
+            return {
+              limit: (limit) => {
+                return {
+                  single: async () => {
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/${table}?limit=1`);
+                      const data = await response.json();
+                      return { data: data[0] || null, error: null };
+                    } catch (error) {
+                      return { data: null, error };
+                    }
+                  },
+                  eq: async (column, value) => {
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/${table}?${column}=${value}&limit=${limit}`);
+                      const data = await response.json();
+                      return { data, error: null };
+                    } catch (error) {
+                      return { data: null, error };
+                    }
+                  },
+                  execute: async () => {
+                    try {
+                      const response = await fetch(`${API_BASE_URL}/${table}?limit=${limit}`);
+                      const data = await response.json();
+                      return { data, error: null };
+                    } catch (error) {
+                      return { data: null, error };
+                    }
+                  }
+                };
+              },
+              execute: async () => {
+                try {
+                  const response = await fetch(`${API_BASE_URL}/${table}`);
+                  const data = await response.json();
+                  return { data, error: null };
+                } catch (error) {
+                  return { data: null, error };
+                }
+              }
+            };
+          },
+          eq: async (column, value) => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/${table}?${column}=${value}`);
+              const data = await response.json();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          },
+          execute: async () => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/${table}`);
+              const data = await response.json();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          }
+        };
+      },
+      insert: (values) => {
+        return {
+          select: () => {
+            return {
+              single: async () => {
+                try {
+                  const response = await fetch(`${API_BASE_URL}/${table}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values)
+                  });
+                  const data = await response.json();
+                  return { data, error: null };
+                } catch (error) {
+                  return { data: null, error };
+                }
+              },
+              execute: async () => {
+                try {
+                  const response = await fetch(`${API_BASE_URL}/${table}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values)
+                  });
+                  const data = await response.json();
+                  return { data, error: null };
+                } catch (error) {
+                  return { data: null, error };
+                }
+              }
+            };
+          },
+          execute: async () => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/${table}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values)
+              });
+              const data = await response.json();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          }
+        };
+      },
+      update: (values) => {
+        return {
+          eq: async (column, value) => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/${table}/${value}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(values)
+              });
+              const data = await response.json();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          }
+        };
+      },
+      delete: () => {
+        return {
+          eq: async (column, value) => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/${table}/${value}`, {
+                method: 'DELETE'
+              });
+              const data = await response.json();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          }
+        };
+      }
+    };
+  },
+  auth: {
+    signInWithPassword: async ({ email, password }) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        
+        if (!result.success) {
+          return { data: null, error: new Error(result.error) };
+        }
+        
+        return { 
+          data: { 
+            user: result.user,
+            session: { user: result.user }
+          }, 
+          error: null 
+        };
+      } catch (error) {
+        return { data: null, error };
+      }
+    },
+    signUp: async ({ email, password }) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const result = await response.json();
+        
+        if (!result.success) {
+          return { data: null, error: new Error(result.error) };
+        }
+        
+        return { 
+          data: { 
+            user: result.user,
+            session: { user: result.user }
+          }, 
+          error: null 
+        };
+      } catch (error) {
+        return { data: null, error };
+      }
+    },
+    getSession: async () => {
+      const currentUserStr = localStorage.getItem('currentUser');
+      if (!currentUserStr) {
+        return { data: { session: null }, error: null };
+      }
+      
+      const currentUser = JSON.parse(currentUserStr);
+      return { 
+        data: { 
+          session: { 
+            user: currentUser 
+          } 
+        }, 
+        error: null 
+      };
+    },
+    onAuthStateChange: (callback) => {
+      // This is a simplified version that doesn't actually listen for changes
+      // In a real implementation, you would set up event listeners
+      const currentUserStr = localStorage.getItem('currentUser');
+      if (currentUserStr) {
+        const currentUser = JSON.parse(currentUserStr);
+        callback('SIGNED_IN', { user: currentUser });
+      }
+      
+      return {
+        data: {
+          subscription: {
+            unsubscribe: () => {}
+          }
+        }
+      };
+    },
+    signOut: async () => {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('lastLoginTime');
+      return { error: null };
+    }
+  }
+};
+
+// Export the appropriate client based on the environment
+export default isElectron ? localApi : supabase;

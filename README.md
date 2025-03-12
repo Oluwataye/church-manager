@@ -1,13 +1,14 @@
 
-# Church Management System
+# Church Management System (Desktop Version)
 
-A comprehensive church management application that works both online and offline.
+A comprehensive church management application that works as a desktop application, with local data storage using Node.js.
 
 ## Features
 
-- ✨ Works offline
-- 📱 Install as desktop app
-- 🔄 Automatic updates when online
+- ✨ Works offline as a desktop application
+- 🖥️ Runs on Windows, macOS, and Linux
+- 📱 Install as desktop app with shortcuts
+- 🔄 Local database storage (no internet required)
 - 🔒 Secure authentication
 - 👥 Member management
 - 📊 Attendance tracking
@@ -16,96 +17,117 @@ A comprehensive church management application that works both online and offline
 
 ## Installation Guide
 
-### For Users (No Coding Required)
+### Standard Installation (For Users)
 
-1. **First-Time Setup**
-   - Open your web browser (Chrome, Edge, or Firefox recommended)
-   - Visit: https://lovable.dev/projects/34950c5b-87fc-4c89-bbfb-11aa6aa11230
-   - When you visit for the first time, you'll see a prompt to "Install" the app
-   - Click "Install" to add it to your desktop
+1. **Download the Installer**
+   - Go to the Releases page and download the installer for your operating system:
+     - Windows: `ChurchMate-Setup-1.0.0.exe`
+     - macOS: `ChurchMate-1.0.0.dmg`
+     - Linux: `ChurchMate-1.0.0.AppImage` or `churchmate_1.0.0_amd64.deb`
 
-2. **Using the Shortcut**
-   - After installation, you'll find an icon on your desktop
-   - Click the icon to launch the app
-   - The app will work even without internet connection
+2. **Run the Installer**
+   - Windows: Double-click the `.exe` file and follow the installation wizard
+   - macOS: Open the `.dmg` file, drag the app to Applications
+   - Linux: Make the AppImage executable and run it, or install the `.deb` package
 
-3. **Updates**
-   - The app will automatically check for updates when you're online
-   - You'll see a notification when updates are available
-   - Click "Update" when prompted to get the latest features
+3. **First-Time Setup**
+   - The first time you run the application, it will create a local database
+   - Default admin credentials:
+     - Email: `admin@lfcc.com`
+     - Password: `admin123`
+   - You should change these credentials after first login
 
-### Troubleshooting
+4. **Using the Application**
+   - Launch ChurchMate from your desktop shortcut or Start Menu/Applications folder
+   - Login with the admin credentials
+   - Set up your church profile in the Settings page
 
-**If the app isn't working:**
-1. Check your internet connection
-2. Try refreshing the page
-3. If problems persist, uninstall and reinstall the app
+### Development Setup (For Developers)
 
-**To uninstall:**
-1. Find the app icon on your desktop
-2. Right-click and select "Uninstall" or "Remove"
+1. **Clone the Repository**
+   ```sh
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_FOLDER>
+   ```
 
-### For Developers
+2. **Install Dependencies**
+   ```sh
+   npm install
+   ```
 
-**Local Development Setup**
+3. **Run in Development Mode**
+   ```sh
+   # Start the Vite dev server and Electron
+   npm run dev
+   ```
 
-```sh
-# Clone the repository
-git clone <YOUR_GIT_URL>
+4. **Build for Production**
+   ```sh
+   # Build the Vite app and package with Electron
+   npm run build
+   npm run package
+   ```
 
-# Navigate to project folder
-cd <YOUR_PROJECT_NAME>
+## Database Configuration
 
-# Install dependencies
-npm install
+The application uses LowDB, a small local JSON database that requires no configuration. Data is stored in:
 
-# Start development server
-npm run dev
-```
+- Windows: `%APPDATA%\churchmate\db.json`
+- macOS: `~/Library/Application Support/churchmate/db.json`
+- Linux: `~/.config/churchmate/db.json`
 
-**Building for Production**
+### Database Backup
 
-```sh
-# Create production build
-npm run build
+To back up your data:
+1. Close the application
+2. Copy the `db.json` file from the location above
+3. Store it in a safe location
 
-# Preview production build
-npm run preview
-```
+To restore from backup:
+1. Close the application
+2. Replace the `db.json` file with your backup
+3. Restart the application
+
+## Customizing Your Church Settings
+
+1. Log in as admin
+2. Go to Settings
+3. Update your church name and logo
+4. Save changes
+
+## Troubleshooting
+
+**If the app isn't starting:**
+1. Check if you have sufficient permissions on your computer
+2. Try running as administrator (Windows) or with sudo (Linux)
+3. Check the application logs at:
+   - Windows: `%APPDATA%\churchmate\logs`
+   - macOS: `~/Library/Logs/churchmate`
+   - Linux: `~/.config/churchmate/logs`
+
+**Data not saving:**
+1. Ensure you have write permissions to the application data folder
+2. Close and restart the application
+3. Check disk space
 
 ## Technical Details
 
-This project uses:
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-- Supabase for backend
-- PWA for offline capabilities
+This desktop application uses:
+- Electron for desktop app capabilities
+- Vite + React for the frontend UI
+- Express.js for local API server
+- LowDB for local JSON database storage
+- Node.js for backend processing
+- TypeScript for type safety
+- Tailwind CSS and shadcn-ui for styling
 
 ## Support
 
 If you need help:
 1. Check the troubleshooting section above
 2. Contact your system administrator
-3. Visit our [documentation](https://docs.lovable.dev/)
-
-## Updates and Maintenance
-
-- The app automatically checks for updates when online
-- Updates are downloaded in the background
-- You'll be notified when updates are ready to install
-- Always keep your browser updated for best performance
-
-## Security
-
-- All data is encrypted
-- Authentication is required
-- Offline data is stored securely
-- Regular security updates are provided
+3. File an issue on the project repository
 
 ## License
 
 This project is protected by copyright law. All rights reserved.
-
