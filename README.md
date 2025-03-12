@@ -42,6 +42,16 @@ A comprehensive church management application that works as a desktop applicatio
    - Login with the admin credentials
    - Set up your church profile in the Settings page
 
+### Database Location
+
+The application stores all data locally on your computer. Database files are stored in:
+
+- Windows: `%APPDATA%\ChurchMate\`
+- macOS: `~/Library/Application Support/ChurchMate/`
+- Linux: `~/.config/ChurchMate/`
+
+Within this directory, database files are stored in the `db` folder, and uploaded files are stored in the `uploads` folder.
+
 ### Development Setup (For Developers)
 
 1. **Clone the Repository**
@@ -57,43 +67,48 @@ A comprehensive church management application that works as a desktop applicatio
 
 3. **Run in Development Mode**
    ```sh
+   # Install Electron dependencies
+   cd electron
+   npm install
+   cd ..
+   
    # Start the Vite dev server and Electron
    npm run dev
    ```
 
 4. **Build for Production**
    ```sh
-   # Build the Vite app and package with Electron
+   # Build the Vite app
    npm run build
+   
+   # Package with Electron
    npm run package
    ```
 
-## Database Configuration
+## Building the Installer
 
-The application uses LowDB, a small local JSON database that requires no configuration. Data is stored in:
+To build the installer for distribution:
 
-- Windows: `%APPDATA%\churchmate\db.json`
-- macOS: `~/Library/Application Support/churchmate/db.json`
-- Linux: `~/.config/churchmate/db.json`
+1. **Prepare Environment**
+   ```sh
+   npm install
+   ```
 
-### Database Backup
+2. **Build the Application**
+   ```sh
+   npm run build
+   ```
 
-To back up your data:
-1. Close the application
-2. Copy the `db.json` file from the location above
-3. Store it in a safe location
+3. **Create Installers**
+   ```sh
+   npm run package
+   ```
 
-To restore from backup:
-1. Close the application
-2. Replace the `db.json` file with your backup
-3. Restart the application
-
-## Customizing Your Church Settings
-
-1. Log in as admin
-2. Go to Settings
-3. Update your church name and logo
-4. Save changes
+4. **Locate Installers**
+   - The installers will be created in the `dist_electron` directory
+   - Windows: `ChurchMate-Setup-1.0.0.exe`
+   - macOS: `ChurchMate-1.0.0.dmg`
+   - Linux: `ChurchMate-1.0.0.AppImage` or `churchmate_1.0.0_amd64.deb`
 
 ## Troubleshooting
 
@@ -101,9 +116,9 @@ To restore from backup:
 1. Check if you have sufficient permissions on your computer
 2. Try running as administrator (Windows) or with sudo (Linux)
 3. Check the application logs at:
-   - Windows: `%APPDATA%\churchmate\logs`
-   - macOS: `~/Library/Logs/churchmate`
-   - Linux: `~/.config/churchmate/logs`
+   - Windows: `%APPDATA%\ChurchMate\logs`
+   - macOS: `~/Library/Logs/ChurchMate`
+   - Linux: `~/.config/ChurchMate/logs`
 
 **Data not saving:**
 1. Ensure you have write permissions to the application data folder

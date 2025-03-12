@@ -25,6 +25,7 @@ win:
   target:
     - nsis
     - portable
+  icon: "public/favicon.ico"
 linux:
   target:
     - AppImage
@@ -37,3 +38,5 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: ChurchMate
   artifactName: ChurchMate-Setup-${version}.${ext}
+  menuCategory: "Church Management"
+  displayLanguageSelector: false
