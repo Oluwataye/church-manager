@@ -65,46 +65,38 @@ Within this directory, database files are stored in the `db` folder, and uploade
    npm install
    ```
 
-3. **Run in Development Mode**
+3. **Add Electron Scripts**
    ```sh
+   # Run this script to add Electron scripts to package.json
+   node electron-script.js
+   
    # Install Electron dependencies
    cd electron
    npm install
    cd ..
-   
-   # Start the Vite dev server and Electron
-   npm run dev
    ```
 
-4. **Build for Production**
+4. **Run in Development Mode**
+   ```sh
+   # Start the Vite dev server and Electron
+   npm run dev:electron
+   ```
+
+5. **Build for Production**
    ```sh
    # Build the Vite app
-   npm run build
+   npm run build:electron
    
    # Package with Electron
    npm run package
+   
+   # OR package for specific platform
+   npm run package:windows
+   npm run package:mac
+   npm run package:linux
    ```
 
-## Building the Installer
-
-To build the installer for distribution:
-
-1. **Prepare Environment**
-   ```sh
-   npm install
-   ```
-
-2. **Build the Application**
-   ```sh
-   npm run build
-   ```
-
-3. **Create Installers**
-   ```sh
-   npm run package
-   ```
-
-4. **Locate Installers**
+6. **Locate Installers**
    - The installers will be created in the `dist_electron` directory
    - Windows: `ChurchMate-Setup-1.0.0.exe`
    - macOS: `ChurchMate-1.0.0.dmg`
@@ -119,6 +111,10 @@ To build the installer for distribution:
    - Windows: `%APPDATA%\ChurchMate\logs`
    - macOS: `~/Library/Logs/ChurchMate`
    - Linux: `~/.config/ChurchMate/logs`
+
+**Package command not found:**
+1. Make sure you've run `node electron-script.js` to add the required scripts to package.json
+2. Verify that electron-builder is installed (`npm install electron-builder --save-dev`)
 
 **Data not saving:**
 1. Ensure you have write permissions to the application data folder

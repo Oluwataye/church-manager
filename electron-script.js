@@ -3,14 +3,14 @@ const fs = require('fs');
 const path = require('path');
 
 // Read the current package.json
-const packageJsonPath = path.join(__dirname, 'package.json');
+const packageJsonPath = path.join(process.cwd(), 'package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 // Add Electron-related scripts
 packageJson.scripts = {
   ...packageJson.scripts,
-  "dev": "concurrently \"vite\" \"wait-on http://localhost:8080 && cross-env ELECTRON_START_URL=http://localhost:8080 electron electron/main.js\"",
-  "build": "vite build",
+  "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron electron/main.js\"",
+  "build:electron": "vite build",
   "package": "electron-builder -c electron-builder.yml",
   "package:windows": "electron-builder -c electron-builder.yml --win",
   "package:mac": "electron-builder -c electron-builder.yml --mac",
