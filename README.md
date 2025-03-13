@@ -63,6 +63,9 @@ Within this directory, database files are stored in the `db` folder, and uploade
 2. **Install Dependencies**
    ```sh
    npm install
+   
+   # Install additional required dependencies
+   npm install --save-dev electron electron-builder concurrently cross-env wait-on
    ```
 
 3. **Add Electron Scripts**
@@ -115,6 +118,17 @@ Within this directory, database files are stored in the `db` folder, and uploade
 **Package command not found:**
 1. Make sure you've run `node electron-script.js` to add the required scripts to package.json
 2. Verify that electron-builder is installed (`npm install electron-builder --save-dev`)
+3. If the script fails to update package.json automatically, you can add the scripts manually:
+   ```json
+   "scripts": {
+     "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron electron/main.js\"",
+     "build:electron": "vite build",
+     "package": "electron-builder -c electron-builder.yml",
+     "package:windows": "electron-builder -c electron-builder.yml --win",
+     "package:mac": "electron-builder -c electron-builder.yml --mac",
+     "package:linux": "electron-builder -c electron-builder.yml --linux"
+   }
+   ```
 
 **Data not saving:**
 1. Ensure you have write permissions to the application data folder

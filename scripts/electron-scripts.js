@@ -11,6 +11,9 @@ Add the following scripts to your package.json file:
   "package:linux": "electron-builder -c electron-builder.yml --linux"
 }
 
+Make sure you have these dependencies installed:
+npm install --save-dev electron electron-builder concurrently cross-env wait-on
+
 Then you can run:
 - npm run dev:electron - to start the development version
 - npm run build:electron - to build the production version
