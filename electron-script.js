@@ -26,7 +26,7 @@ try {
   // Add Electron-related scripts
   packageJson.scripts = {
     ...packageJson.scripts,
-    "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron electron/main.js\"",
+    "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron ./electron/main.js\"",
     "build:electron": "vite build",
     "package": "electron-builder -c electron-builder.yml",
     "package:windows": "electron-builder -c electron-builder.yml --win",
@@ -47,16 +47,15 @@ try {
   console.log('- package:linux: Package the app for Linux');
   
   console.log('\nNext steps:');
-  console.log('1. Install electron-builder: npm install electron-builder --save-dev');
-  console.log('2. Install required dependencies: npm install concurrently cross-env wait-on --save-dev');
-  console.log('3. Run npm run dev:electron to start development');
+  console.log('1. Install required dependencies: npm install --save-dev electron electron-builder concurrently cross-env wait-on');
+  console.log('2. Run npm run dev:electron to start development');
   
 } catch (error) {
   console.error('❌ Error updating package.json:', error.message);
   console.error('\nIf the automatic script fails, you can manually add these scripts to your package.json:');
   console.log(`
 "scripts": {
-  "dev:electron": "concurrently -k \\"cross-env NODE_ENV=development vite\\" \\"wait-on http://localhost:8080 && electron electron/main.js\\"",
+  "dev:electron": "concurrently -k \\"cross-env NODE_ENV=development vite\\" \\"wait-on http://localhost:8080 && electron ./electron/main.js\\"",
   "build:electron": "vite build",
   "package": "electron-builder -c electron-builder.yml",
   "package:windows": "electron-builder -c electron-builder.yml --win",

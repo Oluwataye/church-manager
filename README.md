@@ -115,13 +115,16 @@ Within this directory, database files are stored in the `db` folder, and uploade
    - macOS: `~/Library/Logs/ChurchMate`
    - Linux: `~/.config/ChurchMate/logs`
 
-**Package command not found:**
+**Missing electron script error:**
 1. Make sure you've run `node electron-script.js` to add the required scripts to package.json
-2. Verify that electron-builder is installed (`npm install electron-builder --save-dev`)
+2. Verify you've installed all necessary dependencies:
+   ```
+   npm install --save-dev electron electron-builder concurrently cross-env wait-on
+   ```
 3. If the script fails to update package.json automatically, you can add the scripts manually:
    ```json
    "scripts": {
-     "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron electron/main.js\"",
+     "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron ./electron/main.js\"",
      "build:electron": "vite build",
      "package": "electron-builder -c electron-builder.yml",
      "package:windows": "electron-builder -c electron-builder.yml --win",
@@ -129,6 +132,12 @@ Within this directory, database files are stored in the `db` folder, and uploade
      "package:linux": "electron-builder -c electron-builder.yml --linux"
    }
    ```
+
+**Cannot find module error:**
+1. Ensure the path to the Electron main.js file is correct in your scripts
+2. Make sure all required dependencies are installed
+3. Check that all file paths in your code point to the correct locations
+4. Run `cd electron && npm install && cd ..` to ensure all Electron dependencies are installed
 
 **Data not saving:**
 1. Ensure you have write permissions to the application data folder

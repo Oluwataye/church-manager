@@ -3,7 +3,7 @@ console.log(`
 Add the following scripts to your package.json file:
 
 "scripts": {
-  "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron electron/main.js\"",
+  "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron ./electron/main.js\"",
   "build:electron": "vite build",
   "package": "electron-builder -c electron-builder.yml",
   "package:windows": "electron-builder -c electron-builder.yml --win",
