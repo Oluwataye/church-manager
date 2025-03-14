@@ -25,11 +25,41 @@ const getDbFilePath = (app, dbName) => {
   return path.join(dbDirectory, `${dbName}.json`);
 };
 
-// Initialize a database
+// Initialize a database with default data structure
 const initializeDb = (app, dbName) => {
   const file = getDbFilePath(app, dbName);
   const adapter = new JSONFile(file);
-  const db = new Low(adapter);
+  
+  // Create default data structure based on database name
+  // This addresses the "lowdb: missing default data" error
+  let defaultData = {};
+  switch (dbName) {
+    case 'users':
+      defaultData = { users: [] };
+      break;
+    case 'members':
+      defaultData = { members: [] };
+      break;
+    case 'income':
+      defaultData = { income: [] };
+      break;
+    case 'attendance':
+      defaultData = { attendance: [] };
+      break;
+    case 'events':
+      defaultData = { events: [] };
+      break;
+    case 'groups':
+      defaultData = { groups: [] };
+      break;
+    case 'settings':
+      defaultData = { settings: {} };
+      break;
+    default:
+      defaultData = {};
+  }
+  
+  const db = new Low(adapter, defaultData);
   return db;
 };
 
