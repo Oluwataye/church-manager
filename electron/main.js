@@ -10,6 +10,11 @@ const API_PORT = 3000;
 // Set the electron app in the server module
 setApp(app);
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
 // Start the local API server
 startServer(API_PORT);
 
@@ -35,7 +40,12 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../index.html'));
   } else {
     // In development, load from the dev server
-    mainWindow.loadURL('http://localhost:8080');
+    const startUrl = 'http://localhost:8080';
+    console.log(`Loading app from: ${startUrl}`);
+    mainWindow.loadURL(startUrl)
+      .catch(err => {
+        console.error('Failed to load URL:', err);
+      });
     // Open DevTools in development
     mainWindow.webContents.openDevTools();
   }
@@ -55,6 +65,8 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
+}).catch(err => {
+  console.error('Failed to initialize app:', err);
 });
 
 // Quit when all windows are closed, except on macOS

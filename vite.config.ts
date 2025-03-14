@@ -8,7 +8,11 @@ import { componentTagger } from "lovable-tagger"
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080
+    port: 8080,
+    strictPort: true, // Prevent trying multiple ports
+    watch: {
+      usePolling: true, // Helps with some file system watching issues
+    }
   },
   plugins: [
     react(),
@@ -64,9 +68,24 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // Add this section for Electron build
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          vendors: ['date-fns', '@radix-ui', 'recharts']
+        }
+      }
+    },
+    sourcemap: true
+  },
+  clearScreen: false, // Don't clear the terminal during development
+  optimizeDeps: {
+    exclude: ['electron']
   }
 }))
