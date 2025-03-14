@@ -1,10 +1,14 @@
+
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { startServer } = require('./server');
+const { startServer, setApp } = require('./server');
 
 // Port for the local API server
 const API_PORT = 3000;
+
+// Set the electron app in the server module
+setApp(app);
 
 // Start the local API server
 startServer(API_PORT);
