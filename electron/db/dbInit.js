@@ -1,5 +1,6 @@
 
 const { initializeDb } = require('./dbUtils');
+const { getDefaultUsers, getDefaultSettings } = require('./dbSeeds');
 
 // Initialize database structure if it doesn't exist
 const initializeDatabases = async (app) => {
@@ -12,13 +13,7 @@ const initializeDatabases = async (app) => {
   
   // Check if we need to create an admin user
   if (usersDb.data.users.length === 0) {
-    usersDb.data.users.push({
-      id: '1',
-      email: 'admin@lfcc.com',
-      password: 'admin123', // In a real app, this would be hashed
-      role: 'admin',
-      created_at: new Date().toISOString()
-    });
+    usersDb.data.users.push(...getDefaultUsers());
     await usersDb.write();
   }
   
@@ -55,10 +50,7 @@ const initializeDatabases = async (app) => {
   // Settings database
   const settingsDb = initializeDb(app, 'settings');
   await settingsDb.read();
-  settingsDb.data ||= { settings: {
-    church_name: 'Living Faith Church Chanchaga',
-    logo_url: null
-  }};
+  settingsDb.data ||= { settings: getDefaultSettings() };
   await settingsDb.write();
   
   console.log('Databases initialized successfully');
