@@ -2,7 +2,11 @@
 {
   "name": "churchmate-desktop",
   "version": "1.0.0",
-  "description": "ChurchMate Desktop Application",
+  "description": "ChurchMate Desktop Application - A comprehensive church management system",
+  "author": {
+    "name": "ChurchMate Team",
+    "email": "info@churchmate.example.com"
+  },
   "main": "main.js",
   "type": "commonjs",
   "scripts": {

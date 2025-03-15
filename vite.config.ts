@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -87,16 +86,43 @@ export default defineConfig(({ mode }) => ({
             return 'radix-ui';
           }
           
-          // Group other common libraries
-          if (id.includes('node_modules/date-fns')) return 'date-fns';
-          if (id.includes('node_modules/recharts')) return 'recharts';
+          // Group UI-related libraries
+          if (id.includes('node_modules/lucide-react') || 
+              id.includes('node_modules/class-variance-authority') ||
+              id.includes('node_modules/clsx') ||
+              id.includes('node_modules/tailwind-merge')) {
+            return 'ui-libraries';
+          }
           
-          // You can add more chunks as needed
-          return undefined; // Use default chunking for anything else
+          // Group form-related libraries
+          if (id.includes('node_modules/react-hook-form') || 
+              id.includes('node_modules/@hookform/resolvers') ||
+              id.includes('node_modules/zod')) {
+            return 'form-libraries';
+          }
+          
+          // Group data visualization
+          if (id.includes('node_modules/recharts')) {
+            return 'recharts';
+          }
+          
+          // Group date handling
+          if (id.includes('node_modules/date-fns')) {
+            return 'date-fns';
+          }
+          
+          // Other common libraries
+          if (id.includes('node_modules/@tanstack/react-query')) {
+            return 'react-query';
+          }
+          
+          // Return undefined for anything else to use default chunking
+          return undefined;
         }
       }
     },
-    sourcemap: true
+    sourcemap: true,
+    chunkSizeWarningLimit: 800 // Increase the warning limit to reduce noise
   },
   clearScreen: false, // Don't clear the terminal during development
   optimizeDeps: {
