@@ -76,9 +76,23 @@ export default defineConfig(({ mode }) => ({
         main: path.resolve(__dirname, 'index.html'),
       },
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          vendors: ['date-fns', '@radix-ui', 'recharts']
+        manualChunks: (id) => {
+          // Group React packages
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react';
+          }
+          
+          // Group Radix UI packages properly
+          if (id.includes('node_modules/@radix-ui/')) {
+            return 'radix-ui';
+          }
+          
+          // Group other common libraries
+          if (id.includes('node_modules/date-fns')) return 'date-fns';
+          if (id.includes('node_modules/recharts')) return 'recharts';
+          
+          // You can add more chunks as needed
+          return undefined; // Use default chunking for anything else
         }
       }
     },
