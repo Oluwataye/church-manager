@@ -1,4 +1,6 @@
 
+'use strict';
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose the Electron API to the renderer process
