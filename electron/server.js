@@ -1,4 +1,6 @@
 
+'use strict';
+
 const express = require('express');
 const cors = require('cors');
 const { initializeDatabases } = require('./db/dbInit');
