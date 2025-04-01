@@ -33,11 +33,24 @@ try {
     ...packageJson.scripts,
     "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron ./electron/main.js\"",
     "build:electron": "vite build",
-    "package": "electron-builder -c electron-builder.yml",
-    "package:windows": "electron-builder -c electron-builder.yml --win",
-    "package:mac": "electron-builder -c electron-builder.yml --mac",
-    "package:linux": "electron-builder -c electron-builder.yml --linux"
+    "clean:electron": "node ./electron/clearBuildDirs.js",
+    "package": "npm run clean:electron && electron-builder -c electron-builder.yml",
+    "package:windows": "npm run clean:electron && electron-builder -c electron-builder.yml --win",
+    "package:mac": "npm run clean:electron && electron-builder -c electron-builder.yml --mac",
+    "package:linux": "npm run clean:electron && electron-builder -c electron-builder.yml --linux"
   };
+
+  // Add a description and author if they don't exist
+  if (!packageJson.description) {
+    packageJson.description = "ChurchMate - A comprehensive church management system";
+  }
+  
+  if (!packageJson.author) {
+    packageJson.author = {
+      name: "ChurchMate Team",
+      email: "info@churchmate.example.com"
+    };
+  }
 
   // Save the updated package.json
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
@@ -46,6 +59,7 @@ try {
   console.log('The following scripts have been added:');
   console.log('- dev:electron: Run the app in development mode');
   console.log('- build:electron: Build the production version');
+  console.log('- clean:electron: Clean build directories before packaging');
   console.log('- package: Package the app for all platforms');
   console.log('- package:windows: Package the app for Windows');
   console.log('- package:mac: Package the app for macOS');
@@ -62,10 +76,11 @@ try {
 "scripts": {
   "dev:electron": "concurrently -k \\"cross-env NODE_ENV=development vite\\" \\"wait-on http://localhost:8080 && electron ./electron/main.js\\"",
   "build:electron": "vite build",
-  "package": "electron-builder -c electron-builder.yml",
-  "package:windows": "electron-builder -c electron-builder.yml --win",
-  "package:mac": "electron-builder -c electron-builder.yml --mac",
-  "package:linux": "electron-builder -c electron-builder.yml --linux"
+  "clean:electron": "node ./electron/clearBuildDirs.js",
+  "package": "npm run clean:electron && electron-builder -c electron-builder.yml",
+  "package:windows": "npm run clean:electron && electron-builder -c electron-builder.yml --win",
+  "package:mac": "npm run clean:electron && electron-builder -c electron-builder.yml --mac",
+  "package:linux": "npm run clean:electron && electron-builder -c electron-builder.yml --linux"
 }
   `);
 }

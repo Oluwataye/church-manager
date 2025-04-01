@@ -3,7 +3,7 @@ appId: com.churchmate.app
 productName: ChurchMate
 copyright: Copyright © 2023
 directories:
-  output: dist_electron
+  output: dist_electron_build
   buildResources: public
 files:
   - from: dist
@@ -26,6 +26,8 @@ win:
     - nsis
     - portable
   icon: "public/favicon.ico"
+  artifactName: "ChurchMate-Setup-${version}.${ext}"
+  publisherName: "ChurchMate"
 linux:
   target:
     - AppImage
@@ -40,3 +42,7 @@ nsis:
   artifactName: ChurchMate-Setup-${version}.${ext}
   menuCategory: "Church Management"
   displayLanguageSelector: false
+buildDependenciesFromSource: true
+electronDownload:
+  mirror: https://github.com/electron/electron/releases/download/
+npmRebuild: true

@@ -9,6 +9,7 @@
   },
   "main": "main.js",
   "type": "commonjs",
+  "private": true,
   "scripts": {
     "start": "electron ."
   },
@@ -16,8 +17,5 @@
     "express": "^4.21.2",
     "cors": "^2.8.5",
     "lowdb": "^7.0.1"
-  },
-  "devDependencies": {
-    "electron": "^35.0.1"
   }
 }
