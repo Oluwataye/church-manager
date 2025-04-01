@@ -27,7 +27,6 @@ win:
     - portable
   icon: "public/favicon.ico"
   artifactName: "ChurchMate-Setup-${version}.${ext}"
-  publisherName: "ChurchMate"
 linux:
   target:
     - AppImage
