@@ -31,9 +31,9 @@ try {
   // Add Electron-related scripts
   packageJson.scripts = {
     ...packageJson.scripts,
-    "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron ./electron/main.js\"",
+    "dev:electron": "concurrently -k \"cross-env NODE_ENV=development vite\" \"wait-on http://localhost:8080 && electron ./electron/main.cjs\"",
     "build:electron": "vite build",
-    "clean:electron": "node ./electron/clearBuildDirs.js",
+    "clean:electron": "node ./electron/clearBuildDirs.cjs",
     "package": "npm run clean:electron && electron-builder -c electron-builder.yml",
     "package:windows": "npm run clean:electron && electron-builder -c electron-builder.yml --win",
     "package:mac": "npm run clean:electron && electron-builder -c electron-builder.yml --mac",
@@ -74,9 +74,9 @@ try {
   console.error('\nIf the automatic script fails, you can manually add these scripts to your package.json:');
   console.log(`
 "scripts": {
-  "dev:electron": "concurrently -k \\"cross-env NODE_ENV=development vite\\" \\"wait-on http://localhost:8080 && electron ./electron/main.js\\"",
+  "dev:electron": "concurrently -k \\"cross-env NODE_ENV=development vite\\" \\"wait-on http://localhost:8080 && electron ./electron/main.cjs\\"",
   "build:electron": "vite build",
-  "clean:electron": "node ./electron/clearBuildDirs.js",
+  "clean:electron": "node ./electron/clearBuildDirs.cjs",
   "package": "npm run clean:electron && electron-builder -c electron-builder.yml",
   "package:windows": "npm run clean:electron && electron-builder -c electron-builder.yml --win",
   "package:mac": "npm run clean:electron && electron-builder -c electron-builder.yml --mac",

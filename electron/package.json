@@ -7,7 +7,7 @@
     "name": "ChurchMate Team",
     "email": "info@churchmate.example.com"
   },
-  "main": "main.js",
+  "main": "main.cjs",
   "type": "commonjs",
   "private": true,
   "scripts": {
