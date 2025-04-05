@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 // Login form props
 export interface LoginFormProps {
@@ -39,6 +41,12 @@ export function LoginForm({
   isLoading,
   onSubmit,
 }: LoginFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {error && (
@@ -63,16 +71,29 @@ export function LoginForm({
 
       <div className="space-y-2">
         <Label htmlFor="login-password">Password</Label>
-        <Input
-          id="login-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          placeholder="Enter your password"
-          className="block w-full"
-          disabled={isLoading}
-        />
+        <div className="relative">
+          <Input
+            id="login-password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Enter your password"
+            className="block w-full pr-10"
+            disabled={isLoading}
+          />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Eye className="h-5 w-5" aria-hidden="true" />
+            )}
+          </button>
+        </div>
       </div>
 
       <Button
