@@ -28,38 +28,49 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
     // Add watermark if logo exists
     if (logoUrl) {
       try {
-        // Convert data URL to image for jsPDF
+        // Create a new image element
         const img = new Image();
         img.src = logoUrl;
         
-        // Wait for image to load
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
+        // Wait for image to load before adding it to the PDF
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => {
+            console.error('Failed to load logo image');
+            resolve(); // Continue without watermark if image fails to load
+          };
           // Set a timeout in case the image doesn't load
-          setTimeout(resolve, 2000);
+          setTimeout(() => resolve(), 2000);
         });
         
-        // Add the watermark (centered, faded)
-        const imgWidth = 70; // Adjust size as needed
-        const imgHeight = (img.height / img.width) * imgWidth;
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        
-        // Position in center of page
-        const x = (pageWidth - imgWidth) / 2;
-        const y = (pageHeight - imgHeight) / 2;
-        
-        // Add image with transparency
-        doc.saveGraphicsState();
-        // Set global alpha for transparency
-        doc.setGState({ opacity: 0.2 });
-        doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
-        doc.restoreGraphicsState();
+        // Only proceed if the image loaded successfully
+        if (img.complete && img.naturalWidth > 0) {
+          // Add the watermark (centered, semi-transparent)
+          const imgWidth = 100; // Make it larger than before
+          const imgHeight = (img.height / img.width) * imgWidth;
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const pageHeight = doc.internal.pageSize.getHeight();
+          
+          // Position in center of page
+          const x = (pageWidth - imgWidth) / 2;
+          const y = (pageHeight - imgHeight) / 2;
+          
+          // Add image with transparency - increased opacity from 0.2 to 0.3
+          doc.saveGraphicsState();
+          doc.setGState(new doc.GState({ opacity: 0.3 }));
+          doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
+          doc.restoreGraphicsState();
+          
+          console.log('Watermark added successfully');
+        } else {
+          console.warn('Image loaded but dimensions are invalid');
+        }
       } catch (err) {
         console.error('Error adding watermark:', err);
         // Continue without watermark if there's an error
       }
+    } else {
+      console.log('No logo found in localStorage for watermark');
     }
     
     // Add header
