@@ -57,7 +57,8 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
           
           // Add image with transparency - increased opacity from 0.2 to 0.3
           doc.saveGraphicsState();
-          doc.setGState(new doc.GState({ opacity: 0.3 }));
+          // Fix: Don't use 'new' with GState, just create an object with opacity
+          doc.setGState({ opacity: 0.3 });
           doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
           doc.restoreGraphicsState();
           
