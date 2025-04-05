@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -5,14 +6,15 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 6000
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  icon?: React.ReactNode
 }
 
 const actionTypes = {
@@ -90,8 +92,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -139,8 +139,29 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+import { CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react"
+
 function toast({ ...props }: Toast) {
   const id = genId()
+
+  // Get the appropriate icon based on the variant
+  let icon = null
+  if (props.variant) {
+    switch (props.variant) {
+      case 'success':
+        icon = <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+        break
+      case 'destructive':
+        icon = <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+        break
+      case 'info':
+        icon = <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        break
+      case 'warning':
+        icon = <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+        break
+    }
+  }
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -154,6 +175,7 @@ function toast({ ...props }: Toast) {
     toast: {
       ...props,
       id,
+      icon,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()

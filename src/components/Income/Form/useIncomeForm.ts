@@ -1,11 +1,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { IncomeFormValues, incomeFormSchema } from "./incomeFormSchema";
+import { toast } from "@/hooks/use-toast";
 
 export function useIncomeForm() {
   const queryClient = useQueryClient();
@@ -33,13 +33,21 @@ export function useIncomeForm() {
       return data;
     },
     onSuccess: () => {
-      toast.success("Income recorded successfully");
+      toast({
+        variant: "success",
+        title: "Income Recorded",
+        description: "Income has been recorded successfully."
+      });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
     },
     onError: (error) => {
       console.error('Error saving income:', error);
-      toast.error("Failed to record income. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Record Failed",
+        description: "Failed to record income. Please try again."
+      });
     },
   });
 

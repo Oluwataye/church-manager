@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadLogo } from "@/services/churchSettings";
 import { useOnlineStatus } from "./useOnlineStatus";
@@ -8,6 +7,7 @@ import { useAuth } from "@/components/Auth/AuthContext";
 import { updateHeaderLogo } from "@/utils/logoEvents";
 import { useOfflineLogoUpload } from "./useOfflineLogoUpload";
 import { usePendingLogoUploads } from "./usePendingLogoUploads";
+import { toast } from "@/hooks/use-toast";
 
 export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const [tempLogo, setTempLogo] = useState<string | null>(null);
@@ -43,13 +43,17 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       setTempLogo(null);
       setSelectedFile(null);
       
-      toast("Logo updated successfully", {
+      toast({
+        variant: "success",
+        title: "Logo Updated",
         description: "Your new logo is now visible in the header"
       });
     },
     onError: (error: any) => {
       console.error("Logo upload error:", error);
-      toast.error("Failed to update logo", {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
         description: error.message || "An unexpected error occurred"
       });
     }
@@ -66,14 +70,18 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
     if (!file) return;
     
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File too large", {
+      toast({
+        variant: "warning",
+        title: "File Too Large",
         description: "Logo file size must be less than 5MB"
       });
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      toast.error("Invalid file type", {
+      toast({
+        variant: "warning",
+        title: "Invalid File Type",
         description: "Please select an image file"
       });
       return;
@@ -96,7 +104,11 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
    */
   const handleApply = async () => {
     if (!selectedFile || !tempLogo) {
-      toast.error("No image selected");
+      toast({
+        variant: "warning",
+        title: "No Image Selected",
+        description: "Please select an image first"
+      });
       return;
     }
     
@@ -112,12 +124,16 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
       setTempLogo(null);
       setSelectedFile(null);
       
-      toast.success("Logo updated (offline mode)", {
+      toast({
+        variant: "success",
+        title: "Logo Updated (Offline)",
         description: "Changes will be synced when you're back online"
       });
     } else {
       if (!user) {
-        toast.error("Authentication required", {
+        toast({
+          variant: "warning",
+          title: "Authentication Required",
           description: "You must be logged in to upload a logo"
         });
         return;
@@ -134,7 +150,11 @@ export function useLogoUpload(onLogoChange?: (logo: string) => void) {
   const handleCancel = () => {
     setTempLogo(null);
     setSelectedFile(null);
-    toast("Logo update cancelled");
+    toast({
+      variant: "info",
+      title: "Cancelled",
+      description: "Logo update cancelled"
+    });
   };
 
   return {

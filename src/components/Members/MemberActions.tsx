@@ -1,10 +1,10 @@
 
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import type { Member } from "@/hooks/useMembers";
 import { useAuth } from "@/components/Auth/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 export function useMemberActions() {
   const queryClient = useQueryClient();
@@ -77,15 +77,23 @@ export function useMemberActions() {
 
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast.success("Member registered", {
+      
+      toast({
+        variant: "success",
+        title: "Member Registered",
         description: "Member has been registered successfully" + (isOffline ? " (offline mode)" : "")
       });
+      
       return true;
     } catch (error: any) {
       console.error('Error adding member:', error);
-      toast.error("Registration failed", {
+      
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
         description: "Failed to register member. Please try again."
       });
+      
       return false;
     }
   };
@@ -122,15 +130,23 @@ export function useMemberActions() {
 
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast.success("Member updated", {
+      
+      toast({
+        variant: "success",
+        title: "Member Updated",
         description: "Member has been updated successfully" + (isOffline ? " (offline mode)" : "")
       });
+      
       return true;
     } catch (error: any) {
       console.error('Error updating member:', error);
-      toast.error("Update failed", {
+      
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
         description: "Failed to update member. Please try again."
       });
+      
       return false;
     }
   };
@@ -163,15 +179,23 @@ export function useMemberActions() {
 
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast.success("Member deleted", {
+      
+      toast({
+        variant: "success",
+        title: "Member Deleted",
         description: "Member has been deleted successfully" + (isOffline ? " (offline mode)" : "")
       });
+      
       return true;
     } catch (error: any) {
       console.error('Error deleting member:', error);
-      toast.error("Deletion failed", {
+      
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
         description: "Failed to delete member. Please try again."
       });
+      
       return false;
     }
   };

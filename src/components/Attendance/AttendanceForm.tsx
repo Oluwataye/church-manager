@@ -12,8 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 export function AttendanceForm() {
   const queryClient = useQueryClient();
@@ -40,7 +40,9 @@ export function AttendanceForm() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Attendance recorded", {
+      toast({
+        variant: "success",
+        title: "Attendance Recorded",
         description: "Attendance has been recorded successfully."
       });
       setAttendance({
@@ -55,8 +57,10 @@ export function AttendanceForm() {
     },
     onError: (error) => {
       console.error('Error saving attendance:', error);
-      toast.error("Failed to record attendance", {
-        description: "An error occurred. Please try again."
+      toast({
+        variant: "destructive",
+        title: "Record Failed",
+        description: "An error occurred while recording attendance. Please try again."
       });
     },
   });

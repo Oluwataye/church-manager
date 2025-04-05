@@ -12,11 +12,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 const groupSchema = z.object({
   name: z.string().min(1, "Group name is required"),
@@ -49,7 +49,9 @@ export const GroupForm = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Group created", {
+      toast({
+        variant: "success",
+        title: "Group Created",
         description: "Group has been created successfully!"
       });
       form.reset();
@@ -57,7 +59,9 @@ export const GroupForm = () => {
     },
     onError: (error) => {
       console.error('Error creating group:', error);
-      toast.error("Failed to create group", {
+      toast({
+        variant: "destructive",
+        title: "Group Creation Failed",
         description: "An error occurred. Please try again."
       });
     },
