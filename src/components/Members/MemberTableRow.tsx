@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Download } from "lucide-react";
 
 interface Member {
   id: string;
@@ -73,7 +73,8 @@ export function MemberTableRow({
             <Pencil className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={() => onDownload(member)}>
-            Download
+            <Download className="h-4 w-4 mr-1" />
+            PDF
           </Button>
           <Button
             variant="destructive"
