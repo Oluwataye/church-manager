@@ -18,6 +18,16 @@ type Tithe = {
   service_type: string;
 };
 
+// Define types for Supabase response to avoid deep instantiation
+type IncomeRecord = {
+  id: string;
+  date: string;
+  amount: number | string;
+  service_type: string;
+  member_id?: string;
+  category?: string;
+};
+
 export function useMemberTithes() {
   const [members, setMembers] = useState<Member[]>([]);
   const [tithes, setTithes] = useState<Tithe[]>([]);
@@ -90,22 +100,12 @@ export function useMemberTithes() {
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase with explicit typing to avoid deep instantiation
+        // For web, use Supabase with simple query to avoid type issues
         try {
-          // Use explicit type annotation for the response data
-          interface IncomeRecord {
-            id: string;
-            date: string;
-            amount: number | string;
-            service_type: string;
-            member_id?: string;
-            category: string;
-          }
-          
-          // Define the query directly without chaining to simplify type inference
+          // Execute query without chaining to simplify type inference
           const result = await supabase
             .from('incomes')
-            .select('id, date, amount, service_type, member_id')
+            .select('id, date, amount, service_type')
             .eq('category', 'tithe')
             .eq('member_id', memberId)
             .order('date', { ascending: false });
@@ -116,11 +116,12 @@ export function useMemberTithes() {
             return;
           }
           
-          // Safely type the data
-          const data = result.data as IncomeRecord[];
+          // Force type assertion to avoid deep instantiation issues
+          // This is safe because we're explicitly selecting known columns
+          const records = result.data as unknown as IncomeRecord[];
           
-          // Map the data to match the Tithe type with explicit type casting
-          const formattedTithes: Tithe[] = data.map(item => ({
+          // Map the data to match the Tithe type
+          const formattedTithes: Tithe[] = records.map(item => ({
             id: item.id,
             member_id: memberId, // Use the passed memberId since we filtered by it
             date: item.date,
