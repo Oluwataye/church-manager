@@ -1,0 +1,122 @@
+
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+type Member = {
+  id: string;
+  family_name: string;
+  individual_names: string;
+  contact_number?: string;
+  contact_address?: string;
+};
+
+type Tithe = {
+  id: string;
+  member_id: string;
+  date: string;
+  amount: number;
+  service_type: string;
+};
+
+export function useMemberTithes() {
+  const [members, setMembers] = useState<Member[]>([]);
+  const [tithes, setTithes] = useState<Tithe[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const searchMembers = useCallback(async (searchTerm: string) => {
+    setIsLoading(true);
+    try {
+      // Check if we're in Electron mode
+      const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
+      
+      if (isElectron) {
+        // For Electron, fetch from local API
+        const response = await fetch(`${window.electronAPI?.apiBaseUrl}/members`);
+        if (!response.ok) throw new Error('Failed to fetch members');
+        
+        const allMembers = await response.json();
+        
+        // Filter members based on search term
+        const filteredMembers = allMembers.filter((member: Member) => {
+          const fullName = `${member.family_name} ${member.individual_names}`.toLowerCase();
+          return fullName.includes(searchTerm.toLowerCase());
+        });
+        
+        setMembers(filteredMembers);
+      } else {
+        // For web, use Supabase
+        let query = supabase.from('members').select('id, family_name, individual_names, contact_number, contact_address');
+        
+        if (searchTerm) {
+          query = query.or(`family_name.ilike.%${searchTerm}%,individual_names.ilike.%${searchTerm}%`);
+        }
+        
+        const { data, error } = await query.limit(20);
+        
+        if (error) throw error;
+        setMembers(data || []);
+      }
+    } catch (error) {
+      console.error('Error searching members:', error);
+      setMembers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchMemberTithes = useCallback(async (memberId: string) => {
+    setIsLoading(true);
+    setTithes([]);
+    
+    try {
+      // Check if we're in Electron mode
+      const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
+      
+      if (isElectron) {
+        // For Electron, fetch from local API
+        const response = await fetch(`${window.electronAPI?.apiBaseUrl}/income`);
+        if (!response.ok) throw new Error('Failed to fetch income');
+        
+        const allIncome = await response.json();
+        
+        // Filter to get only tithe records for the selected member
+        const memberTithes = allIncome
+          .filter((income: any) => 
+            income.category === 'tithe' && income.member_id === memberId
+          )
+          .map((income: any) => ({
+            id: income.id,
+            member_id: income.member_id,
+            date: income.date,
+            amount: parseFloat(income.amount),
+            service_type: income.service_type
+          }));
+        
+        setTithes(memberTithes);
+      } else {
+        // For web, use Supabase
+        const { data, error } = await supabase
+          .from('incomes')
+          .select('*')
+          .eq('category', 'tithe')
+          .eq('member_id', memberId)
+          .order('date', { ascending: false });
+        
+        if (error) throw error;
+        setTithes(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching member tithes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return {
+    members,
+    tithes,
+    isLoading,
+    searchMembers,
+    fetchMemberTithes
+  };
+}

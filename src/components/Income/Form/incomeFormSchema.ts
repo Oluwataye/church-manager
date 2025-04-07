@@ -7,6 +7,7 @@ export const incomeFormSchema = z.object({
   category: z.string(),
   amount: z.string().min(1),
   description: z.string().optional(),
+  member_id: z.string().optional(),
 });
 
 export type IncomeFormValues = z.infer<typeof incomeFormSchema>;
