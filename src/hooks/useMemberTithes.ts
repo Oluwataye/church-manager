@@ -90,32 +90,35 @@ export function useMemberTithes() {
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase - fix the query to handle the case when member_id doesn't exist
-        const { data, error } = await supabase
-          .from('incomes')
-          .select('id, date, amount, service_type, category')
-          .eq('category', 'tithe')
-          .eq('member_id', memberId)
-          .order('date', { ascending: false });
-        
-        if (error) {
-          console.error('Error fetching tithes:', error);
-          // In case of error due to missing column, just set empty array
+        // For web, use Supabase with simpler query structure to avoid type errors
+        try {
+          const { data, error } = await supabase
+            .from('incomes')
+            .select('*')
+            .eq('category', 'tithe')
+            .eq('member_id', memberId)
+            .order('date', { ascending: false });
+          
+          if (error) {
+            console.error('Error fetching tithes:', error);
+            setTithes([]);
+            return;
+          }
+          
+          // Map the data to match the Tithe type
+          const formattedTithes = (data || []).map(item => ({
+            id: item.id,
+            member_id: memberId, // Use the passed memberId since we filtered by it
+            date: item.date,
+            amount: Number(item.amount),
+            service_type: item.service_type
+          }));
+          
+          setTithes(formattedTithes);
+        } catch (supabaseError) {
+          console.error('Error in Supabase query:', supabaseError);
           setTithes([]);
-          return;
         }
-        
-        // Ensure we have data and map it to the Tithe type
-        // If member_id field exists in the Supabase table, it will have it, otherwise we use the passed memberId
-        const formattedTithes: Tithe[] = (data || []).map(item => ({
-          id: item.id,
-          member_id: memberId, // Use the passed memberId since we filtered by it
-          date: item.date,
-          amount: Number(item.amount),
-          service_type: item.service_type
-        }));
-        
-        setTithes(formattedTithes);
       }
     } catch (error) {
       console.error('Error fetching member tithes:', error);
