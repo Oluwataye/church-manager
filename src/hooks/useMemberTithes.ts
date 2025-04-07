@@ -90,27 +90,41 @@ export function useMemberTithes() {
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase with simpler query structure to avoid type errors
+        // For web, use Supabase with explicit typing to avoid deep instantiation
         try {
-          const { data, error } = await supabase
+          // Use explicit type annotation for the response data
+          interface IncomeRecord {
+            id: string;
+            date: string;
+            amount: number | string;
+            service_type: string;
+            member_id?: string;
+            category: string;
+          }
+          
+          // Define the query directly without chaining to simplify type inference
+          const result = await supabase
             .from('incomes')
-            .select('*')
+            .select('id, date, amount, service_type, member_id')
             .eq('category', 'tithe')
             .eq('member_id', memberId)
             .order('date', { ascending: false });
           
-          if (error) {
-            console.error('Error fetching tithes:', error);
+          if (result.error) {
+            console.error('Error fetching tithes:', result.error);
             setTithes([]);
             return;
           }
           
-          // Map the data to match the Tithe type
-          const formattedTithes = (data || []).map(item => ({
+          // Safely type the data
+          const data = result.data as IncomeRecord[];
+          
+          // Map the data to match the Tithe type with explicit type casting
+          const formattedTithes: Tithe[] = data.map(item => ({
             id: item.id,
             member_id: memberId, // Use the passed memberId since we filtered by it
             date: item.date,
-            amount: Number(item.amount),
+            amount: typeof item.amount === 'string' ? parseFloat(item.amount) : item.amount,
             service_type: item.service_type
           }));
           
