@@ -18,16 +18,6 @@ type Tithe = {
   service_type: string;
 };
 
-// Define types for Supabase response to avoid deep instantiation
-type IncomeRecord = {
-  id: string;
-  date: string;
-  amount: number | string;
-  service_type: string;
-  member_id?: string;
-  category?: string;
-};
-
 export function useMemberTithes() {
   const [members, setMembers] = useState<Member[]>([]);
   const [tithes, setTithes] = useState<Tithe[]>([]);
@@ -100,40 +90,30 @@ export function useMemberTithes() {
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase with simple query to avoid type issues
-        try {
-          // Execute query without chaining to simplify type inference
-          const result = await supabase
-            .from('incomes')
-            .select('id, date, amount, service_type')
-            .eq('category', 'tithe')
-            .eq('member_id', memberId)
-            .order('date', { ascending: false });
-          
-          if (result.error) {
-            console.error('Error fetching tithes:', result.error);
-            setTithes([]);
-            return;
-          }
-          
-          // Force type assertion to avoid deep instantiation issues
-          // This is safe because we're explicitly selecting known columns
-          const records = result.data as unknown as IncomeRecord[];
-          
-          // Map the data to match the Tithe type
-          const formattedTithes: Tithe[] = records.map(item => ({
-            id: item.id,
-            member_id: memberId, // Use the passed memberId since we filtered by it
-            date: item.date,
-            amount: typeof item.amount === 'string' ? parseFloat(item.amount) : item.amount,
-            service_type: item.service_type
-          }));
-          
-          setTithes(formattedTithes);
-        } catch (supabaseError) {
-          console.error('Error in Supabase query:', supabaseError);
+        // For web, use Supabase with explicit typing to avoid deep instantiation
+        const { data, error } = await supabase
+          .from('incomes')
+          .select('id, date, amount, service_type')
+          .eq('category', 'tithe')
+          .eq('member_id', memberId)
+          .order('date', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching tithes:', error);
           setTithes([]);
+          return;
         }
+        
+        // Map data to Tithe type with explicit typing
+        const formattedTithes: Tithe[] = (data || []).map(item => ({
+          id: item.id,
+          member_id: memberId,
+          date: item.date,
+          amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
+          service_type: item.service_type
+        }));
+        
+        setTithes(formattedTithes);
       }
     } catch (error) {
       console.error('Error fetching member tithes:', error);
