@@ -90,7 +90,15 @@ export function useMemberTithes() {
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase with explicit typing to avoid deep instantiation
+        // For web, use Supabase with explicit type annotations
+        // Using type annotation for data to avoid deep type inference
+        type IncomeRecord = {
+          id: string;
+          date: string;
+          amount: string | number;
+          service_type: string;
+        };
+        
         const { data, error } = await supabase
           .from('incomes')
           .select('id, date, amount, service_type')
@@ -104,8 +112,11 @@ export function useMemberTithes() {
           return;
         }
         
+        // Use explicitly typed variables for clarity
+        const typedData = data as IncomeRecord[] | null;
+        
         // Map data to Tithe type with explicit typing
-        const formattedTithes: Tithe[] = (data || []).map(item => ({
+        const formattedTithes: Tithe[] = (typedData || []).map(item => ({
           id: item.id,
           member_id: memberId,
           date: item.date,
