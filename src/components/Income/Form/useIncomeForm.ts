@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { IncomeFormValues, incomeFormSchema } from "./incomeFormSchema";
 import { toast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export function useIncomeForm() {
   const queryClient = useQueryClient();
@@ -20,7 +21,7 @@ export function useIncomeForm() {
   const selectedCategory = form.watch("category");
 
   // We'll add validation conditionally
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedCategory === "tithe") {
       form.register("member_id", { 
         required: "Member selection is required for tithe records" 

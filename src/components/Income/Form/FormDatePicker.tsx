@@ -12,18 +12,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { Control } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 
 interface FormDatePickerProps {
-  control: Control<any>;
+  form: UseFormReturn<any>;
   name: string;
   label: string;
 }
 
-export function FormDatePicker({ control, name, label }: FormDatePickerProps) {
+export function FormDatePicker({ form, name, label }: FormDatePickerProps) {
   return (
     <FormField
-      control={control}
+      control={form.control}
       name={name}
       render={({ field }) => (
         <FormItem className="flex flex-col">

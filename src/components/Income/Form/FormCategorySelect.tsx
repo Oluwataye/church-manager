@@ -13,26 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Control } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
+import { INCOME_CATEGORY_OPTIONS, SERVICE_TYPE_OPTIONS } from "./incomeFormSchema";
 
 interface FormCategorySelectProps {
-  control: Control<any>;
+  form: UseFormReturn<any>;
   name: string;
   label: string;
-  placeholder: string;
-  options: { value: string; label: string }[];
+  selectType: "service" | "category";
 }
 
 export function FormCategorySelect({ 
-  control, 
+  form, 
   name, 
   label, 
-  placeholder, 
-  options 
+  selectType 
 }: FormCategorySelectProps) {
+  const options = selectType === 'service' ? SERVICE_TYPE_OPTIONS : INCOME_CATEGORY_OPTIONS;
+  
   return (
     <FormField
-      control={control}
+      control={form.control}
       name={name}
       render={({ field }) => (
         <FormItem>
@@ -40,7 +41,7 @@ export function FormCategorySelect({
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder={placeholder} />
+                <SelectValue placeholder={`Select ${selectType}`} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>

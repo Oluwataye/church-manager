@@ -74,36 +74,41 @@ export function useMemberTithes() {
       
       if (isElectron) {
         // For Electron, fetch from local API
-        const response = await fetch(`${window.electronAPI?.apiBaseUrl}/income`);
-        if (!response.ok) throw new Error('Failed to fetch income');
+        const response = await fetch(`${window.electronAPI?.apiBaseUrl}/income/member/${memberId}`);
+        if (!response.ok) throw new Error('Failed to fetch member tithes');
         
-        const allIncome = await response.json();
+        const memberTithes = await response.json();
         
-        // Filter to get only tithe records for the selected member
-        const memberTithes = allIncome
-          .filter((income: any) => 
-            income.category === 'tithe' && income.member_id === memberId
-          )
-          .map((income: any) => ({
-            id: income.id,
-            member_id: income.member_id,
-            date: income.date,
-            amount: parseFloat(income.amount),
-            service_type: income.service_type
-          }));
+        // Convert to Tithe type
+        const formattedTithes: Tithe[] = memberTithes.map((income: any) => ({
+          id: income.id,
+          member_id: income.member_id,
+          date: income.date,
+          amount: parseFloat(income.amount),
+          service_type: income.service_type
+        }));
         
-        setTithes(memberTithes);
+        setTithes(formattedTithes);
       } else {
         // For web, use Supabase
         const { data, error } = await supabase
           .from('incomes')
-          .select('*')
+          .select('id, member_id, date, amount, service_type')
           .eq('category', 'tithe')
           .eq('member_id', memberId)
           .order('date', { ascending: false });
         
         if (error) throw error;
-        setTithes(data || []);
+        
+        const formattedTithes: Tithe[] = (data || []).map(item => ({
+          id: item.id,
+          member_id: item.member_id,
+          date: item.date,
+          amount: Number(item.amount),
+          service_type: item.service_type
+        }));
+        
+        setTithes(formattedTithes);
       }
     } catch (error) {
       console.error('Error fetching member tithes:', error);
