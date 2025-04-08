@@ -48,6 +48,7 @@ export function useMemberTithes() {
         let query = supabase.from('members').select('id, family_name, individual_names, contact_number, contact_address');
         
         if (searchTerm) {
+          // Fix: Use proper filtering for case-insensitive search
           query = query.or(`family_name.ilike.%${searchTerm}%,individual_names.ilike.%${searchTerm}%`);
         }
         
@@ -91,14 +92,8 @@ export function useMemberTithes() {
         setTithes(formattedTithes);
       } else {
         // For web, use Supabase
-        // Define exact types to avoid type inference issues
-        type SupabaseTithe = {
-          id: string;
-          date: string;
-          amount: number | string;
-          service_type: string;
-        };
         
+        // Fix: Use a simpler approach to avoid deep type instantiation
         const { data, error } = await supabase
           .from('incomes')
           .select('id, date, amount, service_type')
@@ -112,15 +107,13 @@ export function useMemberTithes() {
           return;
         }
         
-        // Explicitly cast the data to our defined type
-        const typedData = data as SupabaseTithe[] | null;
-        
-        // Map data to Tithe type
-        const formattedTithes: Tithe[] = (typedData || []).map(item => ({
+        // Map data to Tithe type with explicit number conversion for amount
+        const formattedTithes: Tithe[] = (data || []).map(item => ({
           id: item.id,
           member_id: memberId,
           date: item.date,
-          amount: typeof item.amount === 'string' ? parseFloat(item.amount) : item.amount,
+          // Ensure amount is always a number
+          amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
           service_type: item.service_type
         }));
         

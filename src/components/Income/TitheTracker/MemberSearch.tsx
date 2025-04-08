@@ -16,6 +16,12 @@ export function MemberSearch({ isLoading, onSearch }: MemberSearchProps) {
     onSearch(searchTerm);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="flex-1 space-y-2">
       <label htmlFor="member-search" className="text-sm font-medium">Search Member</label>
@@ -25,6 +31,7 @@ export function MemberSearch({ isLoading, onSearch }: MemberSearchProps) {
           placeholder="Enter member name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="max-w-sm"
         />
         <Button 
