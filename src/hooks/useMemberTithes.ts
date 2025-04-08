@@ -19,8 +19,17 @@ interface Tithe {
   service_type: string;
 }
 
-// Separate interfaces for API responses
+// Create a separate interface for Electron API responses
 interface ElectronTitheRecord {
+  id: string;
+  member_id: string;
+  date: string;
+  amount: string | number;
+  service_type: string;
+}
+
+// Create a separate interface for Supabase responses
+interface SupabaseTitheRecord {
   id: string;
   member_id: string;
   date: string;
@@ -103,7 +112,7 @@ export function useMemberTithes() {
         // For web, use Supabase with simplified query
         const { data, error } = await supabase
           .from('incomes')
-          .select('id, date, amount, service_type, member_id')
+          .select('id, date, amount, service_type, category, member_id')
           .eq('category', 'tithe')
           .eq('member_id', memberId)
           .order('date', { ascending: false });
@@ -111,7 +120,7 @@ export function useMemberTithes() {
         if (error) throw error;
         
         // Format with explicit casting to avoid deep type instantiation
-        const formattedTithes = (data || []).map(item => ({
+        const formattedTithes = (data || []).map((item: SupabaseTitheRecord) => ({
           id: item.id,
           member_id: item.member_id,
           date: item.date,

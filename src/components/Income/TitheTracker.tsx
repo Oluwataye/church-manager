@@ -33,7 +33,12 @@ export function TitheTracker() {
   }, [searchMembers]);
 
   const handleSearch = () => {
-    searchMembers(searchTerm);
+    if (searchTerm.trim()) {
+      searchMembers(searchTerm);
+    } else {
+      // If search term is empty, load all members
+      searchMembers("");
+    }
   };
 
   // Handle Enter key press in search input

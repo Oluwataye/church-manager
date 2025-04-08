@@ -36,7 +36,7 @@ const setupIncomeRoutes = (app, expressApp) => {
     }
   });
 
-  // New endpoint to get tithes by member ID
+  // Endpoint to get tithes by member ID
   expressApp.get('/income/member/:id', async (req, res) => {
     try {
       const { id } = req.params;
