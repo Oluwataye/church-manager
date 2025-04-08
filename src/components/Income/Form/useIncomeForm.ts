@@ -15,6 +15,10 @@ export function useIncomeForm() {
     resolver: zodResolver(incomeFormSchema),
     defaultValues: {
       description: "",
+      date: new Date(),
+      serviceType: "sunday", // Provide defaults for all required fields
+      category: "offering",
+      amount: "",
     },
   });
 
@@ -77,7 +81,13 @@ export function useIncomeForm() {
         title: "Income Recorded",
         description: "Income has been recorded successfully."
       });
-      form.reset();
+      form.reset({
+        date: new Date(),
+        serviceType: "sunday",
+        category: "offering",
+        amount: "",
+        description: "",
+      });
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
     },
     onError: (error) => {

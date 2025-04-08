@@ -2,21 +2,22 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-type Member = {
+// Define types at top level to prevent TypeScript from recalculating them
+interface Member {
   id: string;
   family_name: string;
   individual_names: string;
   contact_number?: string;
   contact_address?: string;
-};
+}
 
-type Tithe = {
+interface Tithe {
   id: string;
   member_id: string;
   date: string;
   amount: number;
   service_type: string;
-};
+}
 
 export function useMemberTithes() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -79,18 +80,18 @@ export function useMemberTithes() {
         
         const memberTithes = await response.json();
         
-        // Convert to Tithe type
-        const formattedTithes: Tithe[] = memberTithes.map((income: any) => ({
+        // Convert to Tithe type with explicit type casting
+        const formattedTithes = memberTithes.map((income: any) => ({
           id: income.id,
           member_id: income.member_id,
           date: income.date,
           amount: parseFloat(income.amount),
           service_type: income.service_type
-        }));
+        })) as Tithe[];
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase
+        // For web, use Supabase with simplified query
         const { data, error } = await supabase
           .from('incomes')
           .select('id, member_id, date, amount, service_type')
@@ -100,13 +101,14 @@ export function useMemberTithes() {
         
         if (error) throw error;
         
-        const formattedTithes: Tithe[] = (data || []).map(item => ({
+        // Format with explicit casting to avoid deep type instantiation
+        const formattedTithes = (data || []).map(item => ({
           id: item.id,
           member_id: item.member_id,
           date: item.date,
           amount: Number(item.amount),
           service_type: item.service_type
-        }));
+        })) as Tithe[];
         
         setTithes(formattedTithes);
       }

@@ -9,7 +9,7 @@ import { useIncomeForm } from "./Form/useIncomeForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { INCOME_CATEGORY_OPTIONS } from "./Form/incomeFormSchema";
+import { Form } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 
 export function IncomeForm() {
@@ -55,6 +55,7 @@ export function IncomeForm() {
     }
   };
 
+  // Ensure we're using the Form provider properly
   return (
     <Card>
       <CardHeader>
@@ -62,78 +63,80 @@ export function IncomeForm() {
         <CardDescription>Record a new income transaction for the church</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} className="space-y-6">
-          <FormDatePicker
-            form={form}
-            name="date"
-            label="Date"
-          />
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormCategorySelect
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="space-y-6">
+            <FormDatePicker
               form={form}
-              name="serviceType"
-              label="Service Type"
-              selectType="service"
+              name="date"
+              label="Date"
             />
 
-            <FormCategorySelect
-              form={form}
-              name="category"
-              label="Income Category"
-              selectType="category"
-            />
-          </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormCategorySelect
+                form={form}
+                name="serviceType"
+                label="Service Type"
+                selectType="service"
+              />
 
-          {isTithe && (
-            <div className="space-y-2">
-              <Label htmlFor="member_id">Member</Label>
-              <Select
-                disabled={loadingMembers}
-                onValueChange={(value) => form.setValue("member_id", value)}
-              >
-                <SelectTrigger id="member_id" className="w-full">
-                  <SelectValue placeholder={loadingMembers ? "Loading members..." : "Select member"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {members.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.family_name} {member.individual_names}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.member_id && (
-                <p className="text-sm text-destructive">{form.formState.errors.member_id.message}</p>
-              )}
+              <FormCategorySelect
+                form={form}
+                name="category"
+                label="Income Category"
+                selectType="category"
+              />
             </div>
-          )}
 
-          <FormTextInput
-            form={form}
-            name="amount"
-            label="Amount (₦)"
-            type="number"
-          />
-
-          <FormTextInput
-            form={form}
-            name="description"
-            label="Description (Optional)"
-            type="text"
-          />
-
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Income Record"
+            {isTithe && (
+              <div className="space-y-2">
+                <Label htmlFor="member_id">Member</Label>
+                <Select
+                  disabled={loadingMembers}
+                  onValueChange={(value) => form.setValue("member_id", value)}
+                >
+                  <SelectTrigger id="member_id" className="w-full">
+                    <SelectValue placeholder={loadingMembers ? "Loading members..." : "Select member"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {members.map((member) => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.family_name} {member.individual_names}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.member_id && (
+                  <p className="text-sm text-destructive">{form.formState.errors.member_id.message}</p>
+                )}
+              </div>
             )}
-          </Button>
-        </form>
+
+            <FormTextInput
+              form={form}
+              name="amount"
+              label="Amount (₦)"
+              type="number"
+            />
+
+            <FormTextInput
+              form={form}
+              name="description"
+              label="Description (Optional)"
+              type="text"
+            />
+
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Income Record"
+              )}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
