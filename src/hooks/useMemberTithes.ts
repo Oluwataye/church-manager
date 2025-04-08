@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Move type definitions to the top level to prevent re-calculation
 type Member = {
   id: string;
   family_name: string;
@@ -17,6 +18,22 @@ type Tithe = {
   amount: number;
   service_type: string;
 };
+
+// Create clear interface types
+interface IncomeApiResponse {
+  id: string;
+  member_id: string;
+  date: string;
+  amount: string | number;
+  service_type: string;
+}
+
+interface SupabaseTithe {
+  id: string;
+  date: string;
+  amount: string | number;
+  service_type: string;
+}
 
 export function useMemberTithes() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -78,41 +95,42 @@ export function useMemberTithes() {
         const response = await fetch(`${window.electronAPI?.apiBaseUrl}/income/member/${memberId}`);
         if (!response.ok) throw new Error('Failed to fetch member tithes');
         
-        const memberTithes = await response.json();
+        const memberTithes = await response.json() as IncomeApiResponse[];
         
-        // Convert to Tithe type
-        const formattedTithes: Tithe[] = memberTithes.map((income: any) => ({
+        // Convert to Tithe type with consistent number handling
+        const formattedTithes: Tithe[] = memberTithes.map((income: IncomeApiResponse) => ({
           id: income.id,
           member_id: income.member_id,
           date: income.date,
-          amount: parseFloat(income.amount),
+          amount: typeof income.amount === 'string' ? parseFloat(income.amount) : Number(income.amount),
           service_type: income.service_type
         }));
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase
-        
-        // Fix: Use a simpler approach to avoid deep type instantiation
-        const { data, error } = await supabase
+        // For web, use Supabase - simplified query to avoid deep type instantiation
+        const result = await supabase
           .from('incomes')
           .select('id, date, amount, service_type')
           .eq('category', 'tithe')
           .eq('member_id', memberId)
           .order('date', { ascending: false });
         
-        if (error) {
-          console.error('Error fetching tithes:', error);
+        if (result.error) {
+          console.error('Error fetching tithes:', result.error);
           setTithes([]);
           return;
         }
         
+        // Explicitly cast data to our defined type to avoid deep instantiation
+        const data = result.data as SupabaseTithe[];
+        
         // Map data to Tithe type with explicit number conversion for amount
-        const formattedTithes: Tithe[] = (data || []).map(item => ({
+        const formattedTithes: Tithe[] = (data || []).map((item: SupabaseTithe) => ({
           id: item.id,
           member_id: memberId,
           date: item.date,
-          // Ensure amount is always a number
+          // Ensure amount is always a number with consistent conversion approach
           amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
           service_type: item.service_type
         }));
