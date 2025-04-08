@@ -28,13 +28,14 @@ interface ElectronTitheRecord {
   service_type: string;
 }
 
-// Create a separate interface for Supabase responses
+// Create a separate interface for Supabase responses - with the fields that actually exist
 interface SupabaseTitheRecord {
   id: string;
-  member_id: string;
   date: string;
   amount: string | number;
   service_type: string;
+  category: string;
+  member_id: string;
 }
 
 export function useMemberTithes() {
@@ -119,16 +120,20 @@ export function useMemberTithes() {
         
         if (error) throw error;
         
-        // Format with explicit casting to avoid deep type instantiation
-        const formattedTithes = (data || []).map((item: SupabaseTitheRecord) => ({
-          id: item.id,
-          member_id: item.member_id,
-          date: item.date,
-          amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
-          service_type: item.service_type
-        })) as Tithe[];
-        
-        setTithes(formattedTithes);
+        // Use type assertion to avoid deep type instantiation
+        if (data) {
+          const formattedTithes = data.map((item) => ({
+            id: item.id,
+            member_id: item.member_id,
+            date: item.date,
+            amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
+            service_type: item.service_type
+          }));
+          
+          setTithes(formattedTithes as Tithe[]);
+        } else {
+          setTithes([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching member tithes:', error);
