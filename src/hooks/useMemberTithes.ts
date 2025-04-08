@@ -19,6 +19,15 @@ interface Tithe {
   service_type: string;
 }
 
+// Separate interfaces for API responses
+interface ElectronTitheRecord {
+  id: string;
+  member_id: string;
+  date: string;
+  amount: string | number;
+  service_type: string;
+}
+
 export function useMemberTithes() {
   const [members, setMembers] = useState<Member[]>([]);
   const [tithes, setTithes] = useState<Tithe[]>([]);
@@ -81,11 +90,11 @@ export function useMemberTithes() {
         const memberTithes = await response.json();
         
         // Convert to Tithe type with explicit type casting
-        const formattedTithes = memberTithes.map((income: any) => ({
+        const formattedTithes = memberTithes.map((income: ElectronTitheRecord) => ({
           id: income.id,
           member_id: income.member_id,
           date: income.date,
-          amount: parseFloat(income.amount),
+          amount: typeof income.amount === 'string' ? parseFloat(income.amount) : income.amount,
           service_type: income.service_type
         })) as Tithe[];
         
@@ -94,7 +103,7 @@ export function useMemberTithes() {
         // For web, use Supabase with simplified query
         const { data, error } = await supabase
           .from('incomes')
-          .select('id, member_id, date, amount, service_type')
+          .select('id, date, amount, service_type, member_id')
           .eq('category', 'tithe')
           .eq('member_id', memberId)
           .order('date', { ascending: false });
@@ -106,7 +115,7 @@ export function useMemberTithes() {
           id: item.id,
           member_id: item.member_id,
           date: item.date,
-          amount: Number(item.amount),
+          amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
           service_type: item.service_type
         })) as Tithe[];
         

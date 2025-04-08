@@ -16,9 +16,10 @@ export function useIncomeForm() {
     defaultValues: {
       description: "",
       date: new Date(),
-      serviceType: "sunday", // Provide defaults for all required fields
+      serviceType: "sunday",
       category: "offering",
       amount: "",
+      member_id: undefined,
     },
   });
 
@@ -87,8 +88,13 @@ export function useIncomeForm() {
         category: "offering",
         amount: "",
         description: "",
+        member_id: undefined,
       });
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
+      // Also invalidate any member tithes queries if this was a tithe
+      if (form.getValues("category") === "tithe") {
+        queryClient.invalidateQueries({ queryKey: ['memberTithes'] });
+      }
     },
     onError: (error) => {
       console.error('Error saving income:', error);

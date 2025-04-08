@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
-import { Search, FileDown, Loader2 } from "lucide-react";
+import { Search, FileDown, Loader2, CreditCard, Calendar } from "lucide-react";
 import { useMemberTithes } from "@/hooks/useMemberTithes";
 import { generateTitheReport } from "@/utils/titheReportGenerator";
 import { toast } from "@/hooks/use-toast";
@@ -34,6 +34,13 @@ export function TitheTracker() {
 
   const handleSearch = () => {
     searchMembers(searchTerm);
+  };
+
+  // Handle Enter key press in search input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleSelectMember = (memberId: string) => {
@@ -84,6 +91,7 @@ export function TitheTracker() {
               placeholder="Enter member name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="max-w-sm"
             />
             <Button 
@@ -164,9 +172,9 @@ export function TitheTracker() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
+                      <TableHead><Calendar className="h-4 w-4 mr-2 inline" /> Date</TableHead>
                       <TableHead>Service Type</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right"><CreditCard className="h-4 w-4 mr-2 inline" /> Amount</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
