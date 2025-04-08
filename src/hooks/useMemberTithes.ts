@@ -2,7 +2,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Move type definitions to the top level to prevent re-calculation
 type Member = {
   id: string;
   family_name: string;
@@ -18,22 +17,6 @@ type Tithe = {
   amount: number;
   service_type: string;
 };
-
-// Create clear interface types
-interface IncomeApiResponse {
-  id: string;
-  member_id: string;
-  date: string;
-  amount: string | number;
-  service_type: string;
-}
-
-interface SupabaseTithe {
-  id: string;
-  date: string;
-  amount: string | number;
-  service_type: string;
-}
 
 export function useMemberTithes() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -65,7 +48,6 @@ export function useMemberTithes() {
         let query = supabase.from('members').select('id, family_name, individual_names, contact_number, contact_address');
         
         if (searchTerm) {
-          // Fix: Use proper filtering for case-insensitive search
           query = query.or(`family_name.ilike.%${searchTerm}%,individual_names.ilike.%${searchTerm}%`);
         }
         
@@ -95,43 +77,34 @@ export function useMemberTithes() {
         const response = await fetch(`${window.electronAPI?.apiBaseUrl}/income/member/${memberId}`);
         if (!response.ok) throw new Error('Failed to fetch member tithes');
         
-        const memberTithes = await response.json() as IncomeApiResponse[];
+        const memberTithes = await response.json();
         
-        // Convert to Tithe type with consistent number handling
-        const formattedTithes: Tithe[] = memberTithes.map((income: IncomeApiResponse) => ({
+        // Convert to Tithe type
+        const formattedTithes: Tithe[] = memberTithes.map((income: any) => ({
           id: income.id,
           member_id: income.member_id,
           date: income.date,
-          amount: typeof income.amount === 'string' ? parseFloat(income.amount) : Number(income.amount),
+          amount: parseFloat(income.amount),
           service_type: income.service_type
         }));
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase - simplified query to avoid deep type instantiation
-        const result = await supabase
+        // For web, use Supabase
+        const { data, error } = await supabase
           .from('incomes')
-          .select('id, date, amount, service_type')
+          .select('id, member_id, date, amount, service_type')
           .eq('category', 'tithe')
           .eq('member_id', memberId)
           .order('date', { ascending: false });
         
-        if (result.error) {
-          console.error('Error fetching tithes:', result.error);
-          setTithes([]);
-          return;
-        }
+        if (error) throw error;
         
-        // Explicitly cast data to our defined type to avoid deep instantiation
-        const data = result.data as SupabaseTithe[];
-        
-        // Map data to Tithe type with explicit number conversion for amount
-        const formattedTithes: Tithe[] = (data || []).map((item: SupabaseTithe) => ({
+        const formattedTithes: Tithe[] = (data || []).map(item => ({
           id: item.id,
-          member_id: memberId,
+          member_id: item.member_id,
           date: item.date,
-          // Ensure amount is always a number with consistent conversion approach
-          amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
+          amount: Number(item.amount),
           service_type: item.service_type
         }));
         
@@ -139,7 +112,6 @@ export function useMemberTithes() {
       }
     } catch (error) {
       console.error('Error fetching member tithes:', error);
-      setTithes([]);
     } finally {
       setIsLoading(false);
     }
