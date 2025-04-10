@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface DeleteAnnouncementDialogProps {
   open: boolean;
@@ -34,19 +34,15 @@ export function DeleteAnnouncementDialog({
 
       if (error) throw error;
 
-      toast({
-        variant: "success",
-        title: "Announcement Deleted",
-        description: "The announcement has been deleted successfully."
+      toast.success("Announcement deleted", {
+        description: "The announcement has been deleted successfully.",
       });
       
       onSuccess();
     } catch (error) {
       console.error("Error deleting announcement:", error);
-      toast({
-        variant: "destructive",
-        title: "Deletion Failed",
-        description: "Failed to delete the announcement. Please try again."
+      toast.error("Error", {
+        description: "Failed to delete the announcement. Please try again.",
       });
     } finally {
       onOpenChange(false);

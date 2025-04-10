@@ -15,7 +15,7 @@ export function IncomeForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={onSubmit} className="space-y-8">
         <FormDatePicker 
           control={form.control} 
           name="date" 

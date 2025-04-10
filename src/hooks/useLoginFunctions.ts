@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function useLoginFunctions() {
   // Login state
@@ -15,6 +15,7 @@ export function useLoginFunctions() {
   
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,9 +55,8 @@ export function useLoginFunctions() {
         }
         
         toast({
-          variant: "success",
-          title: "Welcome Back!",
-          description: "You have successfully logged in."
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
         });
 
         const from = location.state?.from?.pathname || "/";
@@ -84,9 +84,8 @@ export function useLoginFunctions() {
           }));
           
           toast({
-            variant: "success",
-            title: "Welcome Back!",
-            description: "You have successfully logged in."
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
           });
 
           const from = location.state?.from?.pathname || "/";
@@ -100,8 +99,8 @@ export function useLoginFunctions() {
       setError(error.message || 'Error logging in. Please try again.');
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: error.message || 'Error logging in. Please try again.'
+        title: "Error",
+        description: error.message || 'Error logging in. Please try again.',
       });
     } finally {
       setIsLoading(false);

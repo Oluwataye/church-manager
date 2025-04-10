@@ -1,6 +1,5 @@
 
 import jsPDF from "jspdf";
-import { toast } from "@/hooks/use-toast";
 
 interface Member {
   family_name: string;
@@ -58,8 +57,7 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
           
           // Add image with transparency - increased opacity from 0.2 to 0.3
           doc.saveGraphicsState();
-          // Fix: Don't use 'new' with GState, just create an object with opacity
-          doc.setGState({ opacity: 0.3 });
+          doc.setGState(new doc.GState({ opacity: 0.3 }));
           doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
           doc.restoreGraphicsState();
           
@@ -114,23 +112,9 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
     
     // Save the PDF
     doc.save(`${member.family_name}_profile.pdf`);
-    
-    toast({
-      variant: "success",
-      title: "PDF Generated",
-      description: `Profile for ${member.family_name} has been downloaded successfully`
-    });
-    
     return true;
   } catch (error) {
     console.error('Error generating PDF:', error);
-    
-    toast({
-      variant: "destructive",
-      title: "PDF Generation Failed",
-      description: "Failed to generate member profile. Please try again."
-    });
-    
     return false;
   }
 }

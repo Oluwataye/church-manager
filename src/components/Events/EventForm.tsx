@@ -12,11 +12,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Event title is required"),
@@ -63,33 +63,21 @@ export const EventForm = () => {
       return data;
     },
     onSuccess: () => {
-      toast({
-        variant: "success",
-        title: "Event Created",
-        description: "Event has been created successfully!"
-      });
+      toast.success("Event created successfully!");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
     onError: (error) => {
       setIsSubmitting(false);
       console.error('Error creating event:', error);
-      toast({
-        variant: "destructive",
-        title: "Event Creation Failed",
-        description: "Failed to create event. Please try again."
-      });
+      toast.error("Failed to create event. Please try again.");
     },
   });
 
   const onSubmit = (data: EventFormData) => {
     // Validate that start date is before end date if both are provided
     if (data.endDate && data.startDate > data.endDate) {
-      toast({
-        variant: "warning",
-        title: "Invalid Dates",
-        description: "End date must be after start date"
-      });
+      toast.error("End date must be after start date");
       return;
     }
     
@@ -182,4 +170,4 @@ export const EventForm = () => {
       </form>
     </Form>
   );
-}
+};

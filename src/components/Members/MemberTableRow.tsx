@@ -2,8 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2, Download } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { generateMemberProfile } from "@/utils/pdfGenerator";
 
 interface Member {
   id: string;
@@ -39,27 +37,6 @@ export function MemberTableRow({
   onDelete,
   onDownload,
 }: MemberTableRowProps) {
-  const handleDownload = async () => {
-    try {
-      const result = await generateMemberProfile(member);
-      if (!result) {
-        toast({
-          variant: "warning",
-          title: "Download Issue",
-          description: "There was an issue generating the PDF. Please try again."
-        });
-      }
-      onDownload(member);
-    } catch (error) {
-      console.error("Error generating profile:", error);
-      toast({
-        variant: "destructive",
-        title: "Download Failed",
-        description: "Failed to generate member profile. Please try again."
-      });
-    }
-  };
-
   return (
     <TableRow>
       <TableCell>
@@ -92,15 +69,10 @@ export function MemberTableRow({
       <TableCell>{member.group_name || 'No Group'}</TableCell>
       <TableCell>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onEdit(member)} title="Edit member">
+          <Button variant="outline" size="sm" onClick={() => onEdit(member)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleDownload}
-            title="Download PDF"
-          >
+          <Button variant="outline" size="sm" onClick={() => onDownload(member)}>
             <Download className="h-4 w-4 mr-1" />
             PDF
           </Button>
@@ -108,7 +80,6 @@ export function MemberTableRow({
             variant="destructive"
             size="sm"
             onClick={() => onDelete(member)}
-            title="Delete member"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
