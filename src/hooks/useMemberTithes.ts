@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 // Define clean interfaces for our data types
-interface Member {
+export interface Member {
   id: string;
   family_name: string;
   individual_names: string;
@@ -11,7 +11,7 @@ interface Member {
   contact_address?: string;
 }
 
-interface Tithe {
+export interface Tithe {
   id: string;
   member_id?: string; // Optional to handle both Electron and Supabase cases
   date: string;
@@ -94,7 +94,6 @@ export function useMemberTithes() {
         setTithes(formattedTithes);
       } else {
         // For web, use Supabase
-        // Important: We need to update the SQL query to match the actual database schema
         const { data, error } = await supabase
           .from('incomes')
           .select('id, date, amount, service_type, category')
@@ -105,9 +104,8 @@ export function useMemberTithes() {
         
         if (data && Array.isArray(data) && data.length > 0) {
           // Map the data to our Tithe interface
-          const formattedTithes = data.map(item => ({
+          const formattedTithes: Tithe[] = data.map(item => ({
             id: item.id,
-            // We don't include member_id since it doesn't exist in the incomes table
             date: item.date,
             amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
             service_type: item.service_type

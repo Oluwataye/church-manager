@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { Search, FileDown, Loader2, CreditCard, Calendar } from "lucide-react";
-import { useMemberTithes } from "@/hooks/useMemberTithes";
+import { useMemberTithes, Member, Tithe } from "@/hooks/useMemberTithes";
 import { generateTitheReport } from "@/utils/titheReportGenerator";
 import { toast } from "@/hooks/use-toast";
 
