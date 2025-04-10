@@ -149,16 +149,16 @@ function toast({ ...props }: Toast) {
   if (props.variant) {
     switch (props.variant) {
       case 'success':
-        icon = React.createElement(CheckCircle, { className: "h-5 w-5 text-green-600 dark:text-green-400" })
+        icon = <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
         break
       case 'destructive':
-        icon = React.createElement(AlertCircle, { className: "h-5 w-5 text-red-600 dark:text-red-400" })
+        icon = <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
         break
       case 'info':
-        icon = React.createElement(Info, { className: "h-5 w-5 text-blue-600 dark:text-blue-400" })
+        icon = <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
         break
       case 'warning':
-        icon = React.createElement(AlertTriangle, { className: "h-5 w-5 text-yellow-600 dark:text-yellow-400" })
+        icon = <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
         break
     }
   }
@@ -211,4 +211,3 @@ function useToast() {
 }
 
 export { useToast, toast }
-

@@ -7,10 +7,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { Control } from "react-hook-form";
 
 interface FormTextInputProps {
-  form: UseFormReturn<any>;
+  control: Control<any>;
   name: string;
   label: string;
   type?: string;
@@ -19,7 +19,7 @@ interface FormTextInputProps {
 }
 
 export function FormTextInput({ 
-  form, 
+  control, 
   name, 
   label, 
   type = "text",
@@ -28,7 +28,7 @@ export function FormTextInput({
 }: FormTextInputProps) {
   return (
     <FormField
-      control={form.control}
+      control={control}
       name={name}
       render={({ field }) => (
         <FormItem>

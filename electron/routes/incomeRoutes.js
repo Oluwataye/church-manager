@@ -35,25 +35,6 @@ const setupIncomeRoutes = (app, expressApp) => {
       return res.status(500).json({ error: 'Failed to add income' });
     }
   });
-
-  // Endpoint to get tithes by member ID
-  expressApp.get('/income/member/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const incomeDb = initializeDb(app, 'income');
-      await incomeDb.read();
-      
-      // Filter income records to get only tithes for the specified member
-      const memberTithes = incomeDb.data.income.filter(
-        income => income.category === 'tithe' && income.member_id === id
-      );
-      
-      return res.json(memberTithes);
-    } catch (error) {
-      console.error('Error fetching member tithes:', error);
-      return res.status(500).json([]);
-    }
-  });
 };
 
 module.exports = { setupIncomeRoutes };
