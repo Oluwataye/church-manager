@@ -120,9 +120,8 @@ export function useMemberTithes() {
         
         if (error) throw error;
         
-        // Use type assertion to avoid deep type instantiation
-        if (data) {
-          const formattedTithes = data.map((item) => ({
+        if (data && data.length > 0) {
+          const formattedTithes = data.map((item: SupabaseTitheRecord) => ({
             id: item.id,
             member_id: item.member_id,
             date: item.date,
@@ -130,7 +129,7 @@ export function useMemberTithes() {
             service_type: item.service_type
           }));
           
-          setTithes(formattedTithes as Tithe[]);
+          setTithes(formattedTithes);
         } else {
           setTithes([]);
         }
