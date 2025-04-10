@@ -106,11 +106,11 @@ export function useMemberTithes() {
           date: income.date,
           amount: typeof income.amount === 'string' ? parseFloat(income.amount) : income.amount,
           service_type: income.service_type
-        })) as Tithe[];
+        }));
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase with simplified query
+        // For web, use Supabase with explicit typing
         const { data, error } = await supabase
           .from('incomes')
           .select('id, date, amount, service_type, category, member_id')
@@ -120,14 +120,17 @@ export function useMemberTithes() {
         
         if (error) throw error;
         
-        if (data && data.length > 0) {
-          const formattedTithes = data.map((item: SupabaseTitheRecord) => ({
-            id: item.id,
-            member_id: item.member_id,
-            date: item.date,
-            amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
-            service_type: item.service_type
-          }));
+        if (data && Array.isArray(data) && data.length > 0) {
+          // Safe type assertion with explicit mapping
+          const formattedTithes = data.map((item) => {
+            return {
+              id: item.id,
+              member_id: item.member_id,
+              date: item.date,
+              amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
+              service_type: item.service_type
+            };
+          }) as Tithe[];
           
           setTithes(formattedTithes);
         } else {
@@ -136,6 +139,7 @@ export function useMemberTithes() {
       }
     } catch (error) {
       console.error('Error fetching member tithes:', error);
+      setTithes([]);
     } finally {
       setIsLoading(false);
     }
