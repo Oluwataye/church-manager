@@ -57,8 +57,8 @@ export async function generateMemberProfile(member: Member): Promise<boolean> {
           
           // Add image with transparency - increased opacity from 0.2 to 0.3
           doc.saveGraphicsState();
-          // Fix the error by using doc.GState correctly - it's not a constructor
-          const gState = new doc.GState({ opacity: 0.3 });
+          // Fix TypeScript error by using GState correctly
+          const gState = doc.GState({ opacity: 0.3 });
           doc.setGState(gState);
           doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
           doc.restoreGraphicsState();
