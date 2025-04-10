@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -32,6 +31,12 @@ import { useTitheForm } from "./Form/useTitheForm";
 import { TITHE_MONTHS } from "./Form/titheFormSchema";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Member {
+  id: string;
+  family_name: string;
+  individual_names: string;
+}
+
 export function TitheForm() {
   const { form, onSubmit, isPending } = useTitheForm();
   
@@ -45,7 +50,7 @@ export function TitheForm() {
         .order('family_name', { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data as Member[];
     },
   });
 

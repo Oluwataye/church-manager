@@ -260,6 +260,47 @@ export type Database = {
           },
         ]
       }
+      tithes: {
+        Row: {
+          amount: number
+          created_at: string | null
+          date: string
+          id: string
+          member_id: string
+          month: string
+          notes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          date: string
+          id?: string
+          member_id: string
+          month: string
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          member_id?: string
+          month?: string
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tithes_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

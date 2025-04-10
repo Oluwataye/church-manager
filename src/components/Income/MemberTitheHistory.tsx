@@ -15,15 +15,29 @@ import {
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 
+interface TitheRecord {
+  id: string;
+  date: string;
+  amount: number;
+  month: string;
+  notes?: string;
+  members: {
+    id: string;
+    family_name: string;
+    individual_names: string;
+  };
+}
+
 export function MemberTitheHistory() {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch tithe records with member information
+  // Fetch tithe records with member information using type assertion
   const { data: titheRecords = [], isLoading } = useQuery({
     queryKey: ['memberTithes'],
     queryFn: async () => {
+      // Use type assertion for the tithes table
       const { data, error } = await supabase
-        .from('tithes')
+        .from('tithes' as any)
         .select(`
           id,
           date,
@@ -39,7 +53,7 @@ export function MemberTitheHistory() {
         .order('date', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as TitheRecord[];
     },
   });
 
@@ -87,7 +101,7 @@ export function MemberTitheHistory() {
                     <TableCell>{record.members?.family_name} {record.members?.individual_names}</TableCell>
                     <TableCell>{format(new Date(record.date), "PPP")}</TableCell>
                     <TableCell className="capitalize">{record.month}</TableCell>
-                    <TableCell className="text-right">₦{parseFloat(record.amount).toLocaleString()}</TableCell>
+                    <TableCell className="text-right">₦{parseFloat(record.amount.toString()).toLocaleString()}</TableCell>
                   </TableRow>
                 ))
               )}

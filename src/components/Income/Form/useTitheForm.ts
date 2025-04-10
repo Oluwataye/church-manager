@@ -21,13 +21,18 @@ export function useTitheForm() {
     mutationFn: async (values: TitheFormValues) => {
       const formattedDate = format(values.date, "yyyy-MM-dd");
 
-      const { data, error } = await supabase.from('tithes').insert({
-        date: formattedDate,
-        member_id: values.memberId,
-        amount: parseFloat(values.amount),
-        month: values.month,
-        notes: values.notes,
-      }).select().single();
+      // Use casting to work around TypeScript limitations until types are regenerated
+      const { data, error } = await supabase
+        .from('tithes' as any)
+        .insert({
+          date: formattedDate,
+          member_id: values.memberId,
+          amount: parseFloat(values.amount),
+          month: values.month,
+          notes: values.notes,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       return data;
