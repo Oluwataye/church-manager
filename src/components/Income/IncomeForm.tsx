@@ -55,7 +55,6 @@ export function IncomeForm() {
     }
   };
 
-  // Ensure we're using the Form provider properly
   return (
     <Card>
       <CardHeader>
@@ -64,7 +63,7 @@ export function IncomeForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={onSubmit} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormDatePicker
               form={form}
               name="date"

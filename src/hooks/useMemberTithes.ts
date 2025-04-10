@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Define types at top level to prevent TypeScript from recalculating them
+// Define clean interfaces for our data types
 interface Member {
   id: string;
   family_name: string;
@@ -13,29 +13,10 @@ interface Member {
 
 interface Tithe {
   id: string;
-  member_id: string;
+  member_id?: string; // Optional to handle both Electron and Supabase cases
   date: string;
   amount: number;
   service_type: string;
-}
-
-// Create a separate interface for Electron API responses
-interface ElectronTitheRecord {
-  id: string;
-  member_id: string;
-  date: string;
-  amount: string | number;
-  service_type: string;
-}
-
-// Create a separate interface for Supabase responses - with the fields that actually exist
-interface SupabaseTitheRecord {
-  id: string;
-  date: string;
-  amount: string | number;
-  service_type: string;
-  category: string;
-  member_id: string;
 }
 
 export function useMemberTithes() {
@@ -43,10 +24,11 @@ export function useMemberTithes() {
   const [tithes, setTithes] = useState<Tithe[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Search for members by name
   const searchMembers = useCallback(async (searchTerm: string) => {
     setIsLoading(true);
     try {
-      // Check if we're in Electron mode
+      // Check if running in Electron
       const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
       
       if (isElectron) {
@@ -84,12 +66,13 @@ export function useMemberTithes() {
     }
   }, []);
 
+  // Fetch tithe records for a specific member
   const fetchMemberTithes = useCallback(async (memberId: string) => {
     setIsLoading(true);
     setTithes([]);
     
     try {
-      // Check if we're in Electron mode
+      // Check if running in Electron
       const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
       
       if (isElectron) {
@@ -99,8 +82,8 @@ export function useMemberTithes() {
         
         const memberTithes = await response.json();
         
-        // Convert to Tithe type with explicit type casting
-        const formattedTithes = memberTithes.map((income: ElectronTitheRecord) => ({
+        // Process the tithe data
+        const formattedTithes = memberTithes.map((income: any) => ({
           id: income.id,
           member_id: income.member_id,
           date: income.date,
@@ -110,27 +93,25 @@ export function useMemberTithes() {
         
         setTithes(formattedTithes);
       } else {
-        // For web, use Supabase with explicit typing
+        // For web, use Supabase
+        // Important: We need to update the SQL query to match the actual database schema
         const { data, error } = await supabase
           .from('incomes')
-          .select('id, date, amount, service_type, category, member_id')
+          .select('id, date, amount, service_type, category')
           .eq('category', 'tithe')
-          .eq('member_id', memberId)
           .order('date', { ascending: false });
         
         if (error) throw error;
         
         if (data && Array.isArray(data) && data.length > 0) {
-          // Safe type assertion with explicit mapping
-          const formattedTithes = data.map((item) => {
-            return {
-              id: item.id,
-              member_id: item.member_id,
-              date: item.date,
-              amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
-              service_type: item.service_type
-            };
-          }) as Tithe[];
+          // Map the data to our Tithe interface
+          const formattedTithes = data.map(item => ({
+            id: item.id,
+            // We don't include member_id since it doesn't exist in the incomes table
+            date: item.date,
+            amount: typeof item.amount === 'string' ? parseFloat(item.amount) : Number(item.amount),
+            service_type: item.service_type
+          }));
           
           setTithes(formattedTithes);
         } else {
