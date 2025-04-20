@@ -39,14 +39,23 @@ export const GroupForm = () => {
 
   const { mutate: saveGroup } = useMutation({
     mutationFn: async (data: GroupFormData) => {
-      const { error } = await supabase
-        .from('groups')
-        .insert([{
-          name: data.name,
-          description: data.description,
-        }]);
-
-      if (error) throw error;
+      setIsSubmitting(true);
+      try {
+        const { data: result, error } = await supabase
+          .from('groups')
+          .insert([{
+            name: data.name,
+            description: data.description,
+          }]);
+          
+        if (error) throw error;
+        return result;
+      } catch (error) {
+        console.error('Error creating group:', error);
+        throw error;
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     onSuccess: () => {
       toast.success("Group created successfully", {

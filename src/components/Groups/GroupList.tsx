@@ -1,7 +1,10 @@
+
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export interface Group {
   id: string;
@@ -15,18 +18,33 @@ interface GroupListProps {
 }
 
 export const GroupList = ({ searchQuery }: GroupListProps) => {
-  const { data: groups = [], isLoading } = useQuery({
+  const { data: groups = [], isLoading, error, isError } = useQuery({
     queryKey: ["groups"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("groups")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("groups")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.error("Error fetching groups:", error);
+        throw error;
+      }
     },
   });
+
+  // Handle errors with useEffect
+  useEffect(() => {
+    if (isError && error) {
+      toast.error("Failed to load groups", {
+        description: "Please try again or contact support if the issue persists."
+      });
+      console.error("Groups error:", error);
+    }
+  }, [isError, error]);
 
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
