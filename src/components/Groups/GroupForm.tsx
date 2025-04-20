@@ -49,8 +49,8 @@ export const GroupForm = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Group created", {
-        description: "Group has been created successfully!"
+      toast.success("Group created successfully", {
+        description: "The new group has been created and saved."
       });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ['groups'] });
@@ -58,7 +58,7 @@ export const GroupForm = () => {
     onError: (error) => {
       console.error('Error creating group:', error);
       toast.error("Failed to create group", {
-        description: "An error occurred. Please try again."
+        description: "There was an error creating the group. Please try again."
       });
     },
   });

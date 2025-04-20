@@ -41,7 +41,7 @@ export function AttendanceForm() {
     },
     onSuccess: () => {
       toast.success("Attendance recorded", {
-        description: "Attendance has been recorded successfully."
+        description: "Attendance record has been saved successfully."
       });
       setAttendance({
         adultMen: "",
@@ -56,7 +56,7 @@ export function AttendanceForm() {
     onError: (error) => {
       console.error('Error saving attendance:', error);
       toast.error("Failed to record attendance", {
-        description: "An error occurred. Please try again."
+        description: "An error occurred while saving the attendance record. Please try again."
       });
     },
   });

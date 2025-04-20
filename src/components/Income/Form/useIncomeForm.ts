@@ -33,13 +33,17 @@ export function useIncomeForm() {
       return data;
     },
     onSuccess: () => {
-      toast.success("Income recorded successfully");
+      toast.success("Income recorded successfully", {
+        description: "The income record has been saved to the database."
+      });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
     },
     onError: (error) => {
       console.error('Error saving income:', error);
-      toast.error("Failed to record income. Please try again.");
+      toast.error("Failed to record income", {
+        description: "There was an error saving the income record. Please try again."
+      });
     },
   });
 

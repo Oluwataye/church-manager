@@ -20,8 +20,7 @@ export function useTitheForm() {
   const { mutate: saveTithe, isPending } = useMutation({
     mutationFn: async (values: TitheFormValues) => {
       const formattedDate = format(values.date, "yyyy-MM-dd");
-
-      // Use casting to work around TypeScript limitations until types are regenerated
+      
       const { data, error } = await supabase
         .from('tithes' as any)
         .insert({
@@ -38,14 +37,18 @@ export function useTitheForm() {
       return data;
     },
     onSuccess: () => {
-      toast.success("Tithe record saved successfully");
+      toast.success("Tithe recorded successfully", {
+        description: "The tithe record has been saved to the database."
+      });
       form.reset();
       queryClient.invalidateQueries({ queryKey: ['tithes'] });
       queryClient.invalidateQueries({ queryKey: ['memberTithes'] });
     },
     onError: (error) => {
       console.error('Error saving tithe record:', error);
-      toast.error("Failed to save tithe record. Please try again.");
+      toast.error("Failed to record tithe", {
+        description: "There was an error saving the tithe record. Please try again."
+      });
     },
   });
 
