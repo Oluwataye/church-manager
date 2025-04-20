@@ -32,48 +32,54 @@ interface TitheRecord {
 export function MemberTitheHistory() {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch tithe records with member information using proper type handling
+  // Fetch tithe records with member information
   const { data: titheRecords = [], isLoading, error, isError } = useQuery<TitheRecord[], Error>({
     queryKey: ['memberTithes'],
     queryFn: async () => {
-      // Use type assertion for the tithes table but handle it more safely
-      const { data, error } = await supabase
-        .from('tithes' as any)
-        .select(`
-          id,
-          date,
-          amount,
-          month,
-          notes,
-          members:member_id (
-            id, 
-            family_name, 
-            individual_names
-          )
-        `)
-        .order('date', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching tithe records:", error);
+      try {
+        const { data, error } = await supabase
+          .from('tithes')
+          .select(`
+            id,
+            date,
+            amount,
+            month,
+            notes,
+            members:member_id (
+              id, 
+              family_name, 
+              individual_names
+            )
+          `)
+          .order('date', { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching tithe records:", error);
+          throw error;
+        }
+
+        // Return the data with proper type casting
+        return (data as unknown) as TitheRecord[];
+      } catch (error) {
+        console.error("Failed to fetch tithe records:", error);
         throw error;
       }
-
-      // First cast to unknown and then to our expected type
-      return (data as unknown) as TitheRecord[];
     },
   });
 
-  // Handle errors with useEffect instead of onError
+  // Handle errors with useEffect
   useEffect(() => {
     if (isError && error) {
-      toast.error("Failed to load tithe records. Please try again.");
+      toast.error("Failed to load tithe records", {
+        description: "Please try again or contact support if the issue persists."
+      });
       console.error("Tithe records error:", error);
     }
   }, [isError, error]);
 
   // Filter records based on search term
   const filteredRecords = titheRecords?.filter(record => {
-    if (!record.members) return false; // Skip records with missing member data
+    if (!record.members) return false;
     
     const memberName = `${record.members.family_name} ${record.members.individual_names}`.toLowerCase();
     return memberName.includes(searchTerm.toLowerCase());
