@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Search } from "lucide-react";
@@ -33,7 +33,7 @@ export function MemberTitheHistory() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch tithe records with member information using proper type handling
-  const { data: titheRecords = [], isLoading, error } = useQuery({
+  const { data: titheRecords = [], isLoading, error, isError } = useQuery<TitheRecord[], Error>({
     queryKey: ['memberTithes'],
     queryFn: async () => {
       // Use type assertion for the tithes table but handle it more safely
@@ -61,12 +61,15 @@ export function MemberTitheHistory() {
       // First cast to unknown and then to our expected type
       return (data as unknown) as TitheRecord[];
     },
-    onError: (error) => {
+  });
+
+  // Handle errors with useEffect instead of onError
+  useEffect(() => {
+    if (isError && error) {
       toast.error("Failed to load tithe records. Please try again.");
       console.error("Tithe records error:", error);
-      return [];
-    },
-  });
+    }
+  }, [isError, error]);
 
   // Filter records based on search term
   const filteredRecords = titheRecords?.filter(record => {
@@ -104,7 +107,7 @@ export function MemberTitheHistory() {
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-4">Loading records...</TableCell>
                 </TableRow>
-              ) : error ? (
+              ) : isError ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-4 text-destructive">Error loading records. Please try again.</TableCell>
                 </TableRow>
