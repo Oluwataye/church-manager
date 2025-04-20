@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/components/Auth/AuthContext";
 
 const groupSchema = z.object({
   name: z.string().min(1, "Group name is required"),
@@ -28,6 +29,7 @@ type GroupFormData = z.infer<typeof groupSchema>;
 export const GroupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const { session } = useAuth();
 
   const form = useForm<GroupFormData>({
     resolver: zodResolver(groupSchema),
@@ -41,6 +43,10 @@ export const GroupForm = () => {
     mutationFn: async (data: GroupFormData) => {
       setIsSubmitting(true);
       try {
+        if (!session) {
+          throw new Error("Authentication required to create a group");
+        }
+        
         const { data: result, error } = await supabase
           .from('groups')
           .insert([{
@@ -48,7 +54,10 @@ export const GroupForm = () => {
             description: data.description,
           }]);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error details:', error);
+          throw error;
+        }
         return result;
       } catch (error) {
         console.error('Error creating group:', error);
@@ -66,8 +75,21 @@ export const GroupForm = () => {
     },
     onError: (error) => {
       console.error('Error creating group:', error);
+      let errorMessage = "There was an error creating the group. Please try again.";
+      
+      // Check for specific error types
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorObj = error as { message: string, code?: string };
+        
+        if (errorObj.code === '42501') {
+          errorMessage = "Permission denied. You might not have the right access to create groups.";
+        } else if (errorObj.message.includes('authentication')) {
+          errorMessage = "You need to be logged in to create a group.";
+        }
+      }
+      
       toast.error("Failed to create group", {
-        description: "There was an error creating the group. Please try again."
+        description: errorMessage
       });
     },
   });

@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ interface Member {
 
 export function TitheForm() {
   const { form, onSubmit, isPending } = useTitheForm();
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Fetch members list
   const { data: members = [] } = useQuery({
@@ -54,9 +56,29 @@ export function TitheForm() {
     },
   });
 
+  // Filter members based on search query
+  const filteredMembers = searchQuery.trim() === "" 
+    ? members 
+    : members.filter(member => {
+        const fullName = `${member.family_name} ${member.individual_names}`.toLowerCase();
+        return fullName.includes(searchQuery.toLowerCase());
+      });
+
   return (
     <div>
       <h3 className="text-lg font-semibold mb-4">Record Tithe</h3>
+      
+      <div className="relative mb-4">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search members..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+      </div>
       
       <Form {...form}>
         <form onSubmit={onSubmit} className="space-y-4">
@@ -73,7 +95,7 @@ export function TitheForm() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {members.map((member) => (
+                    {filteredMembers.map((member) => (
                       <SelectItem key={member.id} value={member.id}>
                         {member.family_name} {member.individual_names}
                       </SelectItem>
