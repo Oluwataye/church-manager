@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface TitheRecord {
   id: string;
@@ -31,11 +32,11 @@ interface TitheRecord {
 export function MemberTitheHistory() {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch tithe records with member information using type assertion
-  const { data: titheRecords = [], isLoading } = useQuery({
+  // Fetch tithe records with member information using proper type handling
+  const { data: titheRecords = [], isLoading, error } = useQuery({
     queryKey: ['memberTithes'],
     queryFn: async () => {
-      // Use type assertion for the tithes table
+      // Use type assertion for the tithes table but handle it more safely
       const { data, error } = await supabase
         .from('tithes' as any)
         .select(`
@@ -52,16 +53,28 @@ export function MemberTitheHistory() {
         `)
         .order('date', { ascending: false });
       
-      if (error) throw error;
-      return data as TitheRecord[];
+      if (error) {
+        console.error("Error fetching tithe records:", error);
+        throw error;
+      }
+
+      // First cast to unknown and then to our expected type
+      return (data as unknown) as TitheRecord[];
+    },
+    onError: (error) => {
+      toast.error("Failed to load tithe records. Please try again.");
+      console.error("Tithe records error:", error);
+      return [];
     },
   });
 
   // Filter records based on search term
-  const filteredRecords = titheRecords.filter(record => {
-    const memberName = `${record.members?.family_name} ${record.members?.individual_names}`.toLowerCase();
+  const filteredRecords = titheRecords?.filter(record => {
+    if (!record.members) return false; // Skip records with missing member data
+    
+    const memberName = `${record.members.family_name} ${record.members.individual_names}`.toLowerCase();
     return memberName.includes(searchTerm.toLowerCase());
-  });
+  }) || [];
 
   return (
     <div className="space-y-4">
@@ -91,6 +104,10 @@ export function MemberTitheHistory() {
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-4">Loading records...</TableCell>
                 </TableRow>
+              ) : error ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-4 text-destructive">Error loading records. Please try again.</TableCell>
+                </TableRow>
               ) : filteredRecords.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-4">No tithe records found</TableCell>
@@ -98,10 +115,18 @@ export function MemberTitheHistory() {
               ) : (
                 filteredRecords.map((record) => (
                   <TableRow key={record.id}>
-                    <TableCell>{record.members?.family_name} {record.members?.individual_names}</TableCell>
+                    <TableCell>
+                      {record.members ? 
+                        `${record.members.family_name} ${record.members.individual_names}` : 
+                        "Unknown member"}
+                    </TableCell>
                     <TableCell>{format(new Date(record.date), "PPP")}</TableCell>
                     <TableCell className="capitalize">{record.month}</TableCell>
-                    <TableCell className="text-right">₦{parseFloat(record.amount.toString()).toLocaleString()}</TableCell>
+                    <TableCell className="text-right">
+                      ₦{typeof record.amount === 'number' 
+                        ? record.amount.toLocaleString() 
+                        : parseFloat(String(record.amount)).toLocaleString()}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
