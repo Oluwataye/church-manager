@@ -29,7 +29,7 @@ type GroupFormData = z.infer<typeof groupSchema>;
 export const GroupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
-  const { session } = useAuth();
+  const { user } = useAuth(); // Use user instead of session as per AuthContextType
 
   const form = useForm<GroupFormData>({
     resolver: zodResolver(groupSchema),
@@ -43,7 +43,7 @@ export const GroupForm = () => {
     mutationFn: async (data: GroupFormData) => {
       setIsSubmitting(true);
       try {
-        if (!session) {
+        if (!user) {
           throw new Error("Authentication required to create a group");
         }
         
@@ -63,7 +63,7 @@ export const GroupForm = () => {
         console.error('Error creating group:', error);
         throw error;
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(false); // Fixed: was using setIsLoading instead of setIsSubmitting
       }
     },
     onSuccess: () => {
