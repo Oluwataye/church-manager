@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -127,5 +128,7 @@ export default defineConfig(({ mode }) => ({
   clearScreen: false, // Don't clear the terminal during development
   optimizeDeps: {
     exclude: ['electron']
-  }
+  },
+  // Added for better Electron compatibility with Node.js v23
+  base: process.env.NODE_ENV === 'production' ? './' : '/'
 }))

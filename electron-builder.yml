@@ -16,6 +16,7 @@ files:
       - "**/*"
 extraMetadata:
   main: electron/main.cjs
+electronVersion: 28.0.0
 mac:
   category: public.app-category.business
   target:
