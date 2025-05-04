@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PersonalInfoSection } from "./PersonalInfoSection";
@@ -76,6 +77,8 @@ export function MemberRegistrationForm({
         formData.joining_location === "other"
           ? formData.customLocation
           : formData.joining_location,
+      // Convert "none" to empty string or null
+      church_group: formData.church_group === "none" ? null : formData.church_group,
     };
     delete submissionData.customLocation;
     await onSubmit(submissionData);
@@ -159,7 +162,7 @@ export function MemberRegistrationForm({
       />
 
       <ChurchGroupSection
-        churchGroup={formData.church_group || ""}
+        churchGroup={formData.church_group || "none"}
         onChange={(value) =>
           setFormData((prev) => ({ ...prev, church_group: value }))
         }

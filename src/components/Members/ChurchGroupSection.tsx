@@ -52,7 +52,7 @@ export function ChurchGroupSection({
           <SelectValue placeholder="Select a church group" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">None</SelectItem>
+          <SelectItem value="none">None</SelectItem>
           {groups && groups.length > 0 ? (
             groups.map((group) => (
               <SelectItem key={group.id} value={group.id}>
@@ -60,7 +60,7 @@ export function ChurchGroupSection({
               </SelectItem>
             ))
           ) : (
-            <SelectItem value="" disabled>
+            <SelectItem value="no-groups-available" disabled>
               {isLoading ? "Loading groups..." : "No groups available"}
             </SelectItem>
           )}
