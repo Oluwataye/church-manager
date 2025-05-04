@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/Auth/AuthContext";
+import { useState, useEffect } from "react";
 
 export interface Member {
   id: string;
@@ -26,17 +27,33 @@ export interface Member {
 
 export function useMembers() {
   const { isOffline } = useAuth();
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
+  // Pre-load local data outside of the query function
+  useEffect(() => {
+    const localMembers = localStorage.getItem('localMembers');
+    if (localMembers) {
+      try {
+        JSON.parse(localMembers);
+        setInitialDataLoaded(true);
+      } catch (e) {
+        console.error("Error parsing local members data:", e);
+      }
+    }
+  }, []);
 
   return useQuery<Member[]>({
     queryKey: ['members'],
     queryFn: async () => {
+      console.log("Fetching members data, offline mode:", isOffline);
+      
       // First try to get data from local storage
       const localMembers = localStorage.getItem('localMembers');
       const localMembersData = localMembers ? JSON.parse(localMembers) : [];
       
       // If offline, just return local data
       if (isOffline) {
-        console.log('Offline mode: returning local members data');
+        console.log('Offline mode: returning local members data', localMembersData);
         return localMembersData;
       }
       
@@ -77,6 +94,8 @@ export function useMembers() {
           };
         });
         
+        console.log('Successfully fetched members from Supabase:', membersWithGroupNames.length);
+        
         // Update local storage with the latest data
         localStorage.setItem('localMembers', JSON.stringify(membersWithGroupNames));
         return membersWithGroupNames;
@@ -88,7 +107,21 @@ export function useMembers() {
     initialData: () => {
       // Return cached data from localStorage on initial load
       const cached = localStorage.getItem('localMembers');
-      return cached ? JSON.parse(cached) : [];
+      if (cached) {
+        try {
+          const parsedData = JSON.parse(cached);
+          console.log("Using cached member data from localStorage:", parsedData.length);
+          return parsedData;
+        } catch (e) {
+          console.error("Error parsing cached member data:", e);
+          return [];
+        }
+      }
+      return [];
     },
+    staleTime: 60000, // Consider data fresh for 1 minute
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 2, // Retry failed requests twice
   });
 }

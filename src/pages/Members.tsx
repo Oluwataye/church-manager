@@ -1,7 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { generateMemberProfile } from "@/utils/pdfGenerator";
 import {
   Dialog,
@@ -21,6 +21,7 @@ import type { Member } from "@/hooks/useMembers";
 import { toast } from "sonner";
 import { useAuth } from "@/components/Auth/AuthContext";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 export default function Members() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,9 +31,26 @@ export default function Members() {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const { data: members = [], isLoading } = useMembers();
+  // Use data, isLoading, isError and refetch from useMembers hook
+  const { data: members = [], isLoading, isError, refetch } = useMembers();
   const { handleAddMember, handleUpdateMember, handleDeleteMember } = useMemberActions();
   const { isOffline } = useAuth();
+
+  // Ensure members data is loaded correctly
+  useEffect(() => {
+    // Attempt to refetch data when the component mounts
+    refetch();
+    
+    // Also retry loading data if we initially get an empty result
+    if (members.length === 0 && !isLoading) {
+      const retryTimer = setTimeout(() => {
+        console.log("No members found initially, retrying fetch...");
+        refetch();
+      }, 1000); // Wait 1 second before retrying
+      
+      return () => clearTimeout(retryTimer);
+    }
+  }, [refetch, members.length, isLoading]);
 
   // Filter members based on search query
   const filteredMembers = members.filter(
@@ -65,21 +83,17 @@ export default function Members() {
     try {
       const success = await generateMemberProfile(member);
       if (success) {
-        toast.success("Profile downloaded successfully");
+        toast.success("Profile downloaded successfully", {
+          duration: 4000,
+        });
       }
     } catch (error) {
       console.error('Error downloading profile:', error);
-      toast.error("Failed to download profile. Please try again.");
+      toast.error("Failed to download profile. Please try again.", {
+        duration: 4000,
+      });
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-church-600" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 pb-20">
@@ -101,7 +115,9 @@ export default function Members() {
               const success = await handleAddMember(data);
               if (success) {
                 setShowRegistrationForm(false);
-                toast.success("Member added successfully");
+                toast.success("Member added successfully", {
+                  duration: 4000,
+                });
               }
             }}
             onCancel={() => setShowRegistrationForm(false)}
@@ -114,23 +130,36 @@ export default function Members() {
             onSearchChange={handleSearchChange}
           />
 
-          <Card className="p-6">
-            <MemberTable
-              members={paginatedMembers}
-              onEdit={(member) => {
-                setSelectedMember(member);
-                setShowEditForm(true);
-              }}
-              onDelete={(member) => {
-                setSelectedMember(member);
-                setShowDeleteDialog(true);
-              }}
-              onDownload={handleDownloadProfile}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </Card>
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <Loader2 className="h-8 w-8 animate-spin text-church-600" />
+            </div>
+          ) : isError ? (
+            <Card className="p-6 flex flex-col items-center justify-center min-h-[400px]">
+              <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Error loading members</h3>
+              <p className="text-gray-500 mb-4">There was a problem loading member data.</p>
+              <Button onClick={() => refetch()}>Try Again</Button>
+            </Card>
+          ) : (
+            <Card className="p-6">
+              <MemberTable
+                members={paginatedMembers}
+                onEdit={(member) => {
+                  setSelectedMember(member);
+                  setShowEditForm(true);
+                }}
+                onDelete={(member) => {
+                  setSelectedMember(member);
+                  setShowDeleteDialog(true);
+                }}
+                onDownload={handleDownloadProfile}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </Card>
+          )}
         </>
       )}
 
@@ -147,7 +176,9 @@ export default function Members() {
                   if (success) {
                     setShowEditForm(false);
                     setSelectedMember(null);
-                    toast.success("Member updated successfully");
+                    toast.success("Member updated successfully", {
+                      duration: 4000,
+                    });
                   }
                 }}
                 onCancel={() => {
@@ -170,7 +201,9 @@ export default function Members() {
             if (success) {
               setShowDeleteDialog(false);
               setSelectedMember(null);
-              toast.success("Member deleted successfully");
+              toast.success("Member deleted successfully", {
+                duration: 4000,
+              });
             }
           }
         }}

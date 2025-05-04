@@ -76,6 +76,7 @@ export function useMemberActions() {
     try {
       // Get group name for the new member
       const groupName = await getGroupName(memberData.church_group as string);
+      console.log("Adding member with group:", memberData.church_group, "group name:", groupName);
       
       // Generate an ID for offline mode
       const newMember = {
@@ -115,13 +116,15 @@ export function useMemberActions() {
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
       toast.success("Member registered", {
-        description: "Member has been registered successfully" + (isOffline ? " (offline mode)" : "")
+        description: "Member has been registered successfully" + (isOffline ? " (offline mode)" : ""),
+        duration: 4000, // 4 seconds duration
       });
       return true;
     } catch (error: any) {
       console.error('Error adding member:', error);
       toast.error("Registration failed", {
-        description: "Failed to register member. Please try again."
+        description: "Failed to register member. Please try again.",
+        duration: 4000, // 4 seconds duration
       });
       return false;
     }
@@ -131,6 +134,7 @@ export function useMemberActions() {
     try {
       // Get updated group name
       const groupName = await getGroupName(memberData.church_group as string);
+      console.log("Updating member with group:", memberData.church_group, "group name:", groupName);
       
       const updatedMember = {
         ...memberData,
@@ -167,13 +171,15 @@ export function useMemberActions() {
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
       toast.success("Member updated", {
-        description: "Member has been updated successfully" + (isOffline ? " (offline mode)" : "")
+        description: "Member has been updated successfully" + (isOffline ? " (offline mode)" : ""),
+        duration: 4000, // 4 seconds duration
       });
       return true;
     } catch (error: any) {
       console.error('Error updating member:', error);
       toast.error("Update failed", {
-        description: "Failed to update member. Please try again."
+        description: "Failed to update member. Please try again.",
+        duration: 4000, // 4 seconds duration
       });
       return false;
     }
@@ -208,13 +214,15 @@ export function useMemberActions() {
       // Update UI
       await queryClient.invalidateQueries({ queryKey: ['members'] });
       toast.success("Member deleted", {
-        description: "Member has been deleted successfully" + (isOffline ? " (offline mode)" : "")
+        description: "Member has been deleted successfully" + (isOffline ? " (offline mode)" : ""),
+        duration: 4000, // 4 seconds duration
       });
       return true;
     } catch (error: any) {
       console.error('Error deleting member:', error);
       toast.error("Deletion failed", {
-        description: "Failed to delete member. Please try again."
+        description: "Failed to delete member. Please try again.",
+        duration: 4000, // 4 seconds duration
       });
       return false;
     }
