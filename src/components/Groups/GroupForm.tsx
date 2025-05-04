@@ -29,7 +29,7 @@ type GroupFormData = z.infer<typeof groupSchema>;
 export const GroupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
-  const { user } = useAuth(); // Use user instead of session as per AuthContextType
+  const { user } = useAuth();
 
   const form = useForm<GroupFormData>({
     resolver: zodResolver(groupSchema),
@@ -51,19 +51,22 @@ export const GroupForm = () => {
           .from('groups')
           .insert([{
             name: data.name,
-            description: data.description,
-          }]);
+            description: data.description || null,
+          }])
+          .select(); // Return the inserted data
           
         if (error) {
           console.error('Supabase error details:', error);
           throw error;
         }
+        
+        console.log('Group created successfully:', result);
         return result;
       } catch (error) {
         console.error('Error creating group:', error);
         throw error;
       } finally {
-        setIsSubmitting(false); // Fixed: was using setIsLoading instead of setIsSubmitting
+        setIsSubmitting(false);
       }
     },
     onSuccess: () => {
@@ -77,7 +80,6 @@ export const GroupForm = () => {
       console.error('Error creating group:', error);
       let errorMessage = "There was an error creating the group. Please try again.";
       
-      // Check for specific error types
       if (error && typeof error === 'object' && 'message' in error) {
         const errorObj = error as { message: string, code?: string };
         

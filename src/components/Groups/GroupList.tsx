@@ -18,7 +18,7 @@ interface GroupListProps {
 }
 
 export const GroupList = ({ searchQuery }: GroupListProps) => {
-  const { data: groups = [], isLoading, error, isError } = useQuery({
+  const { data: groups = [], isLoading, error, isError, refetch } = useQuery({
     queryKey: ["groups"],
     queryFn: async () => {
       try {
@@ -27,14 +27,24 @@ export const GroupList = ({ searchQuery }: GroupListProps) => {
           .select("*")
           .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        return data;
+        if (error) {
+          console.error("Error fetching groups:", error);
+          throw error;
+        }
+        
+        console.log("Fetched groups for list:", data);
+        return data || [];
       } catch (error) {
         console.error("Error fetching groups:", error);
         throw error;
       }
     },
   });
+
+  // Refetch groups when component mounts
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // Handle errors with useEffect
   useEffect(() => {
@@ -56,21 +66,24 @@ export const GroupList = ({ searchQuery }: GroupListProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {filteredGroups.map((group) => (
-        <Card key={group.id} className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="bg-church-100 p-2 rounded-lg">
-              <Users className="w-6 h-6 text-church-600" />
+      {filteredGroups.length > 0 ? (
+        filteredGroups.map((group) => (
+          <Card key={group.id} className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="bg-church-100 p-2 rounded-lg">
+                <Users className="w-6 h-6 text-church-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold">{group.name}</h3>
+                <p className="text-sm text-gray-500">{group.description}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold">{group.name}</h3>
-              <p className="text-sm text-gray-500">{group.description}</p>
-            </div>
-          </div>
-        </Card>
-      ))}
-      {filteredGroups.length === 0 && (
-        <p className="text-gray-500 col-span-full text-center">No groups found</p>
+          </Card>
+        ))
+      ) : (
+        <p className="text-gray-500 col-span-full text-center">
+          {searchQuery ? "No groups match your search" : "No groups found. Create one!"}
+        </p>
       )}
     </div>
   );
