@@ -24,23 +24,35 @@ export function ChurchGroupSection({
   const { data: groups = [], isLoading, isError, refetch } = useQuery<Group[]>({
     queryKey: ["groups"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("groups")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("groups")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) {
+        if (error) {
+          console.error("Error fetching groups:", error);
+          throw error;
+        }
+        
+        // Save groups to local storage for offline access
+        if (data) {
+          localStorage.setItem('groups', JSON.stringify(data));
+        }
+        
+        console.log("Fetched groups:", data);
+        return data || [];
+      } catch (error) {
         console.error("Error fetching groups:", error);
-        throw error;
+        
+        // Try to get groups from localStorage if online fetch fails
+        const localGroups = localStorage.getItem('groups');
+        if (localGroups) {
+          return JSON.parse(localGroups);
+        }
+        
+        return [];
       }
-      
-      // Save groups to local storage for offline access
-      if (data) {
-        localStorage.setItem('groups', JSON.stringify(data));
-      }
-      
-      console.log("Fetched groups:", data);
-      return data || [];
     },
   });
 
@@ -65,7 +77,7 @@ export function ChurchGroupSection({
               </SelectItem>
             ))
           ) : (
-            <SelectItem value="no-groups-available" disabled>
+            <SelectItem value="no-groups" disabled>
               {isLoading ? "Loading groups..." : "No groups available"}
             </SelectItem>
           )}

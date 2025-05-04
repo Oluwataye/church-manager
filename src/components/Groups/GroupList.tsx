@@ -32,10 +32,24 @@ export const GroupList = ({ searchQuery }: GroupListProps) => {
           throw error;
         }
         
+        // Save groups to local storage for offline access and for member registration
+        if (data) {
+          localStorage.setItem('groups', JSON.stringify(data));
+        }
+        
         console.log("Fetched groups for list:", data);
         return data || [];
       } catch (error) {
         console.error("Error fetching groups:", error);
+        
+        // Try to get groups from localStorage if online fetch fails
+        const localGroups = localStorage.getItem('groups');
+        if (localGroups) {
+          const parsedGroups = JSON.parse(localGroups);
+          console.log("Using cached groups from localStorage:", parsedGroups);
+          return parsedGroups;
+        }
+        
         throw error;
       }
     },

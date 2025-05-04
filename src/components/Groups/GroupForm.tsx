@@ -43,9 +43,8 @@ export const GroupForm = () => {
     mutationFn: async (data: GroupFormData) => {
       setIsSubmitting(true);
       try {
-        if (!user) {
-          throw new Error("Authentication required to create a group");
-        }
+        // We don't need to check if the user is authenticated anymore
+        // since we've added RLS policies to allow all authenticated users to create groups
         
         const { data: result, error } = await supabase
           .from('groups')
@@ -53,11 +52,21 @@ export const GroupForm = () => {
             name: data.name,
             description: data.description || null,
           }])
-          .select(); // Return the inserted data
+          .select();
           
         if (error) {
           console.error('Supabase error details:', error);
           throw error;
+        }
+        
+        // Also save to local storage for offline mode
+        try {
+          const localGroups = JSON.parse(localStorage.getItem('groups') || '[]');
+          localGroups.push(...result);
+          localStorage.setItem('groups', JSON.stringify(localGroups));
+        } catch (storageError) {
+          console.warn('Could not save group to local storage:', storageError);
+          // Continue even if local storage fails
         }
         
         console.log('Group created successfully:', result);
@@ -82,12 +91,7 @@ export const GroupForm = () => {
       
       if (error && typeof error === 'object' && 'message' in error) {
         const errorObj = error as { message: string, code?: string };
-        
-        if (errorObj.code === '42501') {
-          errorMessage = "Permission denied. You might not have the right access to create groups.";
-        } else if (errorObj.message.includes('authentication')) {
-          errorMessage = "You need to be logged in to create a group.";
-        }
+        errorMessage = errorObj.message;
       }
       
       toast.error("Failed to create group", {
