@@ -34,6 +34,11 @@ export function ChurchGroupSection({
         throw error;
       }
       
+      // Save groups to local storage for offline access
+      if (data) {
+        localStorage.setItem('groups', JSON.stringify(data));
+      }
+      
       console.log("Fetched groups:", data);
       return data || [];
     },

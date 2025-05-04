@@ -42,10 +42,47 @@ export function useMemberActions() {
     }
   };
 
+  // Get group name for a member from local storage when adding/updating
+  const getGroupName = async (groupId: string | null): Promise<string | null> => {
+    if (!groupId) return null;
+    
+    try {
+      // First check if we can get it from local storage
+      const localGroups = JSON.parse(localStorage.getItem('groups') || '[]');
+      const localGroup = localGroups.find((g: any) => g.id === groupId);
+      
+      if (localGroup) return localGroup.name;
+      
+      // If not found locally and we're online, fetch from Supabase
+      if (!isOffline) {
+        const { data, error } = await supabase
+          .from('groups')
+          .select('name')
+          .eq('id', groupId)
+          .single();
+          
+        if (error) throw error;
+        return data?.name || null;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting group name:', error);
+      return null;
+    }
+  };
+
   const handleAddMember = async (memberData: Omit<Member, "id">) => {
     try {
+      // Get group name for the new member
+      const groupName = await getGroupName(memberData.church_group as string);
+      
       // Generate an ID for offline mode
-      const newMember = { ...memberData, id: uuidv4() } as Member;
+      const newMember = {
+        ...memberData,
+        id: uuidv4(),
+        group_name: groupName
+      } as Member;
       
       if (!isOffline) {
         // If online, try to save to Supabase
@@ -92,7 +129,14 @@ export function useMemberActions() {
 
   const handleUpdateMember = async (id: string, memberData: Omit<Member, "id">) => {
     try {
-      const updatedMember = { ...memberData, id } as Member;
+      // Get updated group name
+      const groupName = await getGroupName(memberData.church_group as string);
+      
+      const updatedMember = {
+        ...memberData,
+        id,
+        group_name: groupName
+      } as Member;
       
       if (!isOffline) {
         // If online, try to update in Supabase
