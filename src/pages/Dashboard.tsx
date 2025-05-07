@@ -1,9 +1,13 @@
+
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Calendar, Bell, TrendingUp } from "lucide-react";
 import { AttendanceWidget } from "@/components/Dashboard/AttendanceWidget";
 import { IncomeWidget } from "@/components/Dashboard/IncomeWidget";
+import { Link } from "react-router-dom";
+import { StatsCard } from "@/components/Dashboard/StatsCard";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   // Fetch members count
@@ -54,53 +58,61 @@ const Dashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-church-50 rounded-lg">
-              <Users className="h-6 w-6 text-church-600" />
+        <Link to="/members" className="block">
+          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-church-500 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-church-50 rounded-lg">
+                <Users className="h-6 w-6 text-church-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Total Members</p>
+                <h3 className="text-2xl font-bold text-church-600">{membersCount}</h3>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Members</p>
-              <h3 className="text-2xl font-bold text-church-600">{membersCount}</h3>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
 
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-50 rounded-lg">
-              <Calendar className="h-6 w-6 text-orange-600" />
+        <Link to="/events" className="block">
+          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-orange-500 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-50 rounded-lg">
+                <Calendar className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Upcoming Events</p>
+                <h3 className="text-2xl font-bold text-orange-600">{upcomingEvents.length}</h3>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Upcoming Events</p>
-              <h3 className="text-2xl font-bold text-orange-600">{upcomingEvents.length}</h3>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
 
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-50 rounded-lg">
-              <Bell className="h-6 w-6 text-purple-600" />
+        <Link to="/announcements" className="block">
+          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-500 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-50 rounded-lg">
+                <Bell className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Announcements</p>
+                <h3 className="text-2xl font-bold text-purple-600">{announcements.length}</h3>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Announcements</p>
-              <h3 className="text-2xl font-bold text-purple-600">{announcements.length}</h3>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
 
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-green-50 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-green-600" />
+        <Link to="/income" className="block">
+          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-green-500 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-50 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Monthly Income</p>
+                <h3 className="text-2xl font-bold text-green-600">₦45,000</h3>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Monthly Income</p>
-              <h3 className="text-2xl font-bold text-green-600">₦45,000</h3>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
       </div>
 
       {/* Charts Grid */}
@@ -111,45 +123,57 @@ const Dashboard = () => {
 
       {/* Recent Events and Announcements */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
+        <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-church-500 cursor-pointer" onClick={() => window.location.href = '/events'}>
           <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
           <div className="space-y-4">
-            {upcomingEvents.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="min-w-[48px] h-12 bg-church-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-church-600" />
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="min-w-[48px] h-12 bg-church-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-church-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">{event.title}</h4>
+                    <p className="text-sm text-gray-500">
+                      {new Date(event.start_date).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">{event.title}</h4>
-                  <p className="text-sm text-gray-500">
-                    {new Date(event.start_date).toLocaleDateString()}
-                  </p>
-                </div>
+              ))
+            ) : (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No upcoming events</p>
               </div>
-            ))}
+            )}
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-church-500 cursor-pointer" onClick={() => window.location.href = '/announcements'}>
           <h3 className="text-lg font-semibold mb-4">Recent Announcements</h3>
           <div className="space-y-4">
-            {announcements.map((announcement) => (
-              <div
-                key={announcement.id}
-                className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900">{announcement.title}</h4>
-                  <span className="text-sm text-gray-500">
-                    {new Date(announcement.publish_date).toLocaleDateString()}
-                  </span>
+            {announcements.length > 0 ? (
+              announcements.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">{announcement.title}</h4>
+                    <span className="text-sm text-gray-500">
+                      {new Date(announcement.publish_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 line-clamp-2">{announcement.content}</p>
                 </div>
-                <p className="text-gray-600 line-clamp-2">{announcement.content}</p>
+              ))
+            ) : (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No recent announcements</p>
               </div>
-            ))}
+            )}
           </div>
         </Card>
       </div>
