@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/Layout/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { HeaderLogo } from "@/components/Layout/HeaderLogo";
@@ -61,6 +61,7 @@ function AuthenticatedApp() {
             <div className="max-w-[1400px] mx-auto">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Navigate to="/" replace />} />
                 <Route path="/members" element={<Members />} />
                 <Route path="/groups" element={<Groups />} />
                 <Route path="/events" element={<Events />} />

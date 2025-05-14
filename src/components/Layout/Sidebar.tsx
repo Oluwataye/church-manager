@@ -1,3 +1,4 @@
+
 import { Home, Users, Calendar, Bell, DollarSign, Settings, LogOut, ClipboardCheck } from "lucide-react";
 import { 
   Sidebar, 
@@ -9,8 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/Auth/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,6 +28,7 @@ const menuItems = [
 export const AppSidebar = () => {
   const { logout } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -47,19 +48,26 @@ export const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton asChild>
-                    <Link 
-                      to={item.path} 
-                      className="flex items-center gap-4 px-4 py-3 text-white hover:bg-church-700 transition-colors w-full rounded-md"
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span className="text-base font-medium">{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path || 
+                  (item.path === "/" && location.pathname === "/dashboard");
+                
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton asChild>
+                      <Link 
+                        to={item.path} 
+                        className={`flex items-center gap-4 px-4 py-3 text-white hover:bg-church-700 transition-colors w-full rounded-md ${
+                          isActive ? "bg-church-700 font-semibold" : ""
+                        }`}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="text-base font-medium">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -84,4 +92,4 @@ export const AppSidebar = () => {
       </SidebarContent>
     </Sidebar>
   );
-};
+}
