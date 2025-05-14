@@ -2,24 +2,35 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchChurchSettings } from '@/services/churchSettings';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export function useChurchName() {
+  const { isOffline } = useOnlineStatus();
   const [churchName, setChurchName] = useState(() => {
     // Try to get the name from localStorage initially
     return localStorage.getItem('churchName') || 'LIVING FAITH CHURCH';
   });
 
-  // Fetch from the server
+  // Fetch from the server when online
   const { data: settings } = useQuery({
     queryKey: ['churchSettings'],
     queryFn: fetchChurchSettings,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
+    enabled: !isOffline, // Only run if online
     meta: {
       onSuccess: (data) => {
         if (data?.church_name) {
           setChurchName(data.church_name);
           localStorage.setItem('churchName', data.church_name);
+        }
+      },
+      onError: (error) => {
+        console.error("Error fetching church settings:", error);
+        // Use local storage if available when there's an error
+        const localName = localStorage.getItem('churchName');
+        if (localName) {
+          setChurchName(localName);
         }
       }
     }
@@ -39,7 +50,7 @@ export function useChurchName() {
     return () => window.removeEventListener('churchNameUpdated', handleNameUpdated);
   }, []);
 
-  // Listen for localStorage changes
+  // Listen for localStorage changes (works across tabs)
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'churchName' && event.newValue) {
@@ -51,8 +62,24 @@ export function useChurchName() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  const updateLocalChurchName = (newName: string) => {
+    if (!newName.trim()) return;
+    
+    // Update local state
+    setChurchName(newName);
+    
+    // Store in localStorage
+    localStorage.setItem('churchName', newName);
+    
+    // Dispatch event for other components
+    const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
+      detail: { churchName: newName } 
+    });
+    window.dispatchEvent(nameUpdatedEvent);
+  };
+
   return { 
     churchName,
-    setChurchName
+    setChurchName: updateLocalChurchName
   };
 }

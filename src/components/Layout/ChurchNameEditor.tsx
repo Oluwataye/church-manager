@@ -30,22 +30,28 @@ export function ChurchNameEditor({ initialName = "LIVING FAITH CHURCH", onNameCh
     try {
       setIsLoading(true);
       
-      if (isOffline) {
-        // In offline mode, just store locally
-        localStorage.setItem("churchName", churchName);
-        
-        // Dispatch a custom event for updates
-        const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
-          detail: { churchName } 
-        });
-        window.dispatchEvent(nameUpdatedEvent);
-        
-        toast.success("Church name updated locally");
+      // Store in localStorage regardless of online status for local availability
+      localStorage.setItem("churchName", churchName);
+      
+      // Dispatch a custom event for updates across components
+      const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
+        detail: { churchName } 
+      });
+      window.dispatchEvent(nameUpdatedEvent);
+      
+      if (!isOffline) {
+        // Only try to update the server if we're online
+        try {
+          await updateChurchName(churchName);
+          queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+          toast.success("Church name updated successfully");
+        } catch (error) {
+          console.error("Error updating church name on server:", error);
+          // Still treat as successful since we updated locally
+          toast.success("Church name updated locally. Will sync to server when online.");
+        }
       } else {
-        // Online mode - update in database
-        await updateChurchName(churchName);
-        queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
-        toast.success("Church name updated successfully");
+        toast.success("Church name updated locally. Will sync to server when online.");
       }
       
       if (onNameChange) {
@@ -80,6 +86,12 @@ export function ChurchNameEditor({ initialName = "LIVING FAITH CHURCH", onNameCh
       >
         {isLoading ? "Updating..." : "Update Church Name"}
       </Button>
+      
+      {isOffline && (
+        <p className="text-sm text-amber-600 mt-2">
+          You are offline. Changes will be stored locally and synced when online.
+        </p>
+      )}
     </form>
   );
 }

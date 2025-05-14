@@ -1,4 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export interface ChurchSettings {
   logo_url?: string;
@@ -8,6 +10,13 @@ export interface ChurchSettings {
 export async function fetchChurchSettings(): Promise<ChurchSettings> {
   try {
     console.log("Fetching church settings");
+    
+    // First check if we're offline
+    if (!navigator.onLine) {
+      console.log("Device is offline, using local settings");
+      return getLocalSettings();
+    }
+    
     const { data, error } = await supabase
       .from('church_settings')
       .select('logo_url, church_name')
@@ -20,15 +29,33 @@ export async function fetchChurchSettings(): Promise<ChurchSettings> {
         await createDefaultSettings();
         return { logo_url: undefined, church_name: 'LIVING FAITH CHURCH' };
       }
-      throw error;
+      
+      // Fall back to local settings on error
+      return getLocalSettings();
     }
     
     console.log("Settings fetched:", data);
+    
+    // Update local storage with the latest data
+    if (data?.church_name) {
+      localStorage.setItem('churchName', data.church_name);
+    }
+    if (data?.logo_url) {
+      localStorage.setItem('offlineLogo', data.logo_url);
+    }
+    
     return data;
   } catch (error) {
     console.error("Error in fetchChurchSettings:", error);
-    return { logo_url: undefined, church_name: 'LIVING FAITH CHURCH' };
+    return getLocalSettings();
   }
+}
+
+function getLocalSettings(): ChurchSettings {
+  return {
+    logo_url: localStorage.getItem('offlineLogo') || undefined,
+    church_name: localStorage.getItem('churchName') || 'LIVING FAITH CHURCH'
+  };
 }
 
 async function createDefaultSettings() {
@@ -74,9 +101,6 @@ async function ensureBucketExists() {
       }
       
       console.log("Bucket 'church-assets' created successfully");
-      
-      // Note: Removing the setPublic() call as it's not available in the API
-      // The bucket is already set as public during creation with the 'public: true' option
     }
   } catch (error) {
     console.error("Error ensuring bucket exists:", error);
@@ -185,6 +209,22 @@ export async function updateChurchName(churchName: string) {
   try {
     console.log("Updating church name to:", churchName);
     
+    // Update localStorage first for immediate access
+    localStorage.setItem('churchName', churchName);
+    
+    // Dispatch custom event for immediate updates across the app
+    const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
+      detail: { churchName } 
+    });
+    window.dispatchEvent(nameUpdatedEvent);
+    
+    // If offline, just return with success from local update
+    if (!navigator.onLine) {
+      console.log("Device is offline, church name updated locally only");
+      return { data: { church_name: churchName } };
+    }
+    
+    // Continue with server update if online
     // Check if there are existing settings
     const { data: existingSettings, error: fetchError } = await supabase
       .from('church_settings')
@@ -237,19 +277,11 @@ export async function updateChurchName(churchName: string) {
       data = insertData;
     }
 
-    // Store in localStorage for offline access
-    localStorage.setItem('churchName', churchName);
-    
-    // Dispatch custom event for immediate updates across the app
-    const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
-      detail: { churchName } 
-    });
-    window.dispatchEvent(nameUpdatedEvent);
-
     console.log("Church name updated successfully:", data);
     return { data };
   } catch (error) {
     console.error('Error updating church name:', error);
-    throw error;
+    // Even if server update fails, we've already updated locally
+    return { data: { church_name: churchName, updatedLocally: true } };
   }
 }

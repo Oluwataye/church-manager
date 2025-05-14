@@ -54,6 +54,13 @@ const setupSettingsRoutes = (app, expressApp) => {
       };
       
       await settingsDb.write();
+      
+      // Notify the main process about the church name change
+      // This could be expanded to notify renderer processes if needed
+      if (app && app.mainWindow) {
+        app.mainWindow.webContents.send('church-name-updated', { church_name });
+      }
+      
       return res.json({ church_name, success: true });
     } catch (error) {
       console.error('Error updating church name:', error);
