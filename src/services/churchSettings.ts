@@ -1,8 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ChurchSettings {
   logo_url?: string;
+  church_name?: string;
 }
 
 export async function fetchChurchSettings(): Promise<ChurchSettings> {
@@ -10,7 +10,7 @@ export async function fetchChurchSettings(): Promise<ChurchSettings> {
     console.log("Fetching church settings");
     const { data, error } = await supabase
       .from('church_settings')
-      .select('logo_url')
+      .select('logo_url, church_name')
       .single();
     
     if (error) {
@@ -18,7 +18,7 @@ export async function fetchChurchSettings(): Promise<ChurchSettings> {
       // If no settings exist, create default settings
       if (error.code === 'PGRST116') {
         await createDefaultSettings();
-        return { logo_url: undefined };
+        return { logo_url: undefined, church_name: 'LIVING FAITH CHURCH' };
       }
       throw error;
     }
@@ -27,7 +27,7 @@ export async function fetchChurchSettings(): Promise<ChurchSettings> {
     return data;
   } catch (error) {
     console.error("Error in fetchChurchSettings:", error);
-    return { logo_url: undefined };
+    return { logo_url: undefined, church_name: 'LIVING FAITH CHURCH' };
   }
 }
 
@@ -177,6 +177,79 @@ export async function uploadLogo(file: File) {
     return { publicUrl, data };
   } catch (error) {
     console.error('Error uploading logo:', error);
+    throw error;
+  }
+}
+
+export async function updateChurchName(churchName: string) {
+  try {
+    console.log("Updating church name to:", churchName);
+    
+    // Check if there are existing settings
+    const { data: existingSettings, error: fetchError } = await supabase
+      .from('church_settings')
+      .select('*')
+      .maybeSingle();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error("Error fetching settings:", fetchError);
+      throw fetchError;
+    }
+    
+    let data;
+    if (existingSettings) {
+      // Update existing settings
+      console.log("Updating existing settings");
+      const { data: updateData, error: updateError } = await supabase
+        .from('church_settings')
+        .update({ 
+          church_name: churchName,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingSettings.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("Update error:", updateError);
+        throw updateError;
+      }
+      
+      data = updateData;
+    } else {
+      // Create new settings
+      console.log("Creating new settings with church name");
+      const { data: insertData, error: insertError } = await supabase
+        .from('church_settings')
+        .insert({ 
+          church_name: churchName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
+      
+      data = insertData;
+    }
+
+    // Store in localStorage for offline access
+    localStorage.setItem('churchName', churchName);
+    
+    // Dispatch custom event for immediate updates across the app
+    const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
+      detail: { churchName } 
+    });
+    window.dispatchEvent(nameUpdatedEvent);
+
+    console.log("Church name updated successfully:", data);
+    return { data };
+  } catch (error) {
+    console.error('Error updating church name:', error);
     throw error;
   }
 }

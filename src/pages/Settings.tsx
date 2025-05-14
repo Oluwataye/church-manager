@@ -9,12 +9,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useEffect, useState } from "react";
+import { ChurchNameEditor } from "@/components/Layout/ChurchNameEditor";
+import { useChurchName } from "@/hooks/useChurchName";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-
+  const { churchName } = useChurchName();
+  
   // Monitor online status
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -59,6 +62,16 @@ export default function Settings() {
     });
   };
 
+  const handleChurchNameChange = (newName: string) => {
+    console.log("Church name changed in Settings:", newName);
+    
+    // Force a refresh of the church settings data
+    queryClient.invalidateQueries({ queryKey: ['churchSettings'] });
+    
+    // No need for DOM manipulation here as we're using the event system
+    // and the useChurchName hook to propagate changes
+  };
+
   const handleThemeChange = (checked: boolean) => {
     const newTheme = checked ? "dark" : "light";
     setTheme(newTheme);
@@ -81,12 +94,24 @@ export default function Settings() {
         <Alert variant="warning" className="mb-4">
           <AlertTitle>Offline Mode</AlertTitle>
           <AlertDescription>
-            You are currently offline. Logo uploads will not work until you have an internet connection.
+            You are currently offline. Some settings may only be saved locally until you reconnect.
           </AlertDescription>
         </Alert>
       )}
       
       <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Church Name</CardTitle>
+            <CardDescription>
+              Update your church name. This will be displayed across the application.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChurchNameEditor initialName={churchName} onNameChange={handleChurchNameChange} />
+          </CardContent>
+        </Card>
+      
         <Card>
           <CardHeader>
             <CardTitle>Church Logo</CardTitle>
