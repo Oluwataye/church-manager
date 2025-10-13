@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase, localApi } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { processPendingSync } from "@/services/syncService";
 import { CustomUser } from "@/components/Auth/authTypes";
 
 const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
-const authClient = isElectron ? localApi : supabase;
 
 export function useAuthState() {
   const [user, setUser] = useState<User | CustomUser | null>(null);
@@ -18,7 +17,7 @@ export function useAuthState() {
 
   useEffect(() => {
     const handleOnline = () => {
-      authClient.auth.getSession().then(({ data: { session } }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           setUser(session.user);
         } else {
@@ -75,7 +74,7 @@ export function useAuthState() {
         }
         
         if (navigator.onLine || isElectron) {
-          const { data: { session } } = await authClient.auth.getSession();
+          const { data: { session } } = await supabase.auth.getSession();
           
           if (session?.user) {
             setUser(session.user);
@@ -88,7 +87,7 @@ export function useAuthState() {
             }));
           }
           
-          const { data: { subscription } } = authClient.auth.onAuthStateChange(async (event, session) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Auth state changed:', event);
             
             if (session?.user) {
@@ -138,7 +137,7 @@ export function useAuthState() {
 
   const logout = async () => {
     try {
-      await authClient.auth.signOut();
+      await supabase.auth.signOut();
       
       localStorage.removeItem('currentUser');
       localStorage.removeItem('lastLoginTime');
