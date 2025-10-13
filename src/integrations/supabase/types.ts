@@ -14,7 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          priority: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          priority?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      attendance_records: {
+        Row: {
+          adult_men: number
+          adult_women: number
+          boys: number
+          created_at: string
+          date: string
+          girls: number
+          id: string
+          service_type: string
+          total: number | null
+          updated_at: string
+        }
+        Insert: {
+          adult_men?: number
+          adult_women?: number
+          boys?: number
+          created_at?: string
+          date: string
+          girls?: number
+          id?: string
+          service_type: string
+          total?: number | null
+          updated_at?: string
+        }
+        Update: {
+          adult_men?: number
+          adult_women?: number
+          boys?: number
+          created_at?: string
+          date?: string
+          girls?: number
+          id?: string
+          service_type?: string
+          total?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      church_settings: {
+        Row: {
+          church_name: string
+          created_at: string
+          id: string
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          church_name?: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          church_name?: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          location: string | null
+          start_date: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          location?: string | null
+          start_date: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          location?: string | null
+          start_date?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      incomes: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          service_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          service_type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          service_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          address: string | null
+          baptism_date: string | null
+          baptism_location: string | null
+          church_group: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          first_name: string
+          gender: string | null
+          id: string
+          join_date: string | null
+          last_name: string
+          marital_status: string | null
+          member_type: string
+          phone: string | null
+          photo_url: string | null
+          state: string | null
+          updated_at: string
+          wofbi_graduate: boolean | null
+          wofbi_graduation_year: number | null
+        }
+        Insert: {
+          address?: string | null
+          baptism_date?: string | null
+          baptism_location?: string | null
+          church_group?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          first_name: string
+          gender?: string | null
+          id?: string
+          join_date?: string | null
+          last_name: string
+          marital_status?: string | null
+          member_type?: string
+          phone?: string | null
+          photo_url?: string | null
+          state?: string | null
+          updated_at?: string
+          wofbi_graduate?: boolean | null
+          wofbi_graduation_year?: number | null
+        }
+        Update: {
+          address?: string | null
+          baptism_date?: string | null
+          baptism_location?: string | null
+          church_group?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          first_name?: string
+          gender?: string | null
+          id?: string
+          join_date?: string | null
+          last_name?: string
+          marital_status?: string | null
+          member_type?: string
+          phone?: string | null
+          photo_url?: string | null
+          state?: string | null
+          updated_at?: string
+          wofbi_graduate?: boolean | null
+          wofbi_graduation_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_members_church_group"
+            columns: ["church_group"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tithes: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          id: string
+          member_id: string
+          month: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          date: string
+          id?: string
+          member_id: string
+          month: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          id?: string
+          member_id?: string
+          month?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tithes_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
