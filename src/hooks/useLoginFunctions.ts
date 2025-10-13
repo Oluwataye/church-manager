@@ -23,37 +23,16 @@ export function useLoginFunctions() {
     setError(null);
 
     try {
-      // First check if credentials match local users (for offline mode)
-      const localUsers = JSON.parse(localStorage.getItem('localUsers') || '[]');
-      const user = localUsers.find((u: any) => u.email === email && u.password === password);
-      
-      if (user) {
-        // Store login time
-        localStorage.setItem('lastLoginTime', new Date().toISOString());
-        localStorage.setItem('currentUser', JSON.stringify({ 
-          email: user.email, 
-          role: user.role,
-          lastLoginTime: new Date().toISOString()
-        }));
-        
-        // If online, try to authenticate with Supabase as well
-        if (navigator.onLine) {
-          try {
-            const { data, error: signInError } = await supabase.auth.signInWithPassword({
-              email,
-              password,
-            });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-            if (!signInError && data?.user) {
-              // Update last login time
-              localStorage.setItem('lastLoginTime', new Date().toISOString());
-            }
-          } catch (error) {
-            console.log("Online authentication failed, but local auth succeeded");
-            // Continue anyway since local auth passed
-          }
-        }
-        
+      if (signInError) {
+        throw new Error('Invalid email or password. Please try again.');
+      }
+
+      if (data?.user) {
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
@@ -61,38 +40,6 @@ export function useLoginFunctions() {
 
         const from = location.state?.from?.pathname || "/";
         navigate(from, { replace: true });
-      } else if (navigator.onLine) {
-        // If no local match but online, try Supabase
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) {
-          throw new Error('Invalid email or password. Please try again.');
-        }
-
-        if (data?.user) {
-          // Store user locally for future offline logins
-          localUsers.push({ email, password, role: 'user' });
-          localStorage.setItem('localUsers', JSON.stringify(localUsers));
-          localStorage.setItem('lastLoginTime', new Date().toISOString());
-          localStorage.setItem('currentUser', JSON.stringify({ 
-            email,
-            role: 'user',
-            lastLoginTime: new Date().toISOString()
-          }));
-          
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully logged in.",
-          });
-
-          const from = location.state?.from?.pathname || "/";
-          navigate(from, { replace: true });
-        }
-      } else {
-        throw new Error('Invalid email or password. Please try again.');
       }
     } catch (error: any) {
       console.error("Login error:", error);

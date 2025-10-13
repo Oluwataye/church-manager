@@ -163,7 +163,7 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-gray-900">{announcement.title}</h4>
                     <span className="text-sm text-gray-500">
-                      {new Date(announcement.publish_date).toLocaleDateString()}
+                      {new Date(announcement.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   <p className="text-gray-600 line-clamp-2">{announcement.content}</p>

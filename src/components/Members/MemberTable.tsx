@@ -1,7 +1,7 @@
-
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -9,32 +9,13 @@ import {
 import { MemberTableRow } from "./MemberTableRow";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface Member {
-  id: string;
-  family_name: string;
-  individual_names: string;
-  marital_status: string;
-  number_of_children: number;
-  contact_number: string;
-  contact_address: string;
-  foundation_class_date: string;
-  baptism_water: boolean;
-  baptism_holy_ghost: boolean;
-  baptism_year: string;
-  wofbi_class_type: string;
-  wofbi_year: string;
-  joining_location: string;
-  member_type: string;
-  profile_photo?: string;
-  church_group?: string;
-}
+import type { Member } from "@/hooks/useMembers";
 
 interface MemberTableProps {
   members: Member[];
   onEdit: (member: Member) => void;
   onDelete: (member: Member) => void;
-  onDownload: (member: Member) => void;
+  onExport: (member: Member) => Promise<void>;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -44,65 +25,72 @@ export function MemberTable({
   members,
   onEdit,
   onDelete,
-  onDownload,
+  onExport,
   currentPage,
   totalPages,
   onPageChange,
 }: MemberTableProps) {
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Profile</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Group</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {members.length === 0 ? (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <td colSpan={5} className="h-24 text-center">
-                No members found
-              </td>
+              <TableHead>Member</TableHead>
+              <TableHead>Marital Status</TableHead>
+              <TableHead>Gender</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Member Type</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ) : (
-            members.map((member) => (
-              <MemberTableRow
-                key={member.id}
-                member={member}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onDownload={onDownload}
-              />
-            ))
-          )}
-        </TableBody>
-      </Table>
-
+          </TableHeader>
+          <TableBody>
+            {members.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  No members found. Add your first member to get started.
+                </TableCell>
+              </TableRow>
+            ) : (
+              members.map((member) => (
+                <MemberTableRow
+                  key={member.id}
+                  member={member}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onExport={onExport}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
             Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>

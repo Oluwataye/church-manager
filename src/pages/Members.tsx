@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Loader2, AlertTriangle } from "lucide-react";
-import { generateMemberProfile } from "@/utils/pdfGenerator";
+import { generateMemberPDF } from "@/utils/pdfGenerator";
 import {
   Dialog,
   DialogContent,
@@ -55,9 +55,9 @@ export default function Members() {
   // Filter members based on search query
   const filteredMembers = members.filter(
     (member) =>
-      member.family_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.individual_names.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (member.contact_number && member.contact_number.toLowerCase().includes(searchQuery.toLowerCase()))
+      member.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.phone && member.phone.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Pagination logic
@@ -81,7 +81,7 @@ export default function Members() {
 
   const handleDownloadProfile = async (member: Member) => {
     try {
-      const success = await generateMemberProfile(member);
+      const success = await generateMemberPDF(member);
       if (success) {
         toast.success("Profile downloaded successfully", {
           duration: 4000,
@@ -153,7 +153,7 @@ export default function Members() {
                   setSelectedMember(member);
                   setShowDeleteDialog(true);
                 }}
-                onDownload={handleDownloadProfile}
+                onExport={handleDownloadProfile}
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}

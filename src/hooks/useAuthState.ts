@@ -21,12 +21,7 @@ export function useAuthState() {
         if (session?.user) {
           setUser(session.user);
         } else {
-          const currentUser = localStorage.getItem('currentUser');
-          if (currentUser) {
-            setUser(JSON.parse(currentUser));
-          } else {
-            setUser(null);
-          }
+          setUser(null);
         }
       });
       
@@ -36,22 +31,15 @@ export function useAuthState() {
     };
 
     const handleOffline = () => {
-      const currentUser = localStorage.getItem('currentUser');
-      const lastLoginTime = localStorage.getItem('lastLoginTime');
-      
-      if (currentUser) {
-        if (lastLoginTime && Date.now() - new Date(lastLoginTime).getTime() > 7 * 24 * 60 * 60 * 1000) {
-          setUser(null);
-          localStorage.removeItem('currentUser');
-          localStorage.removeItem('lastLoginTime');
-          navigate('/login');
+      // In offline mode, maintain current session if valid
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          setUser(session.user);
         } else {
-          setUser(JSON.parse(currentUser));
+          setUser(null);
+          navigate('/login');
         }
-      } else {
-        setUser(null);
-        navigate('/login');
-      }
+      });
     };
 
     window.addEventListener('online', handleOnline);
@@ -66,81 +54,45 @@ export function useAuthState() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const currentUser = localStorage.getItem('currentUser');
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (currentUser) {
-          setUser(JSON.parse(currentUser));
-          setIsLoading(false);
+        if (session?.user) {
+          setUser(session.user);
         }
         
-        if (navigator.onLine || isElectron) {
-          const { data: { session } } = await supabase.auth.getSession();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log('Auth state changed:', event);
           
           if (session?.user) {
             setUser(session.user);
             
-            localStorage.setItem('lastLoginTime', new Date().toISOString());
-            localStorage.setItem('currentUser', JSON.stringify({
-              email: session.user.email,
-              role: 'user',
-              lastLoginTime: new Date().toISOString()
-            }));
-          }
-          
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth state changed:', event);
-            
-            if (session?.user) {
-              setUser(session.user);
-              
-              localStorage.setItem('lastLoginTime', new Date().toISOString());
-              localStorage.setItem('currentUser', JSON.stringify({
-                email: session.user.email,
-                role: 'user',
-                lastLoginTime: new Date().toISOString()
-              }));
-              
-              if (event === 'SIGNED_IN') {
-                const intendedPath = sessionStorage.getItem('intendedPath') || '/';
-                sessionStorage.removeItem('intendedPath');
-                navigate(intendedPath);
-              }
-            } else if (event === 'SIGNED_OUT') {
-              localStorage.removeItem('currentUser');
-              localStorage.removeItem('lastLoginTime');
-              setUser(null);
-              navigate('/login');
+            if (event === 'SIGNED_IN') {
+              const intendedPath = sessionStorage.getItem('intendedPath') || '/';
+              sessionStorage.removeItem('intendedPath');
+              navigate(intendedPath);
             }
-          });
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+            navigate('/login');
+          }
+        });
 
-          setIsLoading(false);
-          return () => {
-            subscription.unsubscribe();
-          };
-        }
-        
         setIsLoading(false);
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
         console.error('Error initializing auth:', error);
         setIsLoading(false);
-        if (!navigator.onLine && !isElectron) {
-          toast({
-            title: "Offline Mode",
-            description: "Some features may be limited while offline.",
-          });
-        }
       }
     };
 
     initializeAuth();
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('lastLoginTime');
       setUser(null);
       navigate("/login", { replace: true });
       
@@ -149,14 +101,11 @@ export function useAuthState() {
       });
     } catch (error: any) {
       console.error("Logout error:", error);
-      
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('lastLoginTime');
       setUser(null);
       navigate("/login", { replace: true });
       
       toast({
-        description: "You have been logged out successfully (offline mode).",
+        description: "You have been logged out successfully.",
       });
     }
   };

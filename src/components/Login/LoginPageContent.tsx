@@ -1,15 +1,17 @@
 
 import { useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { ChurchLogo } from "@/components/Layout/ChurchLogo";
 import { OfflineAlert } from "@/components/Login/OfflineAlert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/components/Auth/LoginComponents";
 import { useLoginFunctions } from "@/hooks/useLoginFunctions";
-import { initializeLocalUsers } from "@/components/Auth/AuthUtils";
 import { useAuthStatus } from "@/components/Auth/AuthUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LoginPageContent() {
   const { isOffline } = useAuthStatus();
+  const navigate = useNavigate();
   const {
     // Login state
     email,
@@ -25,10 +27,14 @@ export function LoginPageContent() {
     handleLogin
   } = useLoginFunctions();
 
+  // Check if user is already authenticated
   useEffect(() => {
-    // Initialize local users storage if it doesn't exist
-    initializeLocalUsers();
-  }, []);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        navigate("/");
+      }
+    });
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -64,6 +70,12 @@ export function LoginPageContent() {
               isLoading={isLoading}
               onSubmit={handleLogin}
             />
+
+            <div className="mt-4 text-center">
+              <Link to="/signup" className="text-sm text-church-600 hover:text-church-700">
+                Don't have an account? Sign up
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

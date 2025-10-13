@@ -24,8 +24,8 @@ interface TitheRecord {
   notes?: string;
   members: {
     id: string;
-    family_name: string;
-    individual_names: string;
+    first_name: string;
+    last_name: string;
   };
 }
 
@@ -47,8 +47,8 @@ export function MemberTitheHistory() {
             notes,
             members:member_id (
               id, 
-              family_name, 
-              individual_names
+              first_name, 
+              last_name
             )
           `)
           .order('date', { ascending: false });
@@ -81,7 +81,7 @@ export function MemberTitheHistory() {
   const filteredRecords = titheRecords?.filter(record => {
     if (!record.members) return false;
     
-    const memberName = `${record.members.family_name} ${record.members.individual_names}`.toLowerCase();
+    const memberName = `${record.members.first_name} ${record.members.last_name}`.toLowerCase();
     return memberName.includes(searchTerm.toLowerCase());
   }) || [];
 
@@ -126,7 +126,7 @@ export function MemberTitheHistory() {
                   <TableRow key={record.id}>
                     <TableCell>
                       {record.members ? 
-                        `${record.members.family_name} ${record.members.individual_names}` : 
+                        `${record.members.first_name} ${record.members.last_name}` : 
                         "Unknown member"}
                     </TableCell>
                     <TableCell>{format(new Date(record.date), "PPP")}</TableCell>

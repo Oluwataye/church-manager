@@ -6,23 +6,27 @@ import { useState, useEffect } from "react";
 
 export interface Member {
   id: string;
-  family_name: string;
-  individual_names: string;
-  marital_status: string;
-  number_of_children: number;
-  contact_number: string;
-  contact_address: string;
-  foundation_class_date: string;
-  baptism_water: boolean;
-  baptism_holy_ghost: boolean;
-  baptism_year: string;
-  wofbi_class_type: string;
-  wofbi_year: string;
-  joining_location: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  date_of_birth?: string;
+  gender?: string;
+  marital_status?: string;
   member_type: string;
-  profile_photo?: string;
   church_group?: string;
-  group_name?: string; // Add this field for the group name
+  baptism_date?: string;
+  baptism_location?: string;
+  join_date?: string;
+  wofbi_graduate?: boolean;
+  wofbi_graduation_year?: number;
+  photo_url?: string;
+  created_at?: string;
+  updated_at?: string;
+  group_name?: string; // For joined group data
 }
 
 export function useMembers() {

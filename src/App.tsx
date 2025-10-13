@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useSessionTimeout } from "@/hooks/use-session-timeout";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import Dashboard from "@/pages/Dashboard";
 import Members from "@/pages/Members";
 import Groups from "@/pages/Groups";
@@ -89,6 +90,7 @@ function AppContent() {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route
               path="/*"
               element={

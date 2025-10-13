@@ -34,8 +34,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Member {
   id: string;
-  family_name: string;
-  individual_names: string;
+  first_name: string;
+  last_name: string;
 }
 
 export function TitheForm() {
@@ -48,8 +48,8 @@ export function TitheForm() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('members')
-        .select('id, family_name, individual_names')
-        .order('family_name', { ascending: true });
+        .select('id, first_name, last_name')
+        .order('first_name', { ascending: true });
       
       if (error) throw error;
       return data as Member[];
@@ -60,7 +60,7 @@ export function TitheForm() {
   const filteredMembers = searchQuery.trim() === "" 
     ? members 
     : members.filter(member => {
-        const fullName = `${member.family_name} ${member.individual_names}`.toLowerCase();
+        const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
         return fullName.includes(searchQuery.toLowerCase());
       });
 
@@ -97,7 +97,7 @@ export function TitheForm() {
                   <SelectContent>
                     {filteredMembers.map((member) => (
                       <SelectItem key={member.id} value={member.id}>
-                        {member.family_name} {member.individual_names}
+                        {member.first_name} {member.last_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
