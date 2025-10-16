@@ -2,8 +2,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Search } from "lucide-react";
+import { Search, Download, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -15,6 +16,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { exportTithesToCSV, exportMemberTithesToCSV } from "@/utils/titheCsvExport";
+import { generateTitheReportPDF, generateMemberTithePDF } from "@/utils/tithePdfGenerator";
 
 interface TitheRecord {
   id: string;
@@ -85,17 +88,112 @@ export function MemberTitheHistory() {
     return memberName.includes(searchTerm.toLowerCase());
   }) || [];
 
+  const handleDownloadAllCSV = () => {
+    if (filteredRecords.length === 0) {
+      toast.error("No records to download");
+      return;
+    }
+    exportTithesToCSV(filteredRecords);
+    toast.success("CSV downloaded successfully");
+  };
+
+  const handleDownloadAllPDF = async () => {
+    if (filteredRecords.length === 0) {
+      toast.error("No records to download");
+      return;
+    }
+    const success = await generateTitheReportPDF(filteredRecords);
+    if (success) {
+      toast.success("PDF downloaded successfully");
+    } else {
+      toast.error("Failed to generate PDF");
+    }
+  };
+
+  const handleDownloadMemberTithes = async (memberId: string, format: 'csv' | 'pdf') => {
+    const memberRecords = titheRecords.filter(record => record.members?.id === memberId);
+    
+    if (memberRecords.length === 0) {
+      toast.error("No tithe records found for this member");
+      return;
+    }
+
+    const memberName = `${memberRecords[0].members.first_name} ${memberRecords[0].members.last_name}`;
+
+    if (format === 'csv') {
+      exportMemberTithesToCSV(memberName, memberRecords);
+      toast.success("CSV downloaded successfully");
+    } else {
+      const success = await generateMemberTithePDF(memberName, memberRecords);
+      if (success) {
+        toast.success("PDF downloaded successfully");
+      } else {
+        toast.error("Failed to generate PDF");
+      }
+    }
+  };
+
+  // Get unique members from tithe records
+  const uniqueMembers = Array.from(
+    new Map(
+      titheRecords
+        .filter(record => record.members)
+        .map(record => [record.members.id, record.members])
+    ).values()
+  );
+
+  const totalAmount = filteredRecords.reduce((sum, record) => sum + Number(record.amount), 0);
+
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search members..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-8"
-        />
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search members..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleDownloadAllCSV}
+            variant="outline"
+            size="sm"
+            disabled={filteredRecords.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            CSV
+          </Button>
+          <Button
+            onClick={handleDownloadAllPDF}
+            variant="outline"
+            size="sm"
+            disabled={filteredRecords.length === 0}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            PDF
+          </Button>
+        </div>
       </div>
+
+      <Card className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Total Records</p>
+            <p className="text-2xl font-bold">{filteredRecords.length}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Total Amount</p>
+            <p className="text-2xl font-bold text-green-600">₦{totalAmount.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Unique Members</p>
+            <p className="text-2xl font-bold">{uniqueMembers.length}</p>
+          </div>
+        </div>
+      </Card>
 
       <Card>
         <div className="rounded-md border">
@@ -106,20 +204,21 @@ export function MemberTitheHistory() {
                 <TableHead>Date</TableHead>
                 <TableHead>Month</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">Loading records...</TableCell>
+                  <TableCell colSpan={5} className="text-center py-4">Loading records...</TableCell>
                 </TableRow>
               ) : isError ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4 text-destructive">Error loading records. Please try again.</TableCell>
+                  <TableCell colSpan={5} className="text-center py-4 text-destructive">Error loading records. Please try again.</TableCell>
                 </TableRow>
               ) : filteredRecords.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">No tithe records found</TableCell>
+                  <TableCell colSpan={5} className="text-center py-4">No tithe records found</TableCell>
                 </TableRow>
               ) : (
                 filteredRecords.map((record) => (
@@ -135,6 +234,26 @@ export function MemberTitheHistory() {
                       ₦{typeof record.amount === 'number' 
                         ? record.amount.toLocaleString() 
                         : parseFloat(String(record.amount)).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadMemberTithes(record.members.id, 'csv')}
+                          title="Download member's tithe records (CSV)"
+                        >
+                          <Download className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownloadMemberTithes(record.members.id, 'pdf')}
+                          title="Download member's tithe records (PDF)"
+                        >
+                          <FileText className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
