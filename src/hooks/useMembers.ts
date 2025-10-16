@@ -23,6 +23,7 @@ export interface Member {
   join_date?: string;
   wofbi_graduate?: boolean;
   wofbi_graduation_year?: number;
+  wofbi_type?: string;
   photo_url?: string;
   created_at?: string;
   updated_at?: string;

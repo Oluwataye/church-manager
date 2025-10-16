@@ -217,6 +217,7 @@ export type Database = {
           updated_at: string
           wofbi_graduate: boolean | null
           wofbi_graduation_year: number | null
+          wofbi_type: string | null
         }
         Insert: {
           address?: string | null
@@ -240,6 +241,7 @@ export type Database = {
           updated_at?: string
           wofbi_graduate?: boolean | null
           wofbi_graduation_year?: number | null
+          wofbi_type?: string | null
         }
         Update: {
           address?: string | null
@@ -263,6 +265,7 @@ export type Database = {
           updated_at?: string
           wofbi_graduate?: boolean | null
           wofbi_graduation_year?: number | null
+          wofbi_type?: string | null
         }
         Relationships: [
           {

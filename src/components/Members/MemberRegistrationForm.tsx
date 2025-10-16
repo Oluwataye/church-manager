@@ -11,7 +11,7 @@ import type { Member } from "@/hooks/useMembers";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { nigerianCities } from "@/utils/nigerianCities";
+import { nigerianStates, getCitiesByState } from "@/utils/nigerianCities";
 
 interface MemberRegistrationFormProps {
   onSubmit: (data: Omit<Member, "id">) => Promise<void>;
@@ -39,8 +39,11 @@ export function MemberRegistrationForm({ onSubmit, onCancel, initialData }: Memb
     join_date: initialData?.join_date || "",
     wofbi_graduate: initialData?.wofbi_graduate || false,
     wofbi_graduation_year: initialData?.wofbi_graduation_year || undefined,
+    wofbi_type: initialData?.wofbi_type || "",
     photo_url: initialData?.photo_url || "",
   });
+
+  const availableCities = formData.state ? getCitiesByState(formData.state) : [];
 
   // Fetch groups
   const { data: groups = [] } = useQuery({
@@ -208,25 +211,44 @@ export function MemberRegistrationForm({ onSubmit, onCancel, initialData }: Memb
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                value={formData.state}
-                onChange={(e) => updateField("state", e.target.value)}
-                placeholder="e.g., Lagos"
-              />
+              <Select value={formData.state} onValueChange={(value) => {
+                updateField("state", value);
+                updateField("city", ""); // Reset city when state changes
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {nigerianStates.map((state) => (
+                    <SelectItem key={state} value={state}>
+                      {state}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="city">City</Label>
-              <Select value={formData.city} onValueChange={(value) => updateField("city", value)}>
+              <Select 
+                value={formData.city} 
+                onValueChange={(value) => updateField("city", value)}
+                disabled={!formData.state}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select city" />
+                  <SelectValue placeholder={formData.state ? "Select city" : "Select state first"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {nigerianCities.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
+                  {availableCities.length > 0 ? (
+                    availableCities.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-cities" disabled>
+                      No cities available
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -320,18 +342,33 @@ export function MemberRegistrationForm({ onSubmit, onCancel, initialData }: Memb
           <CardDescription>Word of Faith Bible Institute details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="wofbi_graduate"
-              checked={formData.wofbi_graduate}
-              onCheckedChange={(checked) => updateField("wofbi_graduate", checked)}
-            />
-            <Label htmlFor="wofbi_graduate" className="cursor-pointer">
-              WOFBI Graduate
-            </Label>
+          <div>
+            <Label htmlFor="wofbi_type">WOFBI Course Type</Label>
+            <Select 
+              value={formData.wofbi_type} 
+              onValueChange={(value) => {
+                updateField("wofbi_type", value);
+                if (value === "none" || value === "") {
+                  updateField("wofbi_graduate", false);
+                  updateField("wofbi_graduation_year", undefined);
+                } else {
+                  updateField("wofbi_graduate", true);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select WOFBI course type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="BCC">Basic Certificate Course (BCC)</SelectItem>
+                <SelectItem value="LCC">Leadership Certificate Course (LCC)</SelectItem>
+                <SelectItem value="LDC">Leadership Diploma Course (LDC)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {formData.wofbi_graduate && (
+          {formData.wofbi_type && formData.wofbi_type !== "none" && (
             <div>
               <Label htmlFor="wofbi_graduation_year">Graduation Year</Label>
               <Input
