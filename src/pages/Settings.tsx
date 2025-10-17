@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useEffect, useState } from "react";
 import { ChurchNameEditor } from "@/components/Layout/ChurchNameEditor";
 import { useChurchName } from "@/hooks/useChurchName";
+import { LogoExtractor } from "@/components/Layout/LogoExtractor";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
@@ -120,8 +121,16 @@ export default function Settings() {
               Supported formats: PNG, JPEG, SVG. Maximum size: 5MB.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChurchLogo onLogoChange={handleLogoChange} />
+          <CardContent className="space-y-6">
+            <div>
+              <h4 className="text-sm font-medium mb-2">Quick Logo Extraction</h4>
+              <LogoExtractor />
+            </div>
+            <Separator />
+            <div>
+              <h4 className="text-sm font-medium mb-2">Or Upload Custom Logo</h4>
+              <ChurchLogo onLogoChange={handleLogoChange} />
+            </div>
           </CardContent>
         </Card>
 
