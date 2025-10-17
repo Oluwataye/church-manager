@@ -28,13 +28,20 @@ export function AttendanceForm() {
 
   const { mutate: saveAttendance, isPending } = useMutation({
     mutationFn: async (data: typeof attendance) => {
+      const adultMen = parseInt(data.adultMen) || 0;
+      const adultWomen = parseInt(data.adultWomen) || 0;
+      const boys = parseInt(data.boys) || 0;
+      const girls = parseInt(data.girls) || 0;
+      const total = adultMen + adultWomen + boys + girls;
+
       const { error } = await supabase.from('attendance_records').insert([{
         date: data.date,
         service_type: data.serviceType,
-        adult_men: parseInt(data.adultMen) || 0,
-        adult_women: parseInt(data.adultWomen) || 0,
-        boys: parseInt(data.boys) || 0,
-        girls: parseInt(data.girls) || 0,
+        adult_men: adultMen,
+        adult_women: adultWomen,
+        boys: boys,
+        girls: girls,
+        total: total,
       }]);
 
       if (error) throw error;
