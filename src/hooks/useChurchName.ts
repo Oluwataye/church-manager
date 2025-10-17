@@ -18,23 +18,15 @@ export function useChurchName() {
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
     enabled: !isOffline, // Only run if online
-    meta: {
-      onSuccess: (data) => {
-        if (data?.church_name) {
-          setChurchName(data.church_name);
-          localStorage.setItem('churchName', data.church_name);
-        }
-      },
-      onError: (error) => {
-        console.error("Error fetching church settings:", error);
-        // Use local storage if available when there's an error
-        const localName = localStorage.getItem('churchName');
-        if (localName) {
-          setChurchName(localName);
-        }
-      }
-    }
   });
+
+  // Update church name when server data changes
+  useEffect(() => {
+    if (settings?.church_name) {
+      setChurchName(settings.church_name);
+      localStorage.setItem('churchName', settings.church_name);
+    }
+  }, [settings]);
 
   // Listen for custom events
   useEffect(() => {

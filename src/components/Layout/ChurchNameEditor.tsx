@@ -33,12 +33,6 @@ export function ChurchNameEditor({ initialName = "LIVING FAITH CHURCH", onNameCh
       // Store in localStorage regardless of online status for local availability
       localStorage.setItem("churchName", churchName);
       
-      // Dispatch a custom event for updates across components
-      const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
-        detail: { churchName } 
-      });
-      window.dispatchEvent(nameUpdatedEvent);
-      
       if (!isOffline) {
         // Only try to update the server if we're online
         try {
@@ -51,6 +45,11 @@ export function ChurchNameEditor({ initialName = "LIVING FAITH CHURCH", onNameCh
           toast.success("Church name updated locally. Will sync to server when online.");
         }
       } else {
+        // Dispatch event immediately if offline (service won't be called)
+        const nameUpdatedEvent = new CustomEvent('churchNameUpdated', { 
+          detail: { churchName } 
+        });
+        window.dispatchEvent(nameUpdatedEvent);
         toast.success("Church name updated locally. Will sync to server when online.");
       }
       
