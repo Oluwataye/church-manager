@@ -8,10 +8,12 @@ import { LoginForm } from "@/components/Auth/LoginComponents";
 import { useLoginFunctions } from "@/hooks/useLoginFunctions";
 import { useAuthStatus } from "@/components/Auth/AuthUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { useChurchName } from "@/hooks/useChurchName";
 
 export function LoginPageContent() {
   const { isOffline } = useAuthStatus();
   const navigate = useNavigate();
+  const { churchName } = useChurchName();
   const {
     // Login state
     email,
@@ -43,7 +45,7 @@ export function LoginPageContent() {
           <ChurchLogo displayOnly />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Living Faith Church Chanchaga
+          {churchName}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Church Management System
