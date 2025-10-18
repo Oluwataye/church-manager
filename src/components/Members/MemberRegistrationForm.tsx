@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { nigerianStates, getCitiesByState } from "@/utils/nigerianCities";
+import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
 
 interface MemberRegistrationFormProps {
   onSubmit: (data: Omit<Member, "id">) => Promise<void>;
@@ -108,6 +109,17 @@ export function MemberRegistrationForm({ onSubmit, onCancel, initialData }: Memb
           <CardDescription>Basic member details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="mb-6">
+            <Label>Passport Photo</Label>
+            <div className="mt-2">
+              <ProfilePhotoUpload
+                profilePhoto={formData.photo_url || ""}
+                familyName={formData.last_name || ""}
+                onPhotoChange={(photo) => updateField("photo_url", photo)}
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="first_name">First Name *</Label>
