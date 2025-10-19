@@ -35,11 +35,12 @@ export async function uploadLogo(file: File) {
 
     console.log("Public URL generated:", publicUrl);
 
-    // Check if there are existing settings
+    // Check if there are existing settings - fetch the most recent one
     const { data: existingSettings, error: fetchError } = await supabase
       .from('church_settings')
       .select('*')
-      .eq('church_name', 'LIVING FAITH CHURCH')
+      .order('updated_at', { ascending: false, nullsFirst: false })
+      .limit(1)
       .maybeSingle();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
@@ -57,7 +58,7 @@ export async function uploadLogo(file: File) {
           logo_url: publicUrl,
           updated_at: new Date().toISOString()
         })
-        .eq('church_name', 'LIVING FAITH CHURCH')
+        .eq('id', existingSettings.id)
         .select()
         .single();
 
@@ -68,12 +69,12 @@ export async function uploadLogo(file: File) {
       
       data = updateData;
     } else {
-      // Create new settings
+      // Create new settings with the correct church name
       console.log("Creating new settings");
       const { data: insertData, error: insertError } = await supabase
         .from('church_settings')
         .insert({ 
-          church_name: 'LIVING FAITH CHURCH',
+          church_name: 'GLORY COMMUNITY CHRISTIAN CENTRE Kubwa',
           logo_url: publicUrl,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
