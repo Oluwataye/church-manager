@@ -7,8 +7,11 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 export function useChurchName() {
   const { isOffline } = useOnlineStatus();
   const [churchName, setChurchName] = useState(() => {
-    // Try to get the name from localStorage initially
-    return localStorage.getItem('churchName') || 'GLORY COMMUNITY CHRISTIAN CENTRE Kubwa';
+    // Prefer stored name unless it's the legacy default
+    const stored = localStorage.getItem('churchName');
+    return stored && stored !== 'LIVING FAITH CHURCH'
+      ? stored
+      : 'GLORY COMMUNITY CHRISTIAN CENTRE Kubwa';
   });
 
   // Fetch from the server when online
