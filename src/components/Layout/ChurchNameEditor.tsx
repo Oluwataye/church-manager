@@ -13,7 +13,7 @@ interface ChurchNameEditorProps {
   onNameChange?: (name: string) => void;
 }
 
-export function ChurchNameEditor({ initialName = "LIVING FAITH CHURCH", onNameChange }: ChurchNameEditorProps) {
+export function ChurchNameEditor({ initialName = "GLORY COMMUNITY CHRISTIAN CENTRE Kubwa", onNameChange }: ChurchNameEditorProps) {
   const [churchName, setChurchName] = useState(initialName);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();

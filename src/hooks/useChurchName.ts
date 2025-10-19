@@ -8,7 +8,7 @@ export function useChurchName() {
   const { isOffline } = useOnlineStatus();
   const [churchName, setChurchName] = useState(() => {
     // Try to get the name from localStorage initially
-    return localStorage.getItem('churchName') || 'Glory Cummunity Christian Centre Kubwa';
+    return localStorage.getItem('churchName') || 'GLORY COMMUNITY CHRISTIAN CENTRE Kubwa';
   });
 
   // Fetch from the server when online
