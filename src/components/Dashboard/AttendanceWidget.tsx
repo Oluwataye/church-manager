@@ -48,24 +48,28 @@ export function AttendanceWidget() {
               type="monotone"
               dataKey="men"
               name="Men"
-              stroke="#2563eb"
-              dot={{ strokeWidth: 2 }}
+              stroke="hsl(var(--chart-1))"
+              strokeWidth={3}
+              dot={{ strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6 }}
             />
             <Line
               type="monotone"
               dataKey="women"
               name="Women"
-              stroke="#db2777"
-              dot={{ strokeWidth: 2 }}
+              stroke="hsl(var(--chart-4))"
+              strokeWidth={3}
+              strokeDasharray="5 5"
+              dot={{ strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6 }}
             />
             <Line
               type="monotone"
               dataKey="children"
               name="Children"
-              stroke="#16a34a"
-              dot={{ strokeWidth: 2 }}
+              stroke="hsl(var(--chart-2))"
+              strokeWidth={3}
+              dot={{ strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6 }}
             />
           </LineChart>

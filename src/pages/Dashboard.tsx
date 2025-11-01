@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +6,7 @@ import { AttendanceWidget } from "@/components/Dashboard/AttendanceWidget";
 import { IncomeWidget } from "@/components/Dashboard/IncomeWidget";
 import { Link } from "react-router-dom";
 import { StatsCard } from "@/components/Dashboard/StatsCard";
-import { toast } from "sonner";
+import { format } from "date-fns";
 
 const Dashboard = () => {
   // Fetch members count
@@ -18,6 +17,23 @@ const Dashboard = () => {
         .from("members")
         .select("*", { count: "exact", head: true });
       return count || 0;
+    },
+  });
+
+  // Fetch monthly income
+  const { data: monthlyIncome = 0 } = useQuery({
+    queryKey: ["monthlyIncome"],
+    queryFn: async () => {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      
+      const { data } = await supabase
+        .from("incomes")
+        .select("amount")
+        .gte("date", startOfMonth.toISOString());
+      
+      return data?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
     },
   });
 
@@ -48,70 +64,65 @@ const Dashboard = () => {
     },
   });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-church-600 to-church-700 rounded-lg p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Church Manager</h1>
-        <p className="text-church-100">Manage your church efficiently and effectively</p>
+      <div className="bg-gradient-to-br from-primary via-primary/90 to-secondary rounded-xl p-8 text-white shadow-lg">
+        <h1 className="text-4xl font-bold mb-2">{getGreeting()}!</h1>
+        <p className="text-primary-foreground/90 text-lg">
+          Welcome to your Church Management Dashboard
+        </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/members" className="block">
-          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-church-500 cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-church-50 rounded-lg">
-                <Users className="h-6 w-6 text-church-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Total Members</p>
-                <h3 className="text-2xl font-bold text-church-600">{membersCount}</h3>
-              </div>
-            </div>
-          </Card>
+        <Link to="/members">
+          <StatsCard
+            title="Total Members"
+            value={membersCount}
+            icon={<Users className="h-5 w-5" />}
+            colorScheme="primary"
+            description="Registered members"
+            trend={membersCount > 0 ? { value: 12, isPositive: true } : undefined}
+          />
         </Link>
 
-        <Link to="/events" className="block">
-          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-orange-500 cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-orange-50 rounded-lg">
-                <Calendar className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Upcoming Events</p>
-                <h3 className="text-2xl font-bold text-orange-600">{upcomingEvents.length}</h3>
-              </div>
-            </div>
-          </Card>
+        <Link to="/events">
+          <StatsCard
+            title="Upcoming Events"
+            value={upcomingEvents.length}
+            icon={<Calendar className="h-5 w-5" />}
+            colorScheme="warning"
+            description="Events scheduled"
+          />
         </Link>
 
-        <Link to="/announcements" className="block">
-          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-500 cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <Bell className="h-6 w-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Announcements</p>
-                <h3 className="text-2xl font-bold text-purple-600">{announcements.length}</h3>
-              </div>
-            </div>
-          </Card>
+        <Link to="/announcements">
+          <StatsCard
+            title="Active Announcements"
+            value={announcements.length}
+            icon={<Bell className="h-5 w-5" />}
+            colorScheme="info"
+            description="Recent announcements"
+          />
         </Link>
 
-        <Link to="/income" className="block">
-          <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-green-500 cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-50 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Monthly Income</p>
-                <h3 className="text-2xl font-bold text-green-600">₦45,000</h3>
-              </div>
-            </div>
-          </Card>
+        <Link to="/income">
+          <StatsCard
+            title="Monthly Income"
+            value={`₦${monthlyIncome.toLocaleString()}`}
+            icon={<TrendingUp className="h-5 w-5" />}
+            colorScheme="success"
+            description="This month's total"
+            trend={monthlyIncome > 0 ? { value: 8, isPositive: true } : undefined}
+          />
         </Link>
       </div>
 
@@ -123,55 +134,104 @@ const Dashboard = () => {
 
       {/* Recent Events and Announcements */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-church-500 cursor-pointer" onClick={() => window.location.href = '/events'}>
-          <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
-          <div className="space-y-4">
+        <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/50">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold">Upcoming Events</h3>
+            <Link 
+              to="/events" 
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="space-y-3">
             {upcomingEvents.length > 0 ? (
               upcomingEvents.map((event) => (
-                <div
+                <Link
                   key={event.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  to="/events"
+                  className="flex items-start gap-4 p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors group"
                 >
-                  <div className="min-w-[48px] h-12 bg-church-100 rounded-lg flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-church-600" />
+                  <div className="min-w-[56px] h-14 bg-primary/10 rounded-lg flex flex-col items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Calendar className="h-6 w-6 text-primary" />
                   </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">{event.title}</h4>
-                    <p className="text-sm text-gray-500">
-                      {new Date(event.start_date).toLocaleDateString()}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                      {event.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {format(new Date(event.start_date), "PPP")}
                     </p>
+                    {event.location && (
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        📍 {event.location}
+                      </p>
+                    )}
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">No upcoming events</p>
+              <div className="text-center py-12 px-4">
+                <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground font-medium mb-2">No upcoming events</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Start planning your church events
+                </p>
+                <Link 
+                  to="/events" 
+                  className="inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                >
+                  Create Event
+                </Link>
               </div>
             )}
           </div>
         </Card>
 
-        <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-church-500 cursor-pointer" onClick={() => window.location.href = '/announcements'}>
-          <h3 className="text-lg font-semibold mb-4">Recent Announcements</h3>
-          <div className="space-y-4">
+        <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/50">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold">Recent Announcements</h3>
+            <Link 
+              to="/announcements" 
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="space-y-3">
             {announcements.length > 0 ? (
               announcements.map((announcement) => (
-                <div
+                <Link
                   key={announcement.id}
-                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  to="/announcements"
+                  className="block p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors group"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{announcement.title}</h4>
-                    <span className="text-sm text-gray-500">
-                      {new Date(announcement.created_at).toLocaleDateString()}
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                      {announcement.title}
+                    </h4>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {format(new Date(announcement.created_at), "MMM d")}
                     </span>
                   </div>
-                  <p className="text-gray-600 line-clamp-2">{announcement.content}</p>
-                </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {announcement.content}
+                  </p>
+                </Link>
               ))
             ) : (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">No recent announcements</p>
+              <div className="text-center py-12 px-4">
+                <Bell className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground font-medium mb-2">No announcements yet</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Keep your congregation informed
+                </p>
+                <Link 
+                  to="/announcements" 
+                  className="inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                >
+                  Create Announcement
+                </Link>
               </div>
             )}
           </div>

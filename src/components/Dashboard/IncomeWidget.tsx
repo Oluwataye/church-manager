@@ -47,28 +47,28 @@ export function IncomeWidget() {
               dataKey="tithe"
               name="Tithe"
               stackId="a"
-              fill="#2563eb"
+              fill="hsl(var(--chart-1))"
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="offering"
               name="Offering"
               stackId="a"
-              fill="#16a34a"
+              fill="hsl(var(--chart-2))"
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="project"
               name="Project"
               stackId="a"
-              fill="#d97706"
+              fill="hsl(var(--chart-3))"
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="special"
               name="Special"
               stackId="a"
-              fill="#dc2626"
+              fill="hsl(var(--chart-4))"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

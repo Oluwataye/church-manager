@@ -14,15 +14,35 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/Auth/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-const menuItems = [
-  { icon: Home, label: "Dashboard", path: "/" },
-  { icon: Users, label: "Members", path: "/members" },
-  { icon: ClipboardCheck, label: "Attendance", path: "/attendance" },
-  { icon: DollarSign, label: "Income", path: "/income" },
-  { icon: Users, label: "Groups", path: "/groups" },
-  { icon: Calendar, label: "Events", path: "/events" },
-  { icon: Bell, label: "Announcements", path: "/announcements" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+const menuGroups = [
+  {
+    label: "Overview",
+    items: [
+      { icon: Home, label: "Dashboard", path: "/" },
+    ]
+  },
+  {
+    label: "Church Management",
+    items: [
+      { icon: Users, label: "Members", path: "/members" },
+      { icon: ClipboardCheck, label: "Attendance", path: "/attendance" },
+      { icon: Users, label: "Groups", path: "/groups" },
+    ]
+  },
+  {
+    label: "Finance & Events",
+    items: [
+      { icon: DollarSign, label: "Income", path: "/income" },
+      { icon: Calendar, label: "Events", path: "/events" },
+      { icon: Bell, label: "Announcements", path: "/announcements" },
+    ]
+  },
+  {
+    label: "Settings",
+    items: [
+      { icon: Settings, label: "Settings", path: "/settings" },
+    ]
+  }
 ];
 
 export const AppSidebar = () => {
@@ -43,46 +63,56 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar>
+    <Sidebar className="bg-sidebar border-r border-sidebar-border">
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = location.pathname === item.path || 
-                  (item.path === "/" && location.pathname === "/dashboard");
-                
-                return (
-                  <SidebarMenuItem key={item.label}>
-                    <SidebarMenuButton asChild>
-                      <Link 
-                        to={item.path} 
-                        className={`flex items-center gap-4 px-4 py-3 text-white hover:bg-church-700 transition-colors w-full rounded-md ${
-                          isActive ? "bg-church-700 font-semibold" : ""
-                        }`}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        <span className="text-base font-medium">{item.label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {menuGroups.map((group, groupIndex) => (
+          <SidebarGroup key={group.label}>
+            {group.label && groupIndex > 0 && (
+              <SidebarGroupLabel className="text-sidebar-foreground/60 text-xs uppercase tracking-wider px-3 mb-2">
+                {group.label}
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive = location.pathname === item.path || 
+                    (item.path === "/" && location.pathname === "/dashboard");
+                  
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton asChild data-active={isActive}>
+                        <Link 
+                          to={item.path} 
+                          className={`flex items-center gap-3 px-3 py-2.5 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all rounded-md relative group ${
+                            isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" : ""
+                          }`}
+                        >
+                          {isActive && (
+                            <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" />
+                          )}
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
-        <SidebarGroup className="mt-auto pt-6 border-t border-church-700">
+        <SidebarGroup className="mt-auto pt-4 border-t border-sidebar-border">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-4 px-4 py-3 text-white hover:bg-church-700 transition-colors w-full rounded-md"
+                    className="flex items-center gap-3 px-3 py-2.5 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all rounded-md w-full"
                   >
-                    <LogOut className="h-5 w-5" />
-                    <span className="text-base font-medium">Logout</span>
+                    <LogOut className="h-5 w-5 flex-shrink-0" />
+                    <span className="text-sm font-medium">Logout</span>
                   </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
