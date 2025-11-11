@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
+import { PasswordStrengthMeter } from "@/components/Auth/PasswordStrengthMeter";
+import { useChurchName } from "@/hooks/useChurchName";
 
 export function SignupPageContent() {
   const [email, setEmail] = useState("");
@@ -16,6 +18,7 @@ export function SignupPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { churchName } = useChurchName();
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -38,15 +41,21 @@ export function SignupPageContent() {
       return;
     }
 
-    // Validate password strength
-    if (password.length < 12) {
-      setError("Password must be at least 12 characters long");
+    // Validate password strength (16+ chars, special char required)
+    if (password.length < 16) {
+      setError("Password must be at least 16 characters long");
       setIsLoading(false);
       return;
     }
 
     if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
       setError("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      setError("Password must contain at least one special character (!@#$%^&* etc.)");
       setIsLoading(false);
       return;
     }
@@ -93,7 +102,7 @@ export function SignupPageContent() {
           <ChurchLogo displayOnly />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Living Faith Church Chanchaga
+          {churchName}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Church Management System
@@ -111,7 +120,7 @@ export function SignupPageContent() {
           <CardContent>
             <Alert className="mb-4">
               <AlertDescription>
-                Password must be at least 12 characters and contain uppercase, lowercase, and numbers.
+                Password must be at least 16 characters and contain uppercase, lowercase, numbers, and special characters.
               </AlertDescription>
             </Alert>
             
@@ -126,6 +135,8 @@ export function SignupPageContent() {
               isLoading={isLoading}
               onSubmit={handleSignup}
             />
+            
+            <PasswordStrengthMeter password={password} />
 
             <div className="mt-4 text-center">
               <Link to="/login" className="text-sm text-church-600 hover:text-church-700">
