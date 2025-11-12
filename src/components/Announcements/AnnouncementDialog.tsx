@@ -29,10 +29,11 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeUserInput } from "@/utils/sanitization";
 
 const announcementSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  content: z.string().min(1, "Content is required"),
+  title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  content: z.string().min(1, "Content is required").max(2000, "Content must be less than 2000 characters"),
   priority: z.enum(["high", "medium", "low"]),
 });
 
@@ -71,14 +72,34 @@ export function AnnouncementDialog({
   async function onSubmit(data: AnnouncementFormData) {
     setIsSubmitting(true);
     try {
+      // Sanitize inputs
+      const sanitizedData = {
+        title: sanitizeUserInput(data.title),
+        content: sanitizeUserInput(data.content),
+        priority: data.priority,
+      };
+
+      // Server-side validation
+      const { data: validationData, error: validationError } = await supabase.functions.invoke(
+        'validate-announcement',
+        {
+          body: sanitizedData,
+        }
+      );
+
+      if (validationError || !validationData?.valid) {
+        const errors = validationData?.errors || [{ message: 'Validation failed' }];
+        throw new Error(errors.map((e: any) => e.message).join(', '));
+      }
+
       if (isEditing && announcement) {
         // Update existing announcement
         const { error } = await supabase
           .from("announcements")
           .update({
-            title: data.title,
-            content: data.content,
-            priority: data.priority,
+            title: sanitizedData.title,
+            content: sanitizedData.content,
+            priority: sanitizedData.priority,
             updated_at: new Date().toISOString(),
           })
           .eq("id", announcement.id);
@@ -92,9 +113,9 @@ export function AnnouncementDialog({
         const { error } = await supabase
           .from("announcements")
           .insert({
-            title: data.title,
-            content: data.content,
-            priority: data.priority,
+            title: sanitizedData.title,
+            content: sanitizedData.content,
+            priority: sanitizedData.priority,
             publish_date: new Date().toISOString(),
           });
 
@@ -107,10 +128,10 @@ export function AnnouncementDialog({
       onSuccess();
       onOpenChange(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving announcement:", error);
       toast.error("Error", {
-        description: "Failed to save the announcement. Please try again.",
+        description: error.message || "Failed to save the announcement. Please try again.",
       });
     } finally {
       setIsSubmitting(false);

@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { sanitizeUserInput } from "@/utils/sanitization";
 
 export interface Group {
   id: string;
@@ -88,8 +89,8 @@ export const GroupList = ({ searchQuery }: GroupListProps) => {
                 <Users className="w-6 h-6 text-church-600" />
               </div>
               <div>
-                <h3 className="font-semibold">{group.name}</h3>
-                <p className="text-sm text-gray-500">{group.description}</p>
+                <h3 className="font-semibold">{sanitizeUserInput(group.name)}</h3>
+                <p className="text-sm text-gray-500">{group.description && sanitizeUserInput(group.description)}</p>
               </div>
             </div>
           </Card>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sanitizeUserInput } from "@/utils/sanitization";
 
 // Interface for event data
 interface Event {
@@ -70,11 +71,11 @@ export const EventList = () => {
           {filteredEvents.map((event) => (
             <Card key={event.id} className="p-4">
               <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold">{event.title}</h3>
-                  {event.description && (
-                    <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
-                  )}
+              <div>
+                <h3 className="text-lg font-semibold">{sanitizeUserInput(event.title)}</h3>
+                {event.description && (
+                  <p className="text-sm text-muted-foreground mt-1">{sanitizeUserInput(event.description)}</p>
+                )}
                   <div className="space-y-1 mt-2">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="mr-2 h-4 w-4" />

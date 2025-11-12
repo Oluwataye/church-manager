@@ -21,6 +21,25 @@ export function useTitheForm() {
     mutationFn: async (values: TitheFormValues) => {
       const formattedDate = format(values.date, "yyyy-MM-dd");
       
+      // Server-side validation
+      const { data: validationData, error: validationError } = await supabase.functions.invoke(
+        'validate-tithe',
+        {
+          body: {
+            date: formattedDate,
+            member_id: values.memberId,
+            amount: parseFloat(values.amount),
+            month: values.month,
+            notes: values.notes,
+          },
+        }
+      );
+
+      if (validationError || !validationData?.valid) {
+        const errors = validationData?.errors || [{ message: 'Validation failed' }];
+        throw new Error(errors.map((e: any) => e.message).join(', '));
+      }
+
       const { data, error } = await supabase
         .from('tithes' as any)
         .insert({

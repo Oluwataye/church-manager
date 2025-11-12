@@ -8,6 +8,7 @@ import { AnnouncementDialog } from "@/components/Announcements/AnnouncementDialo
 import { DeleteAnnouncementDialog } from "@/components/Announcements/DeleteAnnouncementDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeUserInput } from "@/utils/sanitization";
 
 interface Announcement {
   id: string;
@@ -89,8 +90,8 @@ export default function Announcements() {
         throw new Error("Announcement not found");
       }
       toast({
-        title: announcement.title,
-        description: announcement.content,
+        title: sanitizeUserInput(announcement.title),
+        description: sanitizeUserInput(announcement.content),
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -143,7 +144,7 @@ export default function Announcements() {
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-xl">{announcement.title}</h3>
+                    <h3 className="font-semibold text-xl">{sanitizeUserInput(announcement.title)}</h3>
                     <span
                       className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(
                         announcement.priority
@@ -152,7 +153,7 @@ export default function Announcements() {
                       {announcement.priority}
                     </span>
                   </div>
-                  <p className="mt-2 text-gray-600">{announcement.content}</p>
+                  <p className="mt-2 text-gray-600">{sanitizeUserInput(announcement.content)}</p>
                   <div className="mt-4 flex justify-between items-center">
                     <p className="text-sm text-gray-500">
                       {new Date(announcement.date).toLocaleDateString()}

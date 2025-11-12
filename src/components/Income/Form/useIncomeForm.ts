@@ -21,6 +21,25 @@ export function useIncomeForm() {
     mutationFn: async (values: IncomeFormValues) => {
       const formattedDate = format(values.date, "yyyy-MM-dd");
 
+      // Server-side validation
+      const { data: validationData, error: validationError } = await supabase.functions.invoke(
+        'validate-income',
+        {
+          body: {
+            date: formattedDate,
+            service_type: values.serviceType,
+            category: values.category,
+            amount: parseFloat(values.amount),
+            description: values.description,
+          },
+        }
+      );
+
+      if (validationError || !validationData?.valid) {
+        const errors = validationData?.errors || [{ message: 'Validation failed' }];
+        throw new Error(errors.map((e: any) => e.message).join(', '));
+      }
+
       const { data, error } = await supabase.from('incomes').insert({
         date: formattedDate,
         service_type: values.serviceType,

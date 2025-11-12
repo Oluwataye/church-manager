@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { nigerianStates, getCitiesByState } from "@/utils/nigerianCities";
 import { ProfilePhotoUpload } from "./ProfilePhotoUpload";
+import { submitMemberWithValidation } from "@/hooks/useMemberFormSubmit";
 
 interface MemberRegistrationFormProps {
   onSubmit: (data: Omit<Member, "id">) => Promise<void>;
@@ -88,9 +89,14 @@ export function MemberRegistrationForm({ onSubmit, onCancel, initialData }: Memb
     
     setIsSubmitting(true);
     try {
+      // Validate on server before submitting
+      await submitMemberWithValidation(formData as any);
       await onSubmit(formData as Omit<Member, "id">);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Form submission error:", error);
+      toast.error("Validation failed", {
+        description: error.message || "Please check your input and try again."
+      });
     } finally {
       setIsSubmitting(false);
     }

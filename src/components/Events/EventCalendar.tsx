@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sanitizeUserInput } from "@/utils/sanitization";
 
 interface Event {
   id: string;
@@ -111,7 +112,7 @@ export const EventCalendar = () => {
                   className="p-2 border rounded-md cursor-pointer hover:bg-accent"
                   onClick={() => setSelectedEvent(event)}
                 >
-                  <div className="font-medium">{event.title}</div>
+                  <div className="font-medium">{sanitizeUserInput(event.title)}</div>
                   <div className="text-sm text-muted-foreground">
                     {formatTime(event.start_date)}
                     {event.end_date && ` - ${formatTime(event.end_date)}`}
@@ -126,7 +127,7 @@ export const EventCalendar = () => {
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{selectedEvent?.title}</DialogTitle>
+            <DialogTitle>{selectedEvent?.title && sanitizeUserInput(selectedEvent.title)}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             <p><strong>Date:</strong> {selectedEvent?.start_date && new Date(selectedEvent.start_date).toLocaleDateString()}</p>
@@ -135,10 +136,10 @@ export const EventCalendar = () => {
               {selectedEvent?.end_date && ` - ${formatTime(selectedEvent.end_date)}`}
             </p>
             {selectedEvent?.location && (
-              <p><strong>Location:</strong> {selectedEvent.location}</p>
+              <p><strong>Location:</strong> {sanitizeUserInput(selectedEvent.location)}</p>
             )}
             {selectedEvent?.description && (
-              <p><strong>Description:</strong> {selectedEvent.description}</p>
+              <p><strong>Description:</strong> {sanitizeUserInput(selectedEvent.description)}</p>
             )}
           </div>
         </DialogContent>
