@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { checkRateLimit, handleRateLimitError } from "@/utils/rateLimit";
+import { auditAuthEvent } from "@/utils/auditLog";
 
 export function useLoginFunctions() {
   // Login state
@@ -23,16 +25,42 @@ export function useLoginFunctions() {
     setError(null);
 
     try {
+      // Check rate limit
+      const rateLimitResult = await checkRateLimit('auth/login', 'auth');
+      
+      if (!rateLimitResult.allowed) {
+        const errorMsg = handleRateLimitError(rateLimitResult);
+        setError(errorMsg);
+        toast({
+          variant: "destructive",
+          title: "Too Many Attempts",
+          description: errorMsg,
+        });
+        return;
+      }
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
+        // Audit failed login attempt
+        await auditAuthEvent('login', undefined, { 
+          email, 
+          success: false, 
+          error: signInError.message 
+        });
         throw new Error('Invalid email or password. Please try again.');
       }
 
       if (data?.user) {
+        // Audit successful login
+        await auditAuthEvent('login', data.user.id, { 
+          email, 
+          success: true 
+        });
+
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",

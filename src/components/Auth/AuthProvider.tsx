@@ -3,6 +3,7 @@ import { AuthContext } from "./AuthContext";
 import { initSyncListener } from "@/services/syncService";
 import { useEffect } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
+import { auditAuthEvent } from "@/utils/auditLog";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuthState();

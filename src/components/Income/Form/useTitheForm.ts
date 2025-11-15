@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TitheFormValues, titheFormSchema } from "./titheFormSchema";
+import { auditTitheOperation } from "@/utils/auditLog";
 
 export function useTitheForm() {
   const queryClient = useQueryClient();
@@ -53,6 +54,15 @@ export function useTitheForm() {
         .single();
 
       if (error) throw error;
+      if (!data) throw new Error('No data returned from insert');
+      
+      // Audit tithe creation
+      await auditTitheOperation('create', (data as any).id, undefined, {
+        member_id: values.memberId,
+        amount: parseFloat(values.amount),
+        month: values.month,
+      });
+      
       return data;
     },
     onSuccess: () => {

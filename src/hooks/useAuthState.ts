@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { processPendingSync } from "@/services/syncService";
 import { CustomUser } from "@/components/Auth/authTypes";
+import { auditAuthEvent } from "@/utils/auditLog";
 
 const isElectron = typeof window !== 'undefined' && window.electronAPI?.isElectron;
 
@@ -92,7 +93,15 @@ export function useAuthState() {
 
   const logout = async () => {
     try {
+      const userId = 'id' in (user || {}) ? (user as User).id : undefined;
+      
       await supabase.auth.signOut();
+      
+      // Audit logout event
+      if (userId) {
+        await auditAuthEvent('logout', userId);
+      }
+      
       setUser(null);
       navigate("/login", { replace: true });
       
@@ -101,6 +110,16 @@ export function useAuthState() {
       });
     } catch (error: any) {
       console.error("Logout error:", error);
+      
+      // Audit failed logout attempt
+      const userId = 'id' in (user || {}) ? (user as User).id : undefined;
+      if (userId) {
+        await auditAuthEvent('logout', userId, { 
+          success: false, 
+          error: error.message 
+        });
+      }
+      
       setUser(null);
       navigate("/login", { replace: true });
       
