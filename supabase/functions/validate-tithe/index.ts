@@ -32,6 +32,35 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Check rate limit
+    const rateLimitResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/rate-limit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': req.headers.get('Authorization') || '',
+        'x-forwarded-for': req.headers.get('x-forwarded-for') || '',
+      },
+      body: JSON.stringify({
+        endpoint: 'validate-tithe',
+        category: 'validation',
+      }),
+    });
+
+    const rateLimit = await rateLimitResponse.json();
+    
+    if (!rateLimit.allowed) {
+      console.warn('Rate limit exceeded for validate-tithe');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Too many requests. Please try again in ${Math.ceil((rateLimit.retry_after || 300) / 60)} minutes.`
+        }),
+        { 
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',

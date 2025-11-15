@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import type { Member } from "@/hooks/useMembers";
 import { useAuth } from "@/components/Auth/AuthContext";
+import { auditMemberOperation } from "@/utils/auditLog";
 
 export function useMemberActions() {
   const queryClient = useQueryClient();
@@ -98,6 +99,14 @@ export function useMemberActions() {
           
           // Use the server-generated ID
           newMember.id = data.id;
+          
+          // Audit member creation
+          await auditMemberOperation('create', data.id, undefined, {
+            first_name: memberData.first_name,
+            last_name: memberData.last_name,
+            email: memberData.email,
+            member_type: memberData.member_type,
+          });
         } catch (error) {
           console.error('Supabase error, falling back to offline mode:', error);
           // Continue with offline storage
@@ -145,15 +154,29 @@ export function useMemberActions() {
       if (!isOffline) {
         // If online, try to update in Supabase
         try {
+          // Get old data for audit
+          const { data: oldData } = await supabase
+            .from('members')
+            .select('first_name, last_name, email, member_type')
+            .eq('id', id)
+            .single();
+
           const { error } = await supabase
             .from('members')
             .update(memberData)
             .eq('id', id);
 
           if (error) throw error;
+          
+          // Audit member update
+          await auditMemberOperation('update', id, oldData, {
+            first_name: memberData.first_name,
+            last_name: memberData.last_name,
+            email: memberData.email,
+            member_type: memberData.member_type,
+          });
         } catch (error) {
           console.error('Supabase error, falling back to offline mode:', error);
-          // Continue with offline storage
           createPendingSync('update', updatedMember);
         }
       } else {
@@ -188,21 +211,28 @@ export function useMemberActions() {
   const handleDeleteMember = async (id: string) => {
     try {
       if (!isOffline) {
-        // If online, try to delete from Supabase
         try {
+          // Get member data for audit before deletion
+          const { data: memberData } = await supabase
+            .from('members')
+            .select('first_name, last_name, email')
+            .eq('id', id)
+            .single();
+
           const { error } = await supabase
             .from('members')
             .delete()
             .eq('id', id);
 
           if (error) throw error;
+          
+          // Audit member deletion
+          await auditMemberOperation('delete', id, memberData, undefined);
         } catch (error) {
           console.error('Supabase error, falling back to offline mode:', error);
-          // Continue with offline storage
           createPendingSync('delete', { id });
         }
       } else {
-        // Queue for sync when online
         createPendingSync('delete', { id });
       }
 

@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { IncomeFormValues, incomeFormSchema } from "./incomeFormSchema";
+import { auditIncomeOperation } from "@/utils/auditLog";
 
 export function useIncomeForm() {
   const queryClient = useQueryClient();
@@ -49,6 +50,15 @@ export function useIncomeForm() {
       }).select().single();
 
       if (error) throw error;
+      
+      // Audit income creation
+      await auditIncomeOperation('create', data.id, undefined, {
+        date: formattedDate,
+        service_type: values.serviceType,
+        category: values.category,
+        amount: parseFloat(values.amount),
+      });
+      
       return data;
     },
     onSuccess: () => {

@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { PasswordStrengthMeter } from "@/components/Auth/PasswordStrengthMeter";
 import { useChurchName } from "@/hooks/useChurchName";
+import { checkRateLimit, handleRateLimitError } from "@/utils/rateLimit";
+import { auditAuthEvent } from "@/utils/auditLog";
 
 export function SignupPageContent() {
   const [email, setEmail] = useState("");
@@ -61,6 +63,20 @@ export function SignupPageContent() {
     }
 
     try {
+      // Check rate limit
+      const rateLimitResult = await checkRateLimit('auth/signup', 'auth');
+      
+      if (!rateLimitResult.allowed) {
+        const errorMsg = handleRateLimitError(rateLimitResult);
+        setError(errorMsg);
+        toast({
+          variant: "destructive",
+          title: "Too Many Attempts",
+          description: errorMsg,
+        });
+        return;
+      }
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error: signUpError } = await supabase.auth.signUp({
@@ -72,10 +88,22 @@ export function SignupPageContent() {
       });
 
       if (signUpError) {
+        // Audit failed signup attempt
+        await auditAuthEvent('signup', undefined, { 
+          email, 
+          success: false, 
+          error: signUpError.message 
+        });
         throw signUpError;
       }
 
       if (data?.user) {
+        // Audit successful signup
+        await auditAuthEvent('signup', data.user.id, { 
+          email, 
+          success: true 
+        });
+
         toast({
           title: "Account created successfully!",
           description: "You have been automatically signed in.",
