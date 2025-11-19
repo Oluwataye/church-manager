@@ -12,13 +12,33 @@ import { useEffect, useState } from "react";
 import { ChurchNameEditor } from "@/components/Layout/ChurchNameEditor";
 import { useChurchName } from "@/hooks/useChurchName";
 import { LogoExtractor } from "@/components/Layout/LogoExtractor";
+import { MFAEnrollment } from "@/components/Auth/MFAEnrollment";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { churchName } = useChurchName();
+  const [isAdmin, setIsAdmin] = useState(false);
   
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+        setIsAdmin(!!data);
+      }
+    };
+    checkAdminStatus();
+  }, []);
+
   // Monitor online status
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -159,9 +179,15 @@ export default function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Password management and security features will be available soon.
-            </p>
+            {isAdmin ? (
+              <MFAEnrollment />
+            ) : (
+              <Alert>
+                <AlertDescription>
+                  Two-factor authentication is available for admin accounts only. Contact an administrator to enable advanced security features.
+                </AlertDescription>
+              </Alert>
+            )}
           </CardContent>
         </Card>
       </div>
